@@ -4045,25 +4045,64 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	
 	    _createClass(Obj, [{
-	        key: '_watchXYZ',
-	        value: function _watchXYZ(val, callback) {
-	            var keys = typeof val._x === 'undefined' ? ['x', 'y', 'z'] : ['_x', '_y', '_z'];
-	            keys.forEach(function (key) {
-	                val['_' + key] = val[key];
+	        key: 'setPosition',
+	        value: function setPosition(x, y, z) {
+	            this.position.set(x, y, z);
+	            this.onChange();
+	        }
+	    }, {
+	        key: 'setRotation',
+	        value: function setRotation(x, y, z) {
+	            this.rotation.set(x, y, z, 'XYZ');
+	            this.onChange();
+	        }
+	    }, {
+	        key: 'setScale',
+	        value: function setScale(x, y, z) {
+	            this.scale.set(x, y, z);
+	            this.onChange();
+	        }
 	
-	                Object.defineProperty(val, key, {
-	                    configurable: true,
-	                    enumerable: true,
-	                    get: function get() {
+	        /*set position(position) {
+	            this._position = position;
+	            // this._watchXYZ(this._position, this.onChange.bind(this));
+	            this.onChange();
+	        }
+	        get position() {
+	            return this._position;
+	        }
+	         set rotation(rotation) {
+	            this._rotation = rotation;
+	            this.onChange();
+	        }
+	        get rotation() {
+	            return this._rotation;
+	        }
+	         set scale(scale) {
+	            this._scale = scale;
+	            this.onChange();
+	        }
+	        get scale() {
+	            return this._scale;
+	        }
+	         _watchXYZ(val, callback) {
+	            let keys = typeof val._x === 'undefined'? ['x','y','z']:['_x','_y','_z'];
+	            keys.forEach((key)=>{
+	                val['_' + key] = val[key];
+	                 Object.defineProperty(val, key, {
+	                    configurable : true,
+	                    enumerable : true,
+	                    get : function() {
 	                        return val['_' + key];
 	                    },
-	                    set: function set(newVal) {
+	                    set : function(newVal) {
 	                        val['_' + key] = newVal;
 	                        callback();
 	                    }
 	                });
 	            });
-	        }
+	        }*/
+	
 	    }, {
 	        key: 'setWorldPosition',
 	        value: function setWorldPosition() {
@@ -4076,7 +4115,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                this.worldPosition.copy(this.position);
 	            }
 	
-	            this.updateVertice();
+	            // this.updateVertice();
 	
 	            // child world position update
 	            this.children.forEach(function (child) {
@@ -4125,14 +4164,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'onChange',
 	        value: function onChange() {
-	            var _this2 = this;
+	            this.setWorldPosition();return;
 	
-	            if (this.willUpdate) return;
+	            /*if (this.willUpdate) return;
 	            this.willUpdate = true;
-	            setTimeout(function () {
-	                _this2.willUpdate = false;
-	                _this2.setWorldPosition();
-	            }, 0);
+	            setTimeout(()=>{
+	                this.willUpdate = false;
+	                this.setWorldPosition();
+	            }, 0);*/
 	        }
 	    }, {
 	        key: '_render',
@@ -4148,34 +4187,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }, {
 	        key: 'render',
 	        value: function render(ctx, cvs) {}
-	    }, {
-	        key: 'position',
-	        set: function set(position) {
-	            this._position = position;
-	            this._watchXYZ(this._position, this.onChange.bind(this));
-	            this.onChange();
-	        },
-	        get: function get() {
-	            return this._position;
-	        }
-	    }, {
-	        key: 'rotation',
-	        set: function set(rotation) {
-	            this._rotation = rotation;
-	            this.onChange();
-	        },
-	        get: function get() {
-	            return this._rotation;
-	        }
-	    }, {
-	        key: 'scale',
-	        set: function set(scale) {
-	            this._scale = scale;
-	            this.onChange();
-	        },
-	        get: function get() {
-	            return this._scale;
-	        }
 	    }]);
 	
 	    return Obj;

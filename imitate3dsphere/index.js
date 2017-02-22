@@ -10,9 +10,8 @@ class Point extends F3.Obj {
     render(ctx) {
         this.prevCrood = this.prevCrood || this.croods2D.position.clone();
 
-        ctx.fillStyle = "#fff";
         // ctx.fillStyle = this.color;
-        ctx.beginPath();
+        // ctx.beginPath();
 
 
         // console.log(
@@ -23,17 +22,24 @@ class Point extends F3.Obj {
         // );
 
         // if (this.croods2D.scale < 5)
-        // ctx.fillRect(
-        //     this.croods2D.position.x, 
-        //     this.croods2D.position.y,
-        //     this.radius * this.croods2D.scale * this.yScale, 
-        //     this.radius * this.croods2D.scale * this.yScale
-        // );
+        /*ctx.fillStyle = '#fff'
+        ctx.fillRect(
+            this.croods2D.position.x, 
+            this.croods2D.position.y,
+            this.radius * this.croods2D.scale * this.yScale, 
+            this.radius * this.croods2D.scale * this.yScale
+        );*/
+
+        // ctx.beginPath();
+        ctx.moveTo(
+            this.croods2D.position.x, 
+            this.croods2D.position.y
+        );
         ctx.arc(
             this.croods2D.position.x, 
             this.croods2D.position.y, 
             this.radius * this.croods2D.scale * this.yScale, 0, Math.PI * 2);
-        ctx.fill();
+        // ctx.fill();
 
         // ctx.strokeStyle = this.color;
         // ctx.lineWidth = this.radius * this.zScale;
@@ -57,8 +63,8 @@ class Effect extends F3.Time {
         this.waveHeight = 0.4; // 波高
         this.waveWidth = 8; // 波长
 
-        this.col = 25;
-        this.colPointNum = 25;
+        this.col = 35;
+        this.colPointNum = 35;
         
         this.pointGroup = new F3.Obj();
         this.scene.add(this.pointGroup);
@@ -69,11 +75,12 @@ class Effect extends F3.Time {
     resize(width, height) {
         this.cvs.width = width;
         this.cvs.height = height;
-        this.pointGroup.position.set(this.cvs.width/2, this.cvs.height, 0);
+        // this.pointGroup.position.set(this.cvs.width/2, this.cvs.height, 0);
+        this.stepWidth = width * 1.5 / this.col;
+        this.pointGroup.setPosition(this.cvs.width/2, this.cvs.height, -this.col * this.stepWidth/2);
 
         // this.waveHeight = height/2;
         // this.waveWidth = this.waveHeight * 4;
-        this.stepWidth = width * 1.5 / this.col;
         // console.log(this.stepWidth);
     }
     init() {
@@ -96,7 +103,7 @@ class Effect extends F3.Time {
                 // let zOffset =  Math.cos(( x ) * Math.PI / this.waveWidth ) * this.waveWidth * 2 + this.xOffset;
             
             // for (let z = 2; z > 2 - this.colPointNum; z-- ) {   
-            for (let z = -2; z > -this.colPointNum - 2 ; z-- ) {    
+            for (let z = -(this.colPointNum-1) / 2; z <= (this.colPointNum-1) / 2 ; z++ ) {    
 
                 // let waveHeight = (Math.cos(( x + z + this.xOffset) * Math.PI / this.waveWidth) + 1) * this.waveHeight / 2;
                 // console.log(waveHeight);
@@ -107,7 +114,7 @@ class Effect extends F3.Time {
                 // console.log(count);
                 // console.log(x)
                 this.pointGroup.children[count].yScale = (-y + 0.6)/(this.waveHeight);
-                this.pointGroup.children[count].position.set(
+                this.pointGroup.children[count].setPosition(
                     x * this.stepWidth,
                     y * this.stepWidth,
                     z * this.stepWidth
@@ -115,9 +122,11 @@ class Effect extends F3.Time {
                 count++;
             }
         }
-        // this.pointGroup.rotation.y += 0.002;
-        // this.pointGroup.rotation.x += 0.002;
-        // this.pointGroup.rotation.z += 0.002;
+        this.pointGroup.setRotation(
+            this.pointGroup.rotation.x +0.0005,
+            this.pointGroup.rotation.y +0.0005,
+            this.pointGroup.rotation.z +0.000   
+        );
     }
     animate() {
         this.addTick((delta)=>{
@@ -127,11 +136,25 @@ class Effect extends F3.Time {
     }
 }
 
+class EffectRander extends F3.Renderer {
+    constructor(ctx, cvs) {
+        super(ctx, cvs);
+    }
+    beforeRender() {
+        super.beforeRender();
+        this.ctx.beginPath();
+    }
+    afterRender() {
+        this.ctx.fillStyle = "#fff";
+        this.ctx.fill();
+    }
+}
+
 window.bannerInit = function(cvs) {
     let ctx = cvs.getContext('2d');
 
     let scene = new F3.Scene()
-    let renderer = new F3.Renderer(ctx, cvs);
+    let renderer = new EffectRander(ctx, cvs);
     let effect = new Effect(renderer, scene, cvs);
     F3.perspective.origin = new F3.Vector3(cvs.width/2, 0);
     F3.perspective.p = 1200;

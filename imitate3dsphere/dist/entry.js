@@ -46,6 +46,8 @@
 
 	'use strict';
 	
+	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -77,9 +79,9 @@
 	        value: function render(ctx) {
 	            this.prevCrood = this.prevCrood || this.croods2D.position.clone();
 	
-	            ctx.fillStyle = "#fff";
 	            // ctx.fillStyle = this.color;
-	            ctx.beginPath();
+	            // ctx.beginPath();
+	
 	
 	            // console.log(
 	            //     this.croods2D.position.x, 
@@ -89,14 +91,18 @@
 	            // );
 	
 	            // if (this.croods2D.scale < 5)
-	            // ctx.fillRect(
-	            //     this.croods2D.position.x, 
-	            //     this.croods2D.position.y,
-	            //     this.radius * this.croods2D.scale * this.yScale, 
-	            //     this.radius * this.croods2D.scale * this.yScale
-	            // );
+	            /*ctx.fillStyle = '#fff'
+	            ctx.fillRect(
+	                this.croods2D.position.x, 
+	                this.croods2D.position.y,
+	                this.radius * this.croods2D.scale * this.yScale, 
+	                this.radius * this.croods2D.scale * this.yScale
+	            );*/
+	
+	            // ctx.beginPath();
+	            ctx.moveTo(this.croods2D.position.x, this.croods2D.position.y);
 	            ctx.arc(this.croods2D.position.x, this.croods2D.position.y, this.radius * this.croods2D.scale * this.yScale, 0, Math.PI * 2);
-	            ctx.fill();
+	            // ctx.fill();
 	
 	            // ctx.strokeStyle = this.color;
 	            // ctx.lineWidth = this.radius * this.zScale;
@@ -128,8 +134,8 @@
 	        _this2.waveHeight = 0.4; // 波高
 	        _this2.waveWidth = 8; // 波长
 	
-	        _this2.col = 25;
-	        _this2.colPointNum = 25;
+	        _this2.col = 35;
+	        _this2.colPointNum = 35;
 	
 	        _this2.pointGroup = new F3.Obj();
 	        _this2.scene.add(_this2.pointGroup);
@@ -144,11 +150,12 @@
 	        value: function resize(width, height) {
 	            this.cvs.width = width;
 	            this.cvs.height = height;
-	            this.pointGroup.position.set(this.cvs.width / 2, this.cvs.height, 0);
+	            // this.pointGroup.position.set(this.cvs.width/2, this.cvs.height, 0);
+	            this.stepWidth = width * 1.5 / this.col;
+	            this.pointGroup.setPosition(this.cvs.width / 2, this.cvs.height, -this.col * this.stepWidth / 2);
 	
 	            // this.waveHeight = height/2;
 	            // this.waveWidth = this.waveHeight * 4;
-	            this.stepWidth = width * 1.5 / this.col;
 	            // console.log(this.stepWidth);
 	        }
 	    }, {
@@ -173,7 +180,7 @@
 	                // let zOffset =  Math.cos(( x ) * Math.PI / this.waveWidth ) * this.waveWidth * 2 + this.xOffset;
 	
 	                // for (let z = 2; z > 2 - this.colPointNum; z-- ) {   
-	                for (var z = -2; z > -this.colPointNum - 2; z--) {
+	                for (var z = -(this.colPointNum - 1) / 2; z <= (this.colPointNum - 1) / 2; z++) {
 	
 	                    // let waveHeight = (Math.cos(( x + z + this.xOffset) * Math.PI / this.waveWidth) + 1) * this.waveHeight / 2;
 	                    // console.log(waveHeight);
@@ -184,13 +191,11 @@
 	                    // console.log(count);
 	                    // console.log(x)
 	                    this.pointGroup.children[count].yScale = (-y + 0.6) / this.waveHeight;
-	                    this.pointGroup.children[count].position.set(x * this.stepWidth, y * this.stepWidth, z * this.stepWidth);
+	                    this.pointGroup.children[count].setPosition(x * this.stepWidth, y * this.stepWidth, z * this.stepWidth);
 	                    count++;
 	                }
 	            }
-	            // this.pointGroup.rotation.y += 0.002;
-	            // this.pointGroup.rotation.x += 0.002;
-	            // this.pointGroup.rotation.z += 0.002;
+	            this.pointGroup.setRotation(this.pointGroup.rotation.x + 0.006, this.pointGroup.rotation.y + 0.0005, this.pointGroup.rotation.z + 0.000);
 	        }
 	    }, {
 	        key: 'animate',
@@ -207,11 +212,37 @@
 	    return Effect;
 	}(F3.Time);
 	
+	var EffectRander = function (_F3$Renderer) {
+	    _inherits(EffectRander, _F3$Renderer);
+	
+	    function EffectRander(ctx, cvs) {
+	        _classCallCheck(this, EffectRander);
+	
+	        return _possibleConstructorReturn(this, (EffectRander.__proto__ || Object.getPrototypeOf(EffectRander)).call(this, ctx, cvs));
+	    }
+	
+	    _createClass(EffectRander, [{
+	        key: 'beforeRender',
+	        value: function beforeRender() {
+	            _get(EffectRander.prototype.__proto__ || Object.getPrototypeOf(EffectRander.prototype), 'beforeRender', this).call(this);
+	            this.ctx.beginPath();
+	        }
+	    }, {
+	        key: 'afterRender',
+	        value: function afterRender() {
+	            this.ctx.fillStyle = "#fff";
+	            this.ctx.fill();
+	        }
+	    }]);
+	
+	    return EffectRander;
+	}(F3.Renderer);
+	
 	window.bannerInit = function (cvs) {
 	    var ctx = cvs.getContext('2d');
 	
 	    var scene = new F3.Scene();
-	    var renderer = new F3.Renderer(ctx, cvs);
+	    var renderer = new EffectRander(ctx, cvs);
 	    var effect = new Effect(renderer, scene, cvs);
 	    F3.perspective.origin = new F3.Vector3(cvs.width / 2, 0);
 	    F3.perspective.p = 1200;

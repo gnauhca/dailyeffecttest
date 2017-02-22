@@ -23,9 +23,22 @@ export class Obj {
     }
 
 
-    set position(position) {
+    setPosition(x, y, z) {
+        this.position.set(x, y, z);
+        this.onChange();
+    }
+    setRotation(x, y, z) {
+        this.rotation.set(x, y, z, 'XYZ');
+        this.onChange();
+    }
+    setScale(x, y, z) {
+        this.scale.set(x, y, z);
+        this.onChange();
+    }
+
+    /*set position(position) {
         this._position = position;
-        this._watchXYZ(this._position, this.onChange.bind(this));
+        // this._watchXYZ(this._position, this.onChange.bind(this));
         this.onChange();
     }
     get position() {
@@ -65,7 +78,7 @@ export class Obj {
                 }
             });
         });
-    }
+    }*/
 
 
     setWorldPosition() {
@@ -81,7 +94,7 @@ export class Obj {
             this.worldPosition.copy(this.position);
         }
 
-        this.updateVertice();
+        // this.updateVertice();
 
         // child world position update
         this.children.forEach((child)=>{
@@ -126,12 +139,14 @@ export class Obj {
         this.children = this.children.filter((o)=>{return o !== obj});
     }
     onChange() {
-        if (this.willUpdate) return;
+         this.setWorldPosition(); return;
+
+        /*if (this.willUpdate) return;
         this.willUpdate = true;
         setTimeout(()=>{
             this.willUpdate = false;
             this.setWorldPosition();
-        }, 0);
+        }, 0);*/
     }
     _render(ctx, cvs) {
         ctx.save();
