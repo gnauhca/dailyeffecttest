@@ -175,10 +175,12 @@
 	safeSvg.lineGroup = lineGroup;
 	
 	var scanmaskGradient = s.gradient('L(200,30,-30,50)rgba(94,99,227,1)-rgba(94,99,227,0.95):50-rgba(94,99,227,0)');
-	safeSvg.scanMask9 = s.rect(-100, 0, 600, 400);
+	var scanmaskCircleMask = s.circle(0, 0, 190).attr({ 'fill': '#fff' });
+	safeSvg.scanMask9 = s.rect(-200, 0, 400, 200);
 	safeSvg.scanMask9.attr({
 	    'fill': scanmaskGradient,
-	    'transform': 'rotate(62)'
+	    'transform': 'rotate(62)',
+	    'mask': scanmaskCircleMask
 	});
 	
 	var group = s.group();
@@ -202,7 +204,7 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_LOCAL_MODULE_0__;/*** IMPORTS FROM imports-loader ***/
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_LOCAL_MODULE_0__;var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*** IMPORTS FROM imports-loader ***/
 	(function() {
 	var fix = module.exports=0;
 	
