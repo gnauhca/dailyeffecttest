@@ -8,6 +8,7 @@ var TIME = {
 }
 
 var stop = false;
+var t;
 TIME.addBody = function(timeBody) {
 	this.bodys.push(timeBody);
 }
@@ -31,7 +32,7 @@ TIME.tick = (function() {
 
 		TIME.handleFrame(delta);
 		if (!stop) {
-			requestAnimationFrame(TIME.tick);
+			t = requestAnimationFrame(TIME.tick);
 			// setTimeout(TIME.tick, 1000);
 		}		
 	}	
@@ -40,10 +41,12 @@ TIME.tick = (function() {
 
 TIME.start = function() {
 	stop = false;
+	cancelAnimationFrame(t);
 	this.tick();
 }
 
 TIME.stop = function() {
+	cancelAnimationFrame(t);
 	stop = true;
 }
 

@@ -134,8 +134,11 @@
 	        _this2.waveHeight = 0.4; // 波高
 	        _this2.waveWidth = 8; // 波长
 	
-	        _this2.col = 35;
-	        _this2.colPointNum = 35;
+	        _this2.col = 30;
+	        _this2.colPointNum = 30;
+	
+	        _this2.flyTime = 3000;
+	        _this2.timePass = 0;
 	
 	        _this2.pointGroup = new F3.Obj();
 	        _this2.scene.add(_this2.pointGroup);
@@ -151,9 +154,9 @@
 	            this.cvs.width = width;
 	            this.cvs.height = height;
 	            // this.pointGroup.position.set(this.cvs.width/2, this.cvs.height, 0);
-	            this.stepWidth = width * 1.5 / this.col;
-	            this.pointGroup.setPosition(this.cvs.width / 2, this.cvs.height, -this.col * this.stepWidth / 2);
-	
+	            this.stepWidth = width * 1.8 / this.col;
+	            this.pointGroup.setPosition(this.cvs.width / 2, this.cvs.height * 1.2, -this.col * this.stepWidth / 2);
+	            this.pointGroup.setRotation(0.1, 0, 0);
 	            // this.waveHeight = height/2;
 	            // this.waveWidth = this.waveHeight * 4;
 	            // console.log(this.stepWidth);
@@ -162,40 +165,41 @@
 	        key: 'init',
 	        value: function init() {
 	            // create point
-	            for (var i = 0; i < this.col * this.colPointNum; i++) {
-	                this.pointGroup.add(new Point(3));
+	            var point;
+	            for (var x = -(this.col - 1) / 2, count = 0; x <= (this.col - 1) / 2; x++) {
+	                for (var z = -(this.colPointNum - 1) / 2; z <= (this.colPointNum - 1) / 2; z++) {
+	                    point = new Point(2);
+	                    this.pointGroup.add(point);
+	                    point.initPos = new F3.Vector3(x + Math.random() * -2 + 1, -20 + -10 * Math.random(), z + Math.random() * -2 + 1);
+	                    point.flyDelay = Math.random() * 2000 | 0;
+	                }
 	            }
 	        }
 	    }, {
 	        key: 'update',
 	        value: function update(delta) {
-	            this.xOffset += delta / 2000;
-	            // if (this.xOffset > this.waveWidth*2) {
-	            //     this.xOffset -= this.waveWidth*2;
-	            // }
-	            // console.log(this.xOffset);
+	            this.timePass += delta;
+	            this.xOffset = this.timePass / 2000;
+	
+	            var point = void 0;
+	            var flyPecent = void 0;
+	
 	            for (var x = -(this.col - 1) / 2, count = 0; x <= (this.col - 1) / 2; x++) {
-	                // let zOffset = Math.cos((x + this.xOffset) * Math.PI / this.waveWidth) * this.waveWidth * 2;
-	
-	                // let zOffset =  Math.cos(( x ) * Math.PI / this.waveWidth ) * this.waveWidth * 2 + this.xOffset;
-	
-	                // for (let z = 2; z > 2 - this.colPointNum; z-- ) {   
 	                for (var z = -(this.colPointNum - 1) / 2; z <= (this.colPointNum - 1) / 2; z++) {
 	
-	                    // let waveHeight = (Math.cos(( x + z + this.xOffset) * Math.PI / this.waveWidth) + 1) * this.waveHeight / 2;
-	                    // console.log(waveHeight);
-	                    // let y = Math.cos((z + zOffset) * Math.PI / this.waveWidth) * this.waveHeight;
-	
-	
 	                    var y = Math.cos(x * Math.PI / this.waveWidth + this.xOffset) * Math.sin(z * Math.PI / this.waveWidth + this.xOffset) * this.waveHeight;
-	                    // console.log(count);
-	                    // console.log(x)
-	                    this.pointGroup.children[count].yScale = (-y + 0.6) / this.waveHeight;
-	                    this.pointGroup.children[count].setPosition(x * this.stepWidth, y * this.stepWidth, z * this.stepWidth);
+	
+	                    point = this.pointGroup.children[count];
+	                    point.yScale = (-y + 0.6) / this.waveHeight * 1.5;
+	
+	                    flyPecent = (this.timePass - point.flyDelay) / this.flyTime;
+	                    flyPecent = flyPecent > 1 ? 1 : flyPecent < 0 ? 0 : flyPecent;
+	
+	                    point.setPosition((x + (point.initPos.x - x) * (1 - flyPecent)) * this.stepWidth, (y + (point.initPos.y - y) * (1 - flyPecent)) * this.stepWidth, (z + (point.initPos.z - z) * (1 - flyPecent)) * this.stepWidth);
 	                    count++;
 	                }
 	            }
-	            this.pointGroup.setRotation(this.pointGroup.rotation.x + 0.006, this.pointGroup.rotation.y + 0.0005, this.pointGroup.rotation.z + 0.000);
+	            if (this.timePass > this.flyTime) this.pointGroup.setRotation(this.pointGroup.rotation.x + 0.0000, this.pointGroup.rotation.y + 0.0002, this.pointGroup.rotation.z + 0.000);
 	        }
 	    }, {
 	        key: 'animate',
@@ -244,13 +248,12 @@
 	    var scene = new F3.Scene();
 	    var renderer = new EffectRander(ctx, cvs);
 	    var effect = new Effect(renderer, scene, cvs);
-	    F3.perspective.origin = new F3.Vector3(cvs.width / 2, 0);
-	    F3.perspective.p = 1200;
+	    F3.perspective.origin = new F3.Vector3(cvs.width / 2, cvs.height / 1.6);
+	    F3.perspective.p = 800;
 	    effect.animate();
 	
 	    F3.TIME.start();
 	};
-	bannerInit(document.querySelector('canvas'));
 
 /***/ }
 /******/ ]);
