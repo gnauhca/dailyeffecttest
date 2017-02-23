@@ -140,7 +140,7 @@ safeSvg.scanMask9.attr({
     'mask': scanmaskCircleMask
 });
 
-
+// to center
 var group = s.group();
 group.attr({'transform': 'translate(500 500)'});
 
