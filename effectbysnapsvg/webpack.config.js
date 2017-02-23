@@ -1,9 +1,14 @@
 var webpack = require('webpack');
 
 module.exports = {
-    entry: 'index.js',
+
+    entry: {
+        // 'index': 'index.js',
+        'safesvg': 'safesvg.js'
+    },
     output: {
-        'filename': 'entry.js',
+        'path': './dist',
+        'filename': '[name].js'
     },
     resolve: {
         root: process.cwd(),
