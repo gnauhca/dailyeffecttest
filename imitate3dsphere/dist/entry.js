@@ -140,6 +140,9 @@
 	        _this2.flyTime = 3000;
 	        _this2.timePass = 0;
 	
+	        _this2.scale = 1;
+	        _this2.scaleStep = 0.01;
+	
 	        _this2.pointGroup = new F3.Obj();
 	        _this2.scene.add(_this2.pointGroup);
 	
@@ -200,6 +203,15 @@
 	                }
 	            }
 	            if (this.timePass > this.flyTime) this.pointGroup.setRotation(this.pointGroup.rotation.x + 0.0000, this.pointGroup.rotation.y + 0.0002, this.pointGroup.rotation.z + 0.000);
+	
+	            if (this.scale >= 1.2) {
+	                this.scaleStep = -0.001;
+	            } else if (this.scale <= 1) {
+	                this.scaleStep = 0.001;
+	            }
+	            this.scale += this.scaleStep;
+	            // console.log(this.scale, this.scaleStep);
+	            this.pointGroup.setScale(this.scale, this.scale, this.scale);
 	        }
 	    }, {
 	        key: 'animate',

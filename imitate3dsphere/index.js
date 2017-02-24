@@ -69,6 +69,9 @@ class Effect extends F3.Time {
         this.flyTime = 3000;
         this.timePass = 0;
 
+        this.scale = 1;
+        this.scaleStep = 0.01;
+
         this.pointGroup = new F3.Obj();
         this.scene.add(this.pointGroup);
 
@@ -136,6 +139,15 @@ class Effect extends F3.Time {
             this.pointGroup.rotation.y +0.0002,
             this.pointGroup.rotation.z +0.000   
         );
+
+        if (this.scale >= 1.2) {
+            this.scaleStep = -0.001;
+        } else if (this.scale <= 1) {
+            this.scaleStep = 0.001;
+        }
+        this.scale += this.scaleStep;
+        // console.log(this.scale, this.scaleStep);
+        this.pointGroup.setScale(this.scale, this.scale, this.scale);
     }
     animate() {
         this.addTick((delta)=>{
