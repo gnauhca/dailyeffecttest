@@ -3,7 +3,7 @@ var webpack = require('webpack');
 module.exports = {
 
     entry: {
-        // 'index': 'index.js',
+        'efficient': 'efficient.js',
         'safesvg': 'safesvg.js'
     },
     output: {
