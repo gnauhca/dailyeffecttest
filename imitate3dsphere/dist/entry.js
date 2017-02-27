@@ -46,8 +46,6 @@
 
 	'use strict';
 	
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -91,27 +89,29 @@
 	            // );
 	
 	            // if (this.croods2D.scale < 5)
-	            /*ctx.fillStyle = '#fff'
-	            ctx.fillRect(
-	                this.croods2D.position.x, 
-	                this.croods2D.position.y,
-	                this.radius * this.croods2D.scale * this.yScale, 
-	                this.radius * this.croods2D.scale * this.yScale
-	            );*/
+	            ctx.fillStyle = '#fff';
+	            ctx.fillRect(this.croods2D.position.x, this.croods2D.position.y, this.radius * this.croods2D.scale * this.yScale, this.radius * this.croods2D.scale * this.yScale);
 	
 	            // ctx.beginPath();
-	            ctx.moveTo(this.croods2D.position.x, this.croods2D.position.y);
-	            ctx.arc(this.croods2D.position.x, this.croods2D.position.y, this.radius * this.croods2D.scale * this.yScale, 0, Math.PI * 2);
+	            // ctx.moveTo(
+	            //     this.croods2D.position.x, 
+	            //     this.croods2D.position.y
+	            // );
+	            // ctx.arc(
+	            //     this.croods2D.position.x, 
+	            //     this.croods2D.position.y, 
+	            //     this.radius * this.croods2D.scale * this.yScale, 0, Math.PI * 2);
 	            // ctx.fill();
 	
-	            // ctx.strokeStyle = this.color;
-	            // ctx.lineWidth = this.radius * this.zScale;
+	            // ctx.strokeStyle = '#fff'//this.color;
+	            // ctx.lineWidth = this.radius * this.croods2D.scale// * this.zScale;
 	            // ctx.lineCap = "round";
 	            // ctx.beginPath();
 	            // ctx.moveTo(this.croods2D.position.x, this.croods2D.position.y);
-	            // ctx.lineTo(this.prevCrood.x, this.prevCrood.y);
+	            // ctx.lineTo(this.croods2D.position.x, this.croods2D.position.y);
+	            // // ctx.lineTo(this.prevCrood.x, this.prevCrood.y);
 	            // ctx.stroke();
-	            this.prevCrood = this.croods2D.position.clone();
+	            // this.prevCrood = this.croods2D.position.clone();
 	        }
 	    }]);
 	
@@ -134,10 +134,10 @@
 	        _this2.waveHeight = 0.4; // 波高
 	        _this2.waveWidth = 8; // 波长
 	
-	        _this2.col = 30;
-	        _this2.colPointNum = 30;
+	        _this2.col = 50;
+	        _this2.colPointNum = 50;
 	
-	        _this2.flyTime = 3000;
+	        _this2.flyTime = 2000;
 	        _this2.timePass = 0;
 	
 	        _this2.scale = 1;
@@ -171,10 +171,15 @@
 	            var point;
 	            for (var x = -(this.col - 1) / 2, count = 0; x <= (this.col - 1) / 2; x++) {
 	                for (var z = -(this.colPointNum - 1) / 2; z <= (this.colPointNum - 1) / 2; z++) {
-	                    point = new Point(2);
+	                    point = new Point(10);
 	                    this.pointGroup.add(point);
-	                    point.initPos = new F3.Vector3(x + Math.random() * -2 + 1, -20 + -10 * Math.random(), z + Math.random() * -2 + 1);
-	                    point.flyDelay = Math.random() * 2000 | 0;
+	                    /*point.initPos = new F3.Vector3(
+	                         x + Math.random() * -2 + 1,
+	                         -30 + -10 * Math.random(),
+	                         z + Math.random() * -2 + 1
+	                    );*/
+	                    point.initPos = new F3.Vector3(0, 0, 0);
+	                    point.flyDelay = 0; //Math.random() * 1000 | 0;
 	                }
 	            }
 	        }
@@ -182,7 +187,7 @@
 	        key: 'update',
 	        value: function update(delta) {
 	            this.timePass += delta;
-	            this.xOffset = this.timePass / 2000;
+	            this.xOffset = this.timePass / 500;
 	
 	            var point = void 0;
 	            var flyPecent = void 0;
@@ -190,10 +195,14 @@
 	            for (var x = -(this.col - 1) / 2, count = 0; x <= (this.col - 1) / 2; x++) {
 	                for (var z = -(this.colPointNum - 1) / 2; z <= (this.colPointNum - 1) / 2; z++) {
 	
-	                    var y = Math.cos(x * Math.PI / this.waveWidth + this.xOffset) * Math.sin(z * Math.PI / this.waveWidth + this.xOffset) * this.waveHeight;
+	                    // let y = Math.cos(x*Math.PI/this.waveWidth + this.xOffset)*Math.sin(z*Math.PI/this.waveWidth + this.xOffset) * this.waveHeight;
+	
+	                    var v = 2; //1 + (this.timePass % 1000)/1000; 
+	                    var y = Math.sin(Math.sqrt(Math.pow(x / v, 2) + Math.pow(z / v, 2)) - this.xOffset) * 1; /*/
+	                                                                                                             Math.sqrt(Math.pow(x/v, 2)+Math.pow(z/v, 2));*/
 	
 	                    point = this.pointGroup.children[count];
-	                    point.yScale = (-y + 0.6) / this.waveHeight * 1.5;
+	                    point.yScale = 1; //(-y + 0.6)/(this.waveHeight) * 1.5;
 	
 	                    flyPecent = (this.timePass - point.flyDelay) / this.flyTime;
 	                    flyPecent = flyPecent > 1 ? 1 : flyPecent < 0 ? 0 : flyPecent;
@@ -202,16 +211,8 @@
 	                    count++;
 	                }
 	            }
-	            if (this.timePass > this.flyTime) this.pointGroup.setRotation(this.pointGroup.rotation.x + 0.0000, this.pointGroup.rotation.y + 0.0002, this.pointGroup.rotation.z + 0.000);
-	
-	            if (this.scale >= 1.2) {
-	                this.scaleStep = -0.001;
-	            } else if (this.scale <= 1) {
-	                this.scaleStep = 0.001;
-	            }
-	            this.scale += this.scaleStep;
-	            // console.log(this.scale, this.scaleStep);
-	            this.pointGroup.setScale(this.scale, this.scale, this.scale);
+	            // if (this.timePass > this.flyTime)
+	            this.pointGroup.setRotation(this.pointGroup.rotation.x + 0.0000, this.pointGroup.rotation.y + 0.001, this.pointGroup.rotation.z + 0.000);
 	        }
 	    }, {
 	        key: 'animate',
@@ -236,20 +237,22 @@
 	
 	        return _possibleConstructorReturn(this, (EffectRander.__proto__ || Object.getPrototypeOf(EffectRander)).call(this, ctx, cvs));
 	    }
+	    // beforeRender() {
+	    //     // super.beforeRender();
+	    //     // this.ctx.beginPath();
 	
-	    _createClass(EffectRander, [{
-	        key: 'beforeRender',
-	        value: function beforeRender() {
-	            _get(EffectRander.prototype.__proto__ || Object.getPrototypeOf(EffectRander.prototype), 'beforeRender', this).call(this);
-	            this.ctx.beginPath();
-	        }
-	    }, {
-	        key: 'afterRender',
-	        value: function afterRender() {
-	            this.ctx.fillStyle = "#fff";
-	            this.ctx.fill();
-	        }
-	    }]);
+	    //     this.ctx.save();
+	    //     this.ctx.globalCompositeOperation = 'destination-out';
+	    //     this.ctx.globalAlpha = 1;
+	    //     this.ctx.strokeStyle = this.ctx.fillStyle = '#ffffff';
+	    //     this.ctx.fillRect(0, 0, this.cvs.width, this.cvs.height);
+	    //     this.ctx.restore();
+	    // }
+	    // afterRender() {
+	    //     // this.ctx.fillStyle = "#fff";
+	    //     // this.ctx.fill();
+	    // }
+	
 	
 	    return EffectRander;
 	}(F3.Renderer);
@@ -260,7 +263,7 @@
 	    var scene = new F3.Scene();
 	    var renderer = new EffectRander(ctx, cvs);
 	    var effect = new Effect(renderer, scene, cvs);
-	    F3.perspective.origin = new F3.Vector3(cvs.width / 2, cvs.height / 1.6);
+	    F3.perspective.origin = new F3.Vector3(cvs.width / 2, cvs.height / 3);
 	    F3.perspective.p = 800;
 	    effect.animate();
 	

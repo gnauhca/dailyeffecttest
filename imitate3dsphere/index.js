@@ -22,33 +22,34 @@ class Point extends F3.Obj {
         // );
 
         // if (this.croods2D.scale < 5)
-        /*ctx.fillStyle = '#fff'
+        ctx.fillStyle = '#fff'
         ctx.fillRect(
             this.croods2D.position.x, 
             this.croods2D.position.y,
             this.radius * this.croods2D.scale * this.yScale, 
             this.radius * this.croods2D.scale * this.yScale
-        );*/
+        );
 
         // ctx.beginPath();
-        ctx.moveTo(
-            this.croods2D.position.x, 
-            this.croods2D.position.y
-        );
-        ctx.arc(
-            this.croods2D.position.x, 
-            this.croods2D.position.y, 
-            this.radius * this.croods2D.scale * this.yScale, 0, Math.PI * 2);
+        // ctx.moveTo(
+        //     this.croods2D.position.x, 
+        //     this.croods2D.position.y
+        // );
+        // ctx.arc(
+        //     this.croods2D.position.x, 
+        //     this.croods2D.position.y, 
+        //     this.radius * this.croods2D.scale * this.yScale, 0, Math.PI * 2);
         // ctx.fill();
 
-        // ctx.strokeStyle = this.color;
-        // ctx.lineWidth = this.radius * this.zScale;
+        // ctx.strokeStyle = '#fff'//this.color;
+        // ctx.lineWidth = this.radius * this.croods2D.scale// * this.zScale;
         // ctx.lineCap = "round";
         // ctx.beginPath();
         // ctx.moveTo(this.croods2D.position.x, this.croods2D.position.y);
-        // ctx.lineTo(this.prevCrood.x, this.prevCrood.y);
+        // ctx.lineTo(this.croods2D.position.x, this.croods2D.position.y);
+        // // ctx.lineTo(this.prevCrood.x, this.prevCrood.y);
         // ctx.stroke();
-        this.prevCrood = this.croods2D.position.clone();
+        // this.prevCrood = this.croods2D.position.clone();
     }
 }
 
@@ -63,10 +64,10 @@ class Effect extends F3.Time {
         this.waveHeight = 0.4; // 波高
         this.waveWidth = 8; // 波长
 
-        this.col = 30;
-        this.colPointNum = 30;
+        this.col = 50;
+        this.colPointNum = 50;
         
-        this.flyTime = 3000;
+        this.flyTime = 2000;
         this.timePass = 0;
 
         this.scale = 1;
@@ -94,20 +95,21 @@ class Effect extends F3.Time {
         var point;
         for (let x = -(this.col - 1) / 2, count = 0; x <= (this.col - 1) / 2; x++) {
             for (let z = -(this.colPointNum-1) / 2; z <= (this.colPointNum-1) / 2 ; z++ ) {    
-                point = new Point(2);
+                point = new Point(10);
                 this.pointGroup.add(point);
-                point.initPos = new F3.Vector3(
+                /*point.initPos = new F3.Vector3(
                      x + Math.random() * -2 + 1,
-                     -20 + -10 * Math.random(),
+                     -30 + -10 * Math.random(),
                      z + Math.random() * -2 + 1
-                );
-                point.flyDelay = Math.random() * 2000 | 0;
+                );*/
+                point.initPos = new F3.Vector3(0,0,0);
+                point.flyDelay = 0//Math.random() * 1000 | 0;
             }
         }
     }
     update(delta) {
         this.timePass += delta;
-        this.xOffset = this.timePass / 2000;
+        this.xOffset = this.timePass / 500;
 
         let point;
         let flyPecent;
@@ -115,12 +117,14 @@ class Effect extends F3.Time {
         for (let x = -(this.col - 1) / 2, count = 0; x <= (this.col - 1) / 2; x++) {
             for (let z = -(this.colPointNum-1) / 2; z <= (this.colPointNum-1) / 2 ; z++ ) {    
 
-                let y = Math.cos(x*Math.PI/this.waveWidth + this.xOffset)*Math.sin(z*Math.PI/this.waveWidth + this.xOffset) * this.waveHeight;
+                // let y = Math.cos(x*Math.PI/this.waveWidth + this.xOffset)*Math.sin(z*Math.PI/this.waveWidth + this.xOffset) * this.waveHeight;
                 
-
+                let v = 2;//1 + (this.timePass % 1000)/1000; 
+                let y = Math.sin(Math.sqrt(Math.pow(x/v, 2)+Math.pow(z/v, 2)) - this.xOffset) * 1/*/
+                Math.sqrt(Math.pow(x/v, 2)+Math.pow(z/v, 2));*/
 
                 point = this.pointGroup.children[count]
-                point.yScale = (-y + 0.6)/(this.waveHeight) * 1.5;
+                point.yScale = 1;//(-y + 0.6)/(this.waveHeight) * 1.5;
 
                 flyPecent = (this.timePass-point.flyDelay) / this.flyTime;
                 flyPecent = flyPecent > 1 ? 1: (flyPecent < 0? 0: flyPecent);
@@ -133,21 +137,12 @@ class Effect extends F3.Time {
                 count++;
             }
         }
-        if (this.timePass > this.flyTime)
+        // if (this.timePass > this.flyTime)
         this.pointGroup.setRotation(
             this.pointGroup.rotation.x +0.0000,
-            this.pointGroup.rotation.y +0.0002,
+            this.pointGroup.rotation.y +0.001,
             this.pointGroup.rotation.z +0.000   
         );
-
-        if (this.scale >= 1.2) {
-            this.scaleStep = -0.001;
-        } else if (this.scale <= 1) {
-            this.scaleStep = 0.001;
-        }
-        this.scale += this.scaleStep;
-        // console.log(this.scale, this.scaleStep);
-        this.pointGroup.setScale(this.scale, this.scale, this.scale);
     }
     animate() {
         this.addTick((delta)=>{
@@ -161,14 +156,21 @@ class EffectRander extends F3.Renderer {
     constructor(ctx, cvs) {
         super(ctx, cvs);
     }
-    beforeRender() {
-        super.beforeRender();
-        this.ctx.beginPath();
-    }
-    afterRender() {
-        this.ctx.fillStyle = "#fff";
-        this.ctx.fill();
-    }
+    // beforeRender() {
+    //     // super.beforeRender();
+    //     // this.ctx.beginPath();
+
+    //     this.ctx.save();
+    //     this.ctx.globalCompositeOperation = 'destination-out';
+    //     this.ctx.globalAlpha = 1;
+    //     this.ctx.strokeStyle = this.ctx.fillStyle = '#ffffff';
+    //     this.ctx.fillRect(0, 0, this.cvs.width, this.cvs.height);
+    //     this.ctx.restore();
+    // }
+    // afterRender() {
+    //     // this.ctx.fillStyle = "#fff";
+    //     // this.ctx.fill();
+    // }
 }
 
 window.bannerInit = function(cvs) {
@@ -177,7 +179,7 @@ window.bannerInit = function(cvs) {
     let scene = new F3.Scene()
     let renderer = new EffectRander(ctx, cvs);
     let effect = new Effect(renderer, scene, cvs);
-    F3.perspective.origin = new F3.Vector3(cvs.width/2, cvs.height/1.6);
+    F3.perspective.origin = new F3.Vector3(cvs.width/2, cvs.height/3);
     F3.perspective.p = 800;
     effect.animate();
 
