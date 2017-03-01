@@ -21,8 +21,6 @@ export class Obj {
             vertices: []
         };
     }
-
-
     setPosition(x, y, z) {
         this.position.set(x, y, z);
         this.onChange();
@@ -36,72 +34,21 @@ export class Obj {
         this.onChange();
     }
 
-    /*set position(position) {
-        this._position = position;
-        // this._watchXYZ(this._position, this.onChange.bind(this));
-        this.onChange();
-    }
-    get position() {
-        return this._position;
-    }
-
-    set rotation(rotation) {
-        this._rotation = rotation;
-        this.onChange();
-    }
-    get rotation() {
-        return this._rotation;
-    }
-
-    set scale(scale) {
-        this._scale = scale;
-        this.onChange();
-    }
-    get scale() {
-        return this._scale;
-    }
-
-    _watchXYZ(val, callback) {
-        let keys = typeof val._x === 'undefined'? ['x','y','z']:['_x','_y','_z'];
-        keys.forEach((key)=>{
-            val['_' + key] = val[key];
-
-            Object.defineProperty(val, key, {
-                configurable : true,
-                enumerable : true,
-                get : function() {
-                    return val['_' + key];
-                },
-                set : function(newVal) {
-                    val['_' + key] = newVal;
-                    callback();
-                }
-            });
-        });
-    }*/
-
-
     setWorldPosition() {
-
+        this.worldPosition.copy(this.position);
         if (this.parent) {
             this.worldPosition
-                .copy(this.position)
                 .multiply(this.parent.scale)
-                .applyEuler(this.parent.rotation);
-            
-            this.worldPosition.add(this.parent.worldPosition);
-        } else {
-            this.worldPosition.copy(this.position);
+                .applyEuler(this.parent.rotation)
+                .add(this.parent.worldPosition);
         }
-
-        // this.updateVertice();
+        this.updateVertice();
 
         // child world position update
         this.children.forEach((child)=>{
             child.setWorldPosition();
         });
     }
-
 
     updateVertice() {
         this.vertices.forEach((v, i)=>{
@@ -110,18 +57,17 @@ export class Obj {
             }
             this.worldVertices[i]
                 .copy(this.worldPosition)
-                .add(v)
                 .multiply(this.scale)
-                .applyEuler(this.rotation);
+                .applyEuler(this.rotation)
+                .add(v);
         });
     }
-
 
     calc2DCrood() {
         this.croods2D.scale = perspective.getScaleByZ(this.worldPosition.z);
         
         this.croods2D.position = perspective.get2DCrood(this.worldPosition);
-        this.croods2D.vertices = this.croods2D.vertices.map((v)=>{
+        this.croods2D.vertices = this.worldVertices.map((v)=>{
             return perspective.get2DCrood(v);
         });
     }
@@ -140,13 +86,6 @@ export class Obj {
     }
     onChange() {
          this.setWorldPosition(); return;
-
-        /*if (this.willUpdate) return;
-        this.willUpdate = true;
-        setTimeout(()=>{
-            this.willUpdate = false;
-            this.setWorldPosition();
-        }, 0);*/
     }
     _render(ctx, cvs) {
         ctx.save();
@@ -157,5 +96,3 @@ export class Obj {
     }
     render(ctx, cvs) { }
 }
-
-// export default Obj;

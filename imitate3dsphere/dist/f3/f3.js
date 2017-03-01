@@ -4065,60 +4065,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.scale.set(x, y, z);
 	            this.onChange();
 	        }
-	
-	        /*set position(position) {
-	            this._position = position;
-	            // this._watchXYZ(this._position, this.onChange.bind(this));
-	            this.onChange();
-	        }
-	        get position() {
-	            return this._position;
-	        }
-	         set rotation(rotation) {
-	            this._rotation = rotation;
-	            this.onChange();
-	        }
-	        get rotation() {
-	            return this._rotation;
-	        }
-	         set scale(scale) {
-	            this._scale = scale;
-	            this.onChange();
-	        }
-	        get scale() {
-	            return this._scale;
-	        }
-	         _watchXYZ(val, callback) {
-	            let keys = typeof val._x === 'undefined'? ['x','y','z']:['_x','_y','_z'];
-	            keys.forEach((key)=>{
-	                val['_' + key] = val[key];
-	                 Object.defineProperty(val, key, {
-	                    configurable : true,
-	                    enumerable : true,
-	                    get : function() {
-	                        return val['_' + key];
-	                    },
-	                    set : function(newVal) {
-	                        val['_' + key] = newVal;
-	                        callback();
-	                    }
-	                });
-	            });
-	        }*/
-	
 	    }, {
 	        key: 'setWorldPosition',
 	        value: function setWorldPosition() {
-	
+	            this.worldPosition.copy(this.position);
 	            if (this.parent) {
-	                this.worldPosition.copy(this.position).multiply(this.parent.scale).applyEuler(this.parent.rotation);
-	
-	                this.worldPosition.add(this.parent.worldPosition);
-	            } else {
-	                this.worldPosition.copy(this.position);
+	                this.worldPosition.multiply(this.parent.scale).applyEuler(this.parent.rotation).add(this.parent.worldPosition);
 	            }
-	
-	            // this.updateVertice();
+	            this.updateVertice();
 	
 	            // child world position update
 	            this.children.forEach(function (child) {
@@ -4134,7 +4088,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (!_this.worldVertices[i]) {
 	                    _this.worldVertices[i] = _this.worldPosition.clone();
 	                }
-	                _this.worldVertices[i].copy(_this.worldPosition).add(v).multiply(_this.scale).applyEuler(_this.rotation);
+	                _this.worldVertices[i].copy(_this.worldPosition).multiply(_this.scale).applyEuler(_this.rotation).add(v);
 	            });
 	        }
 	    }, {
@@ -4143,7 +4097,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            this.croods2D.scale = _perspective.perspective.getScaleByZ(this.worldPosition.z);
 	
 	            this.croods2D.position = _perspective.perspective.get2DCrood(this.worldPosition);
-	            this.croods2D.vertices = this.croods2D.vertices.map(function (v) {
+	            this.croods2D.vertices = this.worldVertices.map(function (v) {
 	                return _perspective.perspective.get2DCrood(v);
 	            });
 	        }
@@ -4168,13 +4122,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'onChange',
 	        value: function onChange() {
 	            this.setWorldPosition();return;
-	
-	            /*if (this.willUpdate) return;
-	            this.willUpdate = true;
-	            setTimeout(()=>{
-	                this.willUpdate = false;
-	                this.setWorldPosition();
-	            }, 0);*/
 	        }
 	    }, {
 	        key: '_render',
@@ -4191,11 +4138,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: 'render',
 	        value: function render(ctx, cvs) {}
 	    }]);
-	
+
 	    return Obj;
 	}();
-	
-	// export default Obj;
 
 /***/ },
 /* 11 */
@@ -4264,23 +4209,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        value: function render(scene) {
 	            var _this = this;
 	
-	            this.ctx.save();
 	            this.beforeRender();
-	            this.ctx.restore();
 	            scene.objs.forEach(function (o) {
 	                o._render(_this.ctx, _this.cvs);
 	            });
-	            this.ctx.save();
 	            this.afterRender();
-	            this.ctx.restore();
 	        }
 	    }, {
 	        key: "beforeRender",
 	        value: function beforeRender() {
-	            // this.ctx.globalCompositeOperation = 'destination-out';
-	            // this.ctx.globalAlpha = 0.1;
-	            // this.ctx.fillStyle = "#ffffff";
-	            // this.ctx.fillRect(0,0,this.cvs.width,this.cvs.height);
 	            this.ctx.clearRect(0, 0, this.cvs.width, this.cvs.height);
 	        }
 	    }, {
