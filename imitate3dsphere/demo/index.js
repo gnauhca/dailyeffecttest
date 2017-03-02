@@ -1,4 +1,7 @@
-// import * as F3 from './f3/f3.js'
+import Stats from 'stats.js';
+
+var stats = new Stats();
+document.body.appendChild( stats.dom );
 
 class Point extends F3.Obj {
     constructor(radius=5) {
@@ -8,7 +11,7 @@ class Point extends F3.Obj {
         this.prevCrood = null;
     }
     render(ctx) {
-        this.prevCrood = this.prevCrood || this.croods2D.position.clone();
+        // this.prevCrood = this.prevCrood || this.croods2D.position.clone();
 
         // ctx.fillStyle = this.color;
         // ctx.beginPath();
@@ -22,7 +25,9 @@ class Point extends F3.Obj {
         // );
 
         // if (this.croods2D.scale < 5)
-        ctx.fillStyle = '#fff'
+        ctx.fillStyle = '#fff';
+        // ctx.fillRect(this.croods2D.position.x, 
+        //     this.croods2D.position.y,1,1);
         ctx.fillRect(
             this.croods2D.position.x, 
             this.croods2D.position.y,
@@ -54,18 +59,19 @@ class Point extends F3.Obj {
 }
 
 class Effect extends F3.Time {
-    constructor(renderer, scene, cvs) {
+    constructor(renderer, scene, camera,  cvs) {
         super();
         this.renderer = renderer;
         this.scene = scene;
+        this.camera = camera;
         this.cvs = cvs;
         
         this.xOffset = 0;
         this.waveHeight = 0.4; // 波高
         this.waveWidth = 8; // 波长
 
-        this.col = 50;
-        this.colPointNum = 50;
+        this.col = 33;
+        this.colPointNum = 33;
         
         this.flyTime = 2000;
         this.timePass = 0;
@@ -114,14 +120,14 @@ class Effect extends F3.Time {
         let point;
         let flyPecent;
         
+        // if (this.timePass < 100)
         for (let x = -(this.col - 1) / 2, count = 0; x <= (this.col - 1) / 2; x++) {
             for (let z = -(this.colPointNum-1) / 2; z <= (this.colPointNum-1) / 2 ; z++ ) {    
 
                 // let y = Math.cos(x*Math.PI/this.waveWidth + this.xOffset)*Math.sin(z*Math.PI/this.waveWidth + this.xOffset) * this.waveHeight;
                 
                 let v = 2;//1 + (this.timePass % 1000)/1000; 
-                let y = Math.sin(Math.sqrt(Math.pow(x/v, 2)+Math.pow(z/v, 2)) - this.xOffset) * 1/*/
-                Math.sqrt(Math.pow(x/v, 2)+Math.pow(z/v, 2));*/
+                let y = Math.sin(Math.sqrt(Math.pow(x/v, 2)+Math.pow(z/v, 2)) - this.xOffset) * 1
 
                 point = this.pointGroup.children[count]
                 point.yScale = 1;//(-y + 0.6)/(this.waveHeight) * 1.5;
@@ -130,57 +136,40 @@ class Effect extends F3.Time {
                 flyPecent = flyPecent > 1 ? 1: (flyPecent < 0? 0: flyPecent);
 
                 point.setPosition(
-                    (x + (point.initPos.x - x) * (1-flyPecent)) * this.stepWidth,
-                    (y + (point.initPos.y - y) * (1-flyPecent)) * this.stepWidth,
-                    (z + (point.initPos.z - z) * (1-flyPecent)) * this.stepWidth
+                    x * this.stepWidth,
+                    y * this.stepWidth,
+                    z * this.stepWidth
                 );
                 count++;
             }
         }
         // if (this.timePass > this.flyTime)
-        this.pointGroup.setRotation(
-            this.pointGroup.rotation.x +0.0000,
-            this.pointGroup.rotation.y +0.001,
-            this.pointGroup.rotation.z +0.000   
-        );
+        // this.pointGroup.setRotation(
+        //     this.pointGroup.rotation.x +0.0000,
+        //     this.pointGroup.rotation.y +0.001,
+        //     this.pointGroup.rotation.z +0.000   
+        // );
     }
     animate() {
         this.addTick((delta)=>{
+            stats.update();
             this.update(delta);
-            this.renderer.render(this.scene);
+            this.renderer.render(this.scene, this.camera);
         });
     }
-}
-
-class EffectRander extends F3.Renderer {
-    constructor(ctx, cvs) {
-        super(ctx, cvs);
-    }
-    // beforeRender() {
-    //     // super.beforeRender();
-    //     // this.ctx.beginPath();
-
-    //     this.ctx.save();
-    //     this.ctx.globalCompositeOperation = 'destination-out';
-    //     this.ctx.globalAlpha = 1;
-    //     this.ctx.strokeStyle = this.ctx.fillStyle = '#ffffff';
-    //     this.ctx.fillRect(0, 0, this.cvs.width, this.cvs.height);
-    //     this.ctx.restore();
-    // }
-    // afterRender() {
-    //     // this.ctx.fillStyle = "#fff";
-    //     // this.ctx.fill();
-    // }
 }
 
 window.bannerInit = function(cvs) {
     let ctx = cvs.getContext('2d');
 
-    let scene = new F3.Scene()
-    let renderer = new EffectRander(ctx, cvs);
-    let effect = new Effect(renderer, scene, cvs);
-    F3.perspective.origin = new F3.Vector3(cvs.width/2, cvs.height/3);
-    F3.perspective.p = 800;
+    let scene = new F3.Scene();
+    let camera = new F3.Camera();
+    camera.origin = new F3.Vector3(cvs.width/2, cvs.height/3);
+    camera.p = 800;
+
+    let renderer = new F3.Renderer(ctx, cvs);
+    let effect = new Effect(renderer, scene, camera, cvs);
+
     effect.animate();
 
     F3.TIME.start();

@@ -44,7 +44,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.c = installedModules;
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "/";
+/******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
@@ -60,12 +60,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 	
-	var _perspective = __webpack_require__(1);
+	var _camera = __webpack_require__(1);
 	
-	Object.defineProperty(exports, 'perspective', {
+	Object.defineProperty(exports, 'Camera', {
 	  enumerable: true,
 	  get: function get() {
-	    return _perspective.perspective;
+	    return _camera.Camera;
 	  }
 	});
 	
@@ -138,7 +138,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.perspective = undefined;
+	exports.Camera = undefined;
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
@@ -146,18 +146,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	var Perspective = function () {
-	    function Perspective() {
+	var Camera = exports.Camera = function () {
+	    function Camera() {
 	        var p = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1200;
 	        var origin = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : new _Vector.Vector3();
 	
-	        _classCallCheck(this, Perspective);
+	        _classCallCheck(this, Camera);
 	
 	        this.p = p;
 	        this.origin = origin;
 	    }
 	
-	    _createClass(Perspective, [{
+	    _createClass(Camera, [{
 	        key: 'getScaleByZ',
 	        value: function getScaleByZ(z) {
 	            var scale = void 0;
@@ -182,11 +182,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return vec2D;
 	        }
 	    }]);
-	
-	    return Perspective;
+
+	    return Camera;
 	}();
-	
-	var perspective = exports.perspective = new Perspective();
 
 /***/ },
 /* 2 */
@@ -4021,8 +4019,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _Euler = __webpack_require__(9);
 	
-	var _perspective = __webpack_require__(1);
-	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var Obj = exports.Obj = function () {
@@ -4093,12 +4089,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }, {
 	        key: 'calc2DCrood',
-	        value: function calc2DCrood() {
-	            this.croods2D.scale = _perspective.perspective.getScaleByZ(this.worldPosition.z);
+	        value: function calc2DCrood(camera) {
+	            this.croods2D.scale = camera.getScaleByZ(this.worldPosition.z);
 	
-	            this.croods2D.position = _perspective.perspective.get2DCrood(this.worldPosition);
+	            this.croods2D.position = camera.get2DCrood(this.worldPosition);
 	            this.croods2D.vertices = this.worldVertices.map(function (v) {
-	                return _perspective.perspective.get2DCrood(v);
+	                return camera.get2DCrood(v);
+	            });
+	            this.children.forEach(function (o) {
+	                o.calc2DCrood(camera);
 	            });
 	        }
 	    }, {
@@ -4127,12 +4126,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	        key: '_render',
 	        value: function _render(ctx, cvs) {
 	            ctx.save();
-	            this.calc2DCrood();
 	            this.render(ctx, cvs);
+	            ctx.restore();
 	            this.children.forEach(function (o) {
 	                o._render(ctx, cvs);
 	            });
-	            ctx.restore();
 	        }
 	    }, {
 	        key: 'render',
@@ -4206,11 +4204,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    _createClass(Renderer, [{
 	        key: "render",
-	        value: function render(scene) {
+	        value: function render(scene, camera) {
 	            var _this = this;
 	
 	            this.beforeRender();
 	            scene.objs.forEach(function (o) {
+	                o.calc2DCrood(camera);
 	                o._render(_this.ctx, _this.cvs);
 	            });
 	            this.afterRender();

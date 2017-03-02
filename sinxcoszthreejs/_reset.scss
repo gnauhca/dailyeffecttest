@@ -6,6 +6,18 @@ caption,th {text-align: left; }
 table {border-collapse: collapse; border-spacing: 0; }
 article,aside,footer,header,hgroup,nav,section,figure,figcaption {display: block; }
 
+@font-face {
+  font-family: 'Source Han Sans';
+  src: url('fonts/KaiGenGothicCN-Light.eot');
+  src:
+    url('fonts/KaiGenGothicCN-Light.eot?#font-spider') format('embedded-opentype'),
+    url('fonts/KaiGenGothicCN-Light.woff') format('woff'),
+    url('fonts/KaiGenGothicCN-Light.ttf') format('truetype'),
+    url('fonts/KaiGenGothicCN-Light.svg') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* LAYOUT */
 * {
   margin: 0;
@@ -22,7 +34,20 @@ img {border: 0; }
 a {text-decoration: none;color: #515151; &:focus {outline: none;} }
 i {font-style: normal;}
 ul, li {list-style: none; }
-body {font:14px/1.5 'microsoft yahei';color: #515151; }
+.mac body{
+  font-family: $fontFamilyForMac;
+}
+.slider{
+  h1, h2{font-family: $fontFamilyForMac;}
+}
+.swiper-slide{
+  h1, h2, h3, .next-desc{font-family: $fontFamilyForMac;}
+}
+p {
+  max-height: 100%;
+}
+.fm-syht, .notIE .notIE-syht {font-family: $fontFamilyForMac;}
+body {font:14px/1.5 $fontFamily;color: #515151; }
 .clearfix:after, .clearfix:before {content: "";display: table;height: 0px;clear: both;visibility: hidden;}
 .clearfix{ *zoom:1; }
 .fl { float: left; }

@@ -1,13 +1,9 @@
 var webpack = require('webpack');
 
 module.exports = {
-    entry: 'f3/f3.js',
+    entry: 'index.js',
     output: {
-        'path': 'dist/f3',
-        'filename': 'f3.js',
-        'library': "F3",
-        'libraryTarget': "umd",
-        'publicPath': '/'
+        'filename': 'entry.js',
     },
     resolve: {
         root: process.cwd(),
@@ -21,16 +17,15 @@ module.exports = {
             { test: /.*\.scss$/, loaders: ['style', 'css', 'sass'] },
             {
                 test: /.*?\.js$/,
+                exclude: /node_modules/,
                 loader: 'babel', 
-                query: { 
-                    presets: [ 'es2015'],
-                    plugins: ["transform-object-assign"]
-                }
+                query: { presets: ['es2015'] }
             }
         ]
     },
 
     devServer: {
+        'content-base': '/',
         'inline': true,
         'host': '0.0.0.0',
         'port': 9123

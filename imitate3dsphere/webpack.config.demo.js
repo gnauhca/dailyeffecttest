@@ -1,12 +1,10 @@
 var webpack = require('webpack');
 
 module.exports = {
-    entry: 'src/f3.js',
+    entry: './demo/index.js',
     output: {
-        'path': 'build',
-        'filename': 'f3.js',
-        'library': "F3",
-        'libraryTarget': "umd"
+        'path': './demo/dist',
+        'filename': 'index.js',
     },
     resolve: {
         root: process.cwd(),

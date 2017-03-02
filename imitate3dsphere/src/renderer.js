@@ -4,9 +4,10 @@ class Renderer {
         this.cvs = cvs;
     }
 
-    render(scene) {
+    render(scene, camera) {
         this.beforeRender();
         scene.objs.forEach((o)=>{
+            o.calc2DCrood(camera);
             o._render(this.ctx, this.cvs);
         });
         this.afterRender();

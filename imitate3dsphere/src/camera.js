@@ -1,6 +1,6 @@
-import {Vector3} from 'three/src/math/Vector3';
+import {Vector3} from './Vector3';
 
-class Perspective {
+export class Camera {
     constructor(p=1200, origin=new Vector3) {
         this.p = p;
         this.origin = origin;
@@ -26,6 +26,4 @@ class Perspective {
         return vec2D;
     }
 }
-
-export var perspective = new Perspective;
 

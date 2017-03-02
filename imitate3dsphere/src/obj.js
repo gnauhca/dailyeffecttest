@@ -1,6 +1,5 @@
-import { Vector3 } from 'three/src/math/Vector3';
-import { Euler } from 'three/src/math/Euler';
-import { perspective } from './perspective.js';
+import { Vector3 } from './Vector3';
+import { Euler } from './Euler';
 
 export class Obj {
     constructor() {
@@ -63,12 +62,15 @@ export class Obj {
         });
     }
 
-    calc2DCrood() {
-        this.croods2D.scale = perspective.getScaleByZ(this.worldPosition.z);
+    calc2DCrood(camera) {
+        this.croods2D.scale = camera.getScaleByZ(this.worldPosition.z);
         
-        this.croods2D.position = perspective.get2DCrood(this.worldPosition);
+        this.croods2D.position = camera.get2DCrood(this.worldPosition);
         this.croods2D.vertices = this.worldVertices.map((v)=>{
-            return perspective.get2DCrood(v);
+            return camera.get2DCrood(v);
+        });
+        this.children.forEach(function(o) {
+            o.calc2DCrood(camera);
         });
     }
 
@@ -89,10 +91,9 @@ export class Obj {
     }
     _render(ctx, cvs) {
         ctx.save();
-        this.calc2DCrood();
         this.render(ctx, cvs);
-        this.children.forEach((o)=>{o._render(ctx, cvs)});
         ctx.restore();
+        this.children.forEach((o)=>{o._render(ctx, cvs)});
     }
     render(ctx, cvs) { }
 }
