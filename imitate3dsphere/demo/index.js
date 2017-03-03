@@ -1,6 +1,12 @@
 import Stats from 'stats.js';
 
+import './index.scss';
+
 var stats = new Stats();
+// stats.showPanel( 1 );
+// stats.showPanel( 2 );
+// stats.showPanel( 3 );
+// stats.showPanel( 4 );
 document.body.appendChild( stats.dom );
 
 class Point extends F3.Obj {
@@ -58,6 +64,15 @@ class Point extends F3.Obj {
     }
 }
 
+let planeFunctions = {
+    'cos(x)*sin(z)': function(x, z, offset) {
+        return Math.cos(x/4 + offset)*Math.sin(z/4 + offset) * 1;
+    },
+    'sin(x^2+y^2)': function(x, z, offset) {
+        return Math.sin(Math.sqrt(Math.pow(x/2, 2)+Math.pow(z/2, 2)) - offset);
+    }
+};
+
 class Effect extends F3.Time {
     constructor(renderer, scene, camera,  cvs) {
         super();
@@ -78,6 +93,9 @@ class Effect extends F3.Time {
 
         this.scale = 1;
         this.scaleStep = 0.01;
+
+        this.planeFunction = function() {return 0};
+        this.rotate = {x: false, y: false, z:false}
 
         this.pointGroup = new F3.Obj();
         this.scene.add(this.pointGroup);
@@ -119,15 +137,18 @@ class Effect extends F3.Time {
 
         let point;
         let flyPecent;
+        let x,y,z;
+        let count = 0;
         
         // if (this.timePass < 100)
-        for (let x = -(this.col - 1) / 2, count = 0; x <= (this.col - 1) / 2; x++) {
-            for (let z = -(this.colPointNum-1) / 2; z <= (this.colPointNum-1) / 2 ; z++ ) {    
+        for (x = -(this.col - 1) / 2; x <= (this.col - 1) / 2; x++) {
+            for (z = -(this.colPointNum-1) / 2; z <= (this.colPointNum-1) / 2 ; z++ ) {    
 
                 // let y = Math.cos(x*Math.PI/this.waveWidth + this.xOffset)*Math.sin(z*Math.PI/this.waveWidth + this.xOffset) * this.waveHeight;
                 
-                let v = 2;//1 + (this.timePass % 1000)/1000; 
-                let y = Math.sin(Math.sqrt(Math.pow(x/v, 2)+Math.pow(z/v, 2)) - this.xOffset) * 1
+                y = this.planeFunction(x,z,this.xOffset);
+                // let y = Math.sin(Math.sqrt(Math.pow(x/v, 2)+Math.pow(z/v, 2)) - this.xOffset) * 1
+                // console.log(y);
 
                 point = this.pointGroup.children[count]
                 point.yScale = 1;//(-y + 0.6)/(this.waveHeight) * 1.5;
@@ -143,12 +164,22 @@ class Effect extends F3.Time {
                 count++;
             }
         }
-        // if (this.timePass > this.flyTime)
-        // this.pointGroup.setRotation(
-        //     this.pointGroup.rotation.x +0.0000,
-        //     this.pointGroup.rotation.y +0.001,
-        //     this.pointGroup.rotation.z +0.000   
-        // );
+        if (this.rotate.x || this.rotate.y || this.rotate.z) {
+            this.pointGroup.setRotation(
+                (this.rotate.x ? this.pointGroup.rotation.x + 0.001: 0),
+                (this.rotate.y ? this.pointGroup.rotation.y + 0.001: 0),
+                (this.rotate.z ? this.pointGroup.rotation.z + 0.001: 0)
+            );
+        }
+    }
+    setFunction(fun) {
+        this.planeFunction = fun;
+    }
+    toggleRotate(r) {
+        this.rotate[r] = !this.rotate[r];
+        if (!this.rotate[r]) {
+            this.pointGroup.rotation[r] = 0;
+        }
     }
     animate() {
         this.addTick((delta)=>{
@@ -169,8 +200,52 @@ window.bannerInit = function(cvs) {
 
     let renderer = new F3.Renderer(ctx, cvs);
     let effect = new Effect(renderer, scene, camera, cvs);
-
     effect.animate();
+
+
+
+    let functions = document.querySelector('.functions');
+    let btnHTML = '';
+    for (let name in planeFunctions) {
+        btnHTML += `<div class="btn" data-function="${name}">${name}</div>`
+    }
+    functions.innerHTML = btnHTML;
+
+    let btns = functions.querySelectorAll('.btn');
+    function selectFunction(funName) {
+        btns.forEach(function(btn) {
+            let dataFunction = btn.dataset.function;
+            if (dataFunction === funName) {
+                btn.classList.add('active');
+                effect.setFunction(planeFunctions[funName]);
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+    selectFunction(btns[0].dataset.function)
+    functions.addEventListener('click', function(e) {
+        if (e.target.dataset.function) {
+            selectFunction(e.target.dataset.function);
+        }
+    });
+
+    let rotate = document.querySelector('.rotate');
+    let rotateBtns = rotate.querySelectorAll('.btn');
+    function toggleRotate(_r) {
+        rotateBtns.forEach(function(rotateBtn) {
+            let r = rotateBtn.dataset.rotate;
+            if (r === _r) {
+                rotateBtn.classList.toggle('active'); 
+                effect.toggleRotate(r);
+            } 
+        });
+    }
+    rotate.addEventListener('click', function(e) {
+        if (e.target.dataset.rotate) {
+            toggleRotate(e.target.dataset.rotate);
+        }
+    });
 
     F3.TIME.start();
 }
