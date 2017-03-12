@@ -2,7 +2,7 @@
   "name": "b_shootingstar",
   "version": "1.0.0",
   "description": "b_shootingstar",
-  "main": "index.html",
+  "main": "meteorshower-bg.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
