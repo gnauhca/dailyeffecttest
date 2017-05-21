@@ -14,18 +14,17 @@ module.exports = {
     resolve: {
         alias: {
             Src: path.join(__dirname, './src'),
-            View: path.join(__dirname, './src/js/view')
+            View: path.join(__dirname, './src/js/view/dom-view')
         }
     },
 
     module: {
         rules: [
             { test: /.*\.scss$/, loaders: ['style-loader', 'css-loader', 'sass-loader'] },
-            // {
-            //     test: /\.js$/,
-            //     exclude: /node_modules/,
-            //     use: 'babel-loader'
-            // },
+            { 
+                test: /\.(gif|jpg|png|woff|svg|eot|ttf)\??.*$/, 
+                use: 'file-loader?name=[path][name].[ext]'
+            }
         ]
     },
 

@@ -1,8 +1,9 @@
 import Game from './game/game.js';
-import view from './view/view.js';
+import View from './view/dom-view/view.js';
 
 var view = new View();
 var game = new Game(view);
 
+view.init();
 game.init();
 game.start();

@@ -1,25 +1,34 @@
+import {globalData} from 'Src/js/global-data.js';
+import AvatarStage from './avatar/avatar-stage.js';
 import GateStage from './gate/gate-stage.js';
 import PlayStage from './play/play-stage.js';
 
 class Game {
-    constuctor(view) {
+    constructor(view) {
         
         this.stages = {};
         this.currentStage = null;
 
         this.view = view;
-        this.init();
     }
 
     init() {
-        let gate = new GateStage(this);
-        let play = new PlayStage(this);
+        let avatar = new AvatarStage(this, this.view.pages.avatar);
+        let gate = new GateStage(this, this.view.pages.gate);
+        let play = new PlayStage(this, this.view.pages.play);
 
-        this.stages = {gate, play};
+        this.view.init();
+        this.stages = {avatar, gate, play};
     }
 
     start() {
-        this.goToStage('gate');
+        // console.log(globalData);
+        if (!!globalData.player1.avatar) {
+            // 首次游戏，设置头像
+            this.goToStage('avatar');
+        } else {
+            this.goToStage('gate');
+        }
     }
 
     exit() {
