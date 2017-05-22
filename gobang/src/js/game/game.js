@@ -22,6 +22,9 @@ class Game {
     }
 
     start() {
+        /* test*/
+        this.goToStage('play', {time: 5, mode: 'duet'}); return;
+
         // console.log(globalData);
         if (!!globalData.player1.avatar) {
             // 首次游戏，设置头像
@@ -37,11 +40,11 @@ class Game {
 
     goToStage(name, data) {
         if (this.currentStage) {
-            this.currentStage.inactivate();
+            this.currentStage._inactivate();
         }
         
         this.currentStage = this.stages[name];
-        this.currentStage.activate(data);
+        this.currentStage._activate(data);
     }
 }
 

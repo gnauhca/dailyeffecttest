@@ -4,23 +4,20 @@ export default class Stage {
         this.view = view;
         this.isInit = false;
         this.active = false;
-        this.data;
+        this.activateData;
 
         this.actors = [];
-        this._orders;
+        this.actorBroadcastHandlers = this.handleActorBroadcast();
         this.actorFactory;
     }
 
     init() {
-        this.isInit = true;
-        this.activate && this.activate();
-
-        this._orders = this.orders();
 
         let ActorConstructors = this.createActorConstructors();
         this.actorFactory = {
             constructors: ActorConstructors,
             getActor: (name)=>{
+                // console.log(name);
                 return ( new ActorConstructors[name](this, this.view.createWidget(name)) );
             }
         }
@@ -30,58 +27,65 @@ export default class Stage {
         // 重写此方法，返回包含本 stage 要用到的所有 Actor 构造函数，用于按需创建 actor
     }
 
-    createActor(name) {
+    createActor(name, ...initArgs) {
         // 创建舞台演员
         let actor = this.actorFactory.getActor(name);
+
+        actor.name = name;
         actor.id = 'actor_' + (new Date).getTime() + (Math.random() * 1000000)|0;
         this.actors.push(actor);
-        actor.init();
+        actor.init(...initArgs);
 
         return actor;
     }
 
 
-    orders() {
-        // 重写此方法，返回包含多个命令函数的对象，用于 actor 发送公共命令
+    handleActorBroadcast() {
+        // 重写此方法，返回包含多个消息处理函数的对象，用于处理 actor 对 stage 发出的消息
+        return {};
     }
 
-    // 收到信息，执行命令
-    excuteOrder(orderName, data) {
-        this._orders[orderName](data);
+    // 向当前 stage 所有的 actor 发送消息
+    dispatch(msg, data) {
+        this.actors.forEach(
+            a=>a.stageDispatchHandlers[msg] && a.stageDispatchHandlers[msg](data)
+        );
     }
 
-    getActorsData(data) {
-        return data;
+    getActorResetDatas(activateData) {
+        return {};
     }
 
-    activate(data) {
+    _activate(data) {
         this.active = true;
         // 首次激活需要初始化
         if (!this.isInit) {
+            this.isInit = true;
             this.view.init();
             this.init();
-            return; 
+            // return false; 
         }
-        this.data = data;
-        
-        
-        let actorsData = this.getActorsData(data);
+        this.activateData = data;
 
-        // 每个 actor 各自激活
-        for (let actorName in this.actors) {
-            this.actors[actorName].activate(actorsData[actorName]);
-        }
+        let actorResetDatas = this.getActorResetDatas(this.activateData);
 
+        this.actors.forEach(w=>w.reset(actorResetDatas[w.name]));
+        this.activate(data);
         this.view && this.view.show();
     }
 
-    inactivate() {
+    activate() {
+        // 重写此方法，激活之后的操作，在视图显示之前
+    }
+
+    _inactivate() {
         this.active = false;
         this.view && this.view.hide();
 
-        // 每个 actor 各自休眠
-        for (let actorName in this.actors) {
-            this.actors[actorName].inactivate();
-        }
+        this.inactivate();
+    }
+
+    inactivate() {
+        // 重写此方法，离开之后的操作，在视图消失之后
     }
 }

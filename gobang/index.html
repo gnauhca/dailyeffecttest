@@ -27,20 +27,63 @@
 
 	<!--gate-->
 	<div class="page" id="gate">
-		<ul class="options">
-			<li class="option pointer">05 分钟</li>
-			<li class="option pointer">10 分钟</li>
-			<li class="option pointer">30 分钟</li>
+		<ul class="options" id="gate-time">
+			<li class="option pointer selected" data-time="5">05 分钟</li>
+			<li class="option pointer" data-time="10">10 分钟</li>
+			<li class="option pointer" data-time="30">30 分钟</li>
 		</ul>
 
-		<ul class="options">
-			<li class="option pointer">双人</li>
-			<li class="option pointer">人机</li>
+		<ul class="options" id="gate-mode">
+			<li class="option pointer" data-mode="duet">双人</li>
+			<li class="option pointer" data-mode="robot">人机</li>
 			<!--<li class="option">联机</li>-->
 		</ul>
 	</div>
 
 
+	<!--play-->
+	<div class="page" id="play">
+		<div class="time">
+			<div class="time-left"></div>
+			<div class="time-total"></div>
+			<div class="time-right"></div>
+		</div>
+
+		<div class="player player1">
+			<div class="player-btn avatar"></div>
+			<div class="player-btn undo">悔棋</div>
+			<div class="player-btn givein">求和</div>
+			<div class="player-btn askdraw">认输</div>
+		</div>
+
+		<div class="player2">
+			<div class="player-btn avatar"></div>
+			<div class="player-btn undo">悔棋</div>
+			<div class="player-btn givein">求和</div>
+			<div class="player-btn askdraw">认输</div>
+		</div>
+
+		<div class="chessboard">
+
+		</div>
+
+		<div class="confirm">
+			<div class="confirm-msg"></div>
+			<div class="confirm-handle">
+				<div class="confirm-yes"></div>
+				<div class="confirm-no"></div>
+			</div>
+		</div>
+
+		<div class="gameover">
+			<div class="gameover-msg"></div>
+			<div class="gameover-handle">
+				<div class="gameover-btn restart"></div>
+				<div class="gameover-btn back"></div>
+			</div>
+		</div>
+
+	</div>	
 	
 </div>
 

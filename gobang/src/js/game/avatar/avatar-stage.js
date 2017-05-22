@@ -9,16 +9,16 @@ export default class AvatarStage extends Stage {
         super(game, view);
         this.name = 'avatar';
         this.data;
-        this.avatarSelector;
+        this.avatarSelectorActor;
     }
 
     init() {
         super.init();
-        this.avatarSelector = this.createActor('AvatarSelector');
+        this.avatarSelectorActor = this.createActor('AvatarSelector');
     }
 
 
-    orders() {
+    handleActorBroadcast() {
         return {
             selectAvatar: (selected)=>{
                 globalData.player1.avatar = selected.player1Avatar;

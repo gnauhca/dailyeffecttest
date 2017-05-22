@@ -12,33 +12,29 @@ export default class AvatarSelectorWidget extends Widget {
     }
 
     initEvent() {
-        Array.prototype.forEach.call(this.ePlayer1Avatars, (avatar)=>{
+        [...this.ePlayer1Avatars].forEach((avatar)=>{
             avatar.addEventListener('click', ()=>{ 
-                Array.prototype.forEach.call(this.ePlayer1Avatars, a=>a.classList.remove('selected'));
+                [...this.ePlayer1Avatars].forEach(a=>a.classList.remove('selected'));
                 avatar.classList.add('selected');
                 this.play1Avatar = avatar.dataset.avatar;
             });
         });
 
-        Array.prototype.forEach.call(this.ePlayer2Avatars, (avatar)=>{
+        [...this.ePlayer2Avatars].forEach((avatar)=>{
             avatar.addEventListener('click', ()=>{
-                Array.prototype.forEach.call(this.ePlayer2Avatars, a=>a.classList.remove('selected'));
+                [...this.ePlayer2Avatars].forEach(a=>a.classList.remove('selected'));
                 avatar.classList.add('selected');
                 this.play2Avatar = avatar.dataset.avatar;
             });
         });
 
         this.eSelectOk.addEventListener('click', ()=>{
-            this.setData();
+            this.trigger('select-done', {
+                play1Avatar: this.play1Avatar,
+                play2Avatar: this.play2Avatar
+            });
         });
 
     }
 
-
-    setData(data) {
-        this.trigger('select-done', {
-            play1Avatar: this.play1Avatar,
-            play2Avatar: this.play2Avatar
-        });
-    }
 }
