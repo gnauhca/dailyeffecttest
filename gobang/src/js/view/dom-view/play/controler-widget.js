@@ -9,24 +9,43 @@ export default class ControlerWidget extends Widget {
         this.eConfirmYesBtn = this.eConfirm.querySelector('.confirm-yes');
         this.eConfirmNoBtn = this.eConfirm.querySelector('.confirm-no');
 
+
+        this.eGameover = this.page.elem.querySelector('.gameover');
+        this.eGameoverMsg = this.eGameover.querySelector('.gameover-msg');
+        this.eGameoverRestart = this.eGameover.querySelector('.restart');
+        this.eGameoverBack = this.eGameover.querySelector('.back');
+
         this.confirmCallback;
         this.refuseCallback;
+
+        this.initEvent();
     }
 
     initEvent() {
-        this.eConfirmYesBtn.addEventListener('click', function() {
+        this.eConfirmYesBtn.addEventListener('click', ()=>{
             this.eConfirm.classList.remove('show');
             this.confirmCallback();
         });
 
-        this.eConfirmNoBtn.addEventListener('click', function() {
+        this.eConfirmNoBtn.addEventListener('click', ()=>{
             this.eConfirm.classList.remove('show');
             this.refuseCallback();
         });
+
+        this.eGameoverRestart.addEventListener('click', ()=>{
+            this.eGameover.classList.remove('show');
+            this.trigger('restart');
+        });
+
+        this.eGameoverBack.addEventListener('click', ()=>{
+            this.eGameover.classList.remove('show');
+            this.trigger('back');
+        });
+
     }
 
     showMsg(msg, dur, callback) {
-        this.eConfirmHandle.classList.add('hide');
+        this.eConfirmHandle.classList.remove('show');
         this.eConfirmMsg.innerHTML = msg;
 
         this.eConfirm.classList.add('show');
@@ -44,8 +63,14 @@ export default class ControlerWidget extends Widget {
         this.eConfirmMsg.innerHTML = msg;
 
         this.confirmCallback = confirmCallback;
+        this.refuseCallback = refuseCallback;
 
         this.eConfirm.classList.add('show');
+    }
+
+    showGameoverMsg(msg) {
+        this.eGameoverMsg.innerHTML = msg;
+        this.eGameover.classList.add('show');
     }
 
 }

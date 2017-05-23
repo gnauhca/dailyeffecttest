@@ -15,6 +15,9 @@ export default class SettingActor extends Actor {
         return {
             'setting-done': (setting) => {
                 this.doSetting(setting);
+            },
+            'back': () => {
+                this.broadcast('back');
             }
         }
     }
@@ -23,4 +26,9 @@ export default class SettingActor extends Actor {
         this.broadcast('doSetting', setting);
     }
 
+    makeWidgetData() {
+        return {
+            time: 5
+        }
+    }
 }

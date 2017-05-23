@@ -4,6 +4,7 @@ export default class SettingWidget extends Widget {
     init() {
         this.eTime = this.page.elem.querySelectorAll('#gate-time .option');
         this.eMode = this.page.elem.querySelectorAll('#gate-mode .option');
+        this.eBack = this.page.elem.querySelector('.back');
         this.initEvent();
 
         this.time = 5;
@@ -25,7 +26,15 @@ export default class SettingWidget extends Widget {
                 this.settingDone();
             });
         });
+        this.eBack.addEventListener('click', ()=>{
+            this.trigger('back');
+        });
+    }
 
+    reset(){
+        [...this.eTime].forEach((t)=>{
+            t.classList.remove('selected');
+        });
     }
 
 

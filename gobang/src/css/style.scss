@@ -1,9 +1,28 @@
 @import './_reset.scss';
 
+@font-face {
+    font-family: "ziti";
+    src: url("ziti.eot"); /* IE9 */
+    src: url("ziti.eot?#iefix") format("embedded-opentype"), /* IE6-IE8 */
+    
+    url("ziti.woff") format("woff"), /* chrome、firefox */
+    url("ziti.ttf") format("truetype"), /* chrome、firefox、opera、Safari, Android, iOS 4.2+ */
+    
+    url("ziti.svg#ziti") format("svg"); /* iOS 4.1- */
+    font-style: normal;
+    font-weight: normal;
+}
+body {
+    font-family: "ziti";
+    font-size: 30px;
+    color: #000;
+}
+
 .container {
     width: 1368px;
     height: 768px;
-    background: url(../images/bg.jpg) no-repeat;
+    overflow: hidden;
+    background: url(../images/bg-1.jpg) no-repeat;
     background-size: 100%;
 }
 
@@ -14,6 +33,13 @@
     background-size: 100%;
 }
 
+.btn {
+    display: inline-block;
+    font-size: 30px;
+    padding: 10px;
+    border: 1px solid #666;
+}
+
 .pointer {
     cursor: pointer;
 }
@@ -22,9 +48,26 @@
     display: block!important;
 }
 
+@mixin selected {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    padding-top: 100%;
+    transform: translate(-50%, -50%);
+    display: block;
+    content: '';
+    background: url(../images/selected.png) no-repeat center;
+    background-size: 100%;
+}
+
+
 // base
 .page {
     display: none;
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
 .page.show {
@@ -32,55 +75,100 @@
 }
 
 
+.avatar-1-1 {
+    background-image: url(../images/avatar-1-1.png);
+}
+.avatar-1-2 {
+    background-image: url(../images/avatar-1-2.png);
+}
+.avatar-2-1 {
+    background-image: url(../images/avatar-2-1.png);
+}
+.avatar-2-2 {
+    background-image: url(../images/avatar-2-2.png);
+}
+.avatar-robot {
+    background-image: url(../images/avatar-robot.png);
+}
+
 // avatar
-.avatars {
-    display: flex;
-    width: 50%;
+#avatar {
+    h1 {
+        font-size: 50px; 
+        padding: 50px 80px;
+    }
+    .avatar-select {
+        display: flex;
+        width: 90%;
+        margin: 0 auto;
+        justify-content: space-around;
+        padding: 10px; 
+        border: 1px solid rgba(0,0,0,0.2);
+    }
+    .avatars {
+        margin-top: 30px;
+    }
     .avatar {
-        width: 100px;
-        height: 100px;
+        position: relative;
+        display: inline-block;
+        width: 200px;
+        height: 200px;
+        margin: 30px;
+        
         &.selected {
-            box-shadow: inset 2px 2px 2px #666;
+            // transform: translateY(-20px) scale(1.3);
+            &:after {
+                @include selected;
+            }
         }
     }
-    .avatar-1-1 {
-        background-image: url(../images/avatar-1-1.jpg);
-    }
-    .avatar-1-2 {
-        background-image: url(../images/avatar-1-2.jpg);
-    }
-    .avatar-1-3 {
-        background-image: url(../images/avatar-1-3.jpg);
-    }
-    .avatar-2-1 {
-        background-image: url(../images/avatar-2-1.jpg);
-    }
-    .avatar-2-2 {
-        background-image: url(../images/avatar-2-2.jpg);
-    }
-    .avatar-2-3 {
-        background-image: url(../images/avatar-2-3.jpg);
+    .select-ok {
+        float: right;
+        margin-top: 80px;
+        margin-right: 60px;
     }
 }
 
 
 // gate
-.options {
-    display: flex;
-    justify-content: space-around;
-    width: 400px;
-    height: 100px;
-    .option {
-        width: 100px;
-        height: 50px;
-        line-height: 50px;
-        text-align: center;
-        outline: 1px solid #666;
 
-        &.selected {
-            box-shadow: inset 2px 2px 2px #666;
+#gate {
+    .gate-select {
+        padding: 120px 0 0 450px;
+        h2 {
+            font-size: 50px;
+            padding: 10px;
         }
     }
+    .options {
+        // justify-content: space-around;
+        width: 600px;
+        height: 160px;
+        .option {
+            float: left;
+            position: relative;
+            width: 130px;
+            height: 50px;
+            line-height: 50px;
+            margin: 10px;
+            text-align: center;
+
+            &.selected {
+                &:after {
+                    @include selected;
+                }
+            }
+        }
+    }
+    .back {
+        position: absolute;
+        top: 30px;
+        left: 60px;
+        width: 80px;
+        height: 80px;
+        background-image: url(../images/back.png);
+    }
+
 }
 
 
@@ -89,6 +177,41 @@
 
     .confirm {
         display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 100;
+
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.1);
+
+        .confirm-box {
+            width: 450px;
+            height: 150px;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-size: 70%;
+            box-shadow: 5px 3px 8px rgba(0,0,0,0.3);
+            background-image: url(../images/bg.jpg);
+
+            .confirm-msg {
+                font-size: 30px;
+                margin-bottom: 30px;
+            }
+            .confirm-handle {
+                display: none;
+                .confirm-btn {
+                    margin: 20px;
+                    font-size: 20px;
+                    float: right;
+                    cursor: pointer;
+                }
+            }
+        }
     }
 
     .chessboard {
@@ -106,12 +229,13 @@
         .square {
             width: 40px;
             height: 40px;
+            cursor: pointer;
+            
             // outline: 0.3px solid #f00;
             &, & i {
                 background-repeat: no-repeat;
                 background-position: center;
                 background-size: 100%;
-                cursor: pointer;
             }
 
             i {
@@ -138,16 +262,130 @@
                 background-image: url(../images/white-hover.png);
             }
         }
-        &.playing-black .white, &.playing-black .black {
+        & .white, & .black,
+        &.forbidden .square, &.forbidden .square {
             &:hover {
-                background: none;
+                background: none!important;
+                cursor: not-allowed;
+            }
+        }
+        
+    }
+
+    .time {
+        display: flex;
+        justify-content: space-around;
+    }
+    
+    .player {
+        width: 30%;
+        height: 100%;
+        box-sizing: border-box;
+        padding: 80px 60px 50px 60px;
+        .avatar {
+            width: 160px;
+            height: 160px;
+            margin: 30px auto;
+            background-size: 100%;
+        }
+
+        .piece {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+            &.white {
+                background-image: url(../images/white-piece.png);
+            }
+            &.black {
+                background-image: url(../images/black-piece.png);
+            }
+
+            &:after {
+                @include selected;
+                opacity: 0;
+                transition: opacity 0.3s;
+            }
+        }
+        &.playing .piece {
+            &:after {
+                opacity: 1;
+            }
+        }
+        &.player1 {
+            float: left;
+        }
+        &.player2 {
+            float: right;
+        }
+
+        .player-handle {
+            text-align: center;
+        }
+        .player-btn {
+            cursor: pointer;
+            &.disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        }
+
+        $states: playing, wait, lose, win;
+        @each $state in $states {
+            &.#{$state} {
+                .avatar-1-1 {
+                    background-image: url(../images/avatar-1-1-#{$state}.png);
+                }
+                .avatar-1-2 {
+                    background-image: url(../images/avatar-1-2-#{$state}.png);
+                }
+                .avatar-2-1 {
+                    background-image: url(../images/avatar-2-1-#{$state}.png);
+                }
+                .avatar-2-2 {
+                    background-image: url(../images/avatar-2-2-#{$state}.png);
+                }
             }
         }
     }
 
-    .player {
-        .player-btn {
-            cursor: pointer;
+
+    .gameover {
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 100;
+
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.1);
+
+        .gameover-box {
+            width: 450px;
+            height: 150px;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-image: url(../images/bg.jpg);
+            padding: 20px;
+            background-size: 70%;
+            box-shadow: 5px 3px 8px rgba(0,0,0,0.3);
+
+            .gameover-msg {
+                font-size: 30px;
+                margin-bottom: 30px;
+            }
+            .gameover-handle {
+                .gameover-btn {
+                    margin: 20px;
+                    font-size: 20px;
+                    float: right;
+                    cursor: pointer;
+                }
+            }
         }
     }
+
 }

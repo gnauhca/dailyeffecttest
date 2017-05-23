@@ -8,7 +8,17 @@ export default class ChessboardWidget extends Widget {
         this.squares;
         this.initEvent();
     }
-
+    watch() {
+        return {
+            forbidden: (forbidden)=>{
+                if (forbidden) {
+                    this.eChessboard.classList.add('forbidden');
+                } else {
+                    this.eChessboard.classList.remove('forbidden');
+                }
+            }
+        }
+    }
     createSquares(horizontal, vertical) {
         this.horizontal = horizontal; // 格子个数
         this.vertical = horizontal; // 格子个数
@@ -21,18 +31,11 @@ export default class ChessboardWidget extends Widget {
         });
     }
 
-
-    setPrevent(isPrevent) {
-        if (isPrevent) {
-            this.eChessboard.classList.add('prevent');
-        } else {
-            this.eChessboard.classList.remove('prevent');
-        }
-    }
-
     initEvent() {
         this.eChessboard.addEventListener('click', (e)=>{
-            if (this.eChessboard.classList.contains('prevent')||!e.target.parentNode.classList.contains('square')) return;
+            if (this.widgetData.forbidden||!e.target.parentNode.classList.contains('square')) {
+                return;
+            } 
 
             let square = e.target.parentNode;
             let crood = square.dataset.crood.split(',');
@@ -48,7 +51,7 @@ export default class ChessboardWidget extends Widget {
         let square = this.squares[Number(crood.x) + crood.y * this.horizontal];
 
         square.classList.remove('black','white');
-        square.classList.add(pieceType);
+        pieceType && square.classList.add(pieceType);
     }
 
     setActivePiece(pieceType) {

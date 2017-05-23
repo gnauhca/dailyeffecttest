@@ -24,6 +24,7 @@ export default class AvatarStage extends Stage {
                 globalData.player1.avatar = selected.player1Avatar;
                 globalData.player2.avatar = selected.player2Avatar;
                 this.game.goToStage('gate');
+                // console.log(globalData);
             }
         }
     }

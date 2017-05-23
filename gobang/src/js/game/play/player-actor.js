@@ -8,12 +8,63 @@ export default class PlayerActor extends Actor {
         this.role = role;
         this.pieceType;
         this.myTurn = false;
+        this.lock = false;
+    }
+
+    initWidget() {
+        this.widget.init(this.role, this.isRobot); 
     }
 
     handleStageDispatch() {
         return {
-            setPlaying: (playingActor) => {
+            setPlaying: (playingActor, chessboardData, pieceStack) => {
+
+                // 自己有没有下子，判断悔棋炒作是否可行
+                let hasPut = (pieceStack)=>{
+                    if (pieceStack.length === 0 || (pieceStack.length === 1 && pieceStack[0].pieceType !== this.pieceType)) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+
                 this.myTurn = playingActor === this;
+                this.widgetData.undoState = !hasPut(pieceStack) ? 'disabled' : (this.myTurn?'playing':'wait');
+                this.widgetData.playerState = this.myTurn?'playing':'wait';
+            },
+            lock: ()=>{
+                this.lock = true;
+                this.widgetData.prevent = true;
+                this.widgetData.playerState = 'wait';
+            },
+
+            unlock: ()=>{
+                this.lock = false;
+                this.widgetData.prevent = false;
+                this.widgetData.playerState = this.myTurn?'playing':'wait';
+            },
+            gameover: (overData)=>{
+                this.widgetData.playerState = overData.winner===this? 'win': (overData.winner==null? 'wait': 'lose');
+            }
+        }
+    }
+
+    handleWidgetEvent() {
+        return {
+            undo: ()=>{
+                this.broadcast('undo', this, (isSuccess)=>{ 
+                    this.widgetData.undoState = isSuccess?'undoundo':'undo';
+                });
+            },
+            undoundo: ()=>{
+                this.broadcast('undoundo', this);
+                this.widgetData.undoState = 'undo';
+            },
+            askDraw: ()=>{
+                this.broadcast('askDraw', this);
+            },
+            giveIn: ()=>{
+                this.broadcast('giveIn', this);
             }
         }
     }
@@ -25,12 +76,19 @@ export default class PlayerActor extends Actor {
     }
 
     makeWidgetData(resetData) {
-        return resetData
+        if (!resetData) return{};
+        return {
+            avatar: resetData.avatar,
+            pieceType: resetData.pieceType,
+            playerState: 'wait',
+            undoState: 'disabled'
+        };
     }
 
     reset(data) {
         super.reset(...arguments);
         if (!data) return;
+        this.hasPut = 0;
         this.pieceType = data.pieceType;
         this.avatar = data.avatar;
     }

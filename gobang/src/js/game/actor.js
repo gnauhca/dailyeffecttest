@@ -9,10 +9,13 @@ export default class Actor {
     }
 
     init() {
-        this.widget.init();
         for (let eventName in this.widgetEventHandlers) {
             this.widget.addEventListener(eventName, this.widgetEventHandlers[eventName]);
         }
+    }
+
+    initWidget() {
+        this.widget.init();
     }
 
     handleStageDispatch() {
@@ -27,8 +30,11 @@ export default class Actor {
     }
 
     // 向 stage 发送消息
-    broadcast(msg, data) {
-        this.stage.actorBroadcastHandlers[msg] && this.stage.actorBroadcastHandlers[msg](data);
+    broadcast() {
+        let args = [...arguments];
+        let msg = args.shift();
+
+        this.stage.actorBroadcastHandlers[msg] && this.stage.actorBroadcastHandlers[msg](...args);
     }
 
     makeWidgetData(actorResetData) {
@@ -39,6 +45,16 @@ export default class Actor {
     reset(actorResetData) {
         this.resetData = actorResetData;
         // 重置，在 stage 离开时，需要重置持久(生命周期与stage想同)的 actor
-        this.widget.setData(this.makeWidgetData(actorResetData));
+        this.widgetData = this.makeWidgetData(actorResetData);
+        this.widget.setData(this.widgetData);
+        this.widget.reset();
+    }
+
+    distory() {
+        this.widget.distory();
+        this.stage.removeActor(this);
+        this.stage = null;
+        this.widget = null
+        this.widgetData = null;
     }
 }

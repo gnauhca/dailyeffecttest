@@ -23,15 +23,19 @@ class Game {
 
     start() {
         /* test*/
-        this.goToStage('play', {time: 5, mode: 'duet'}); return;
+        // globalData.player1.avatar = 'avatar-1-2';
+        // globalData.player2.avatar = 'avatar-2-1';
+        // this.goToStage('play', {time: 5, mode: 'duet'}); return;
+
+        // this.goToStage('gate'); return;
 
         // console.log(globalData);
-        if (!!globalData.player1.avatar) {
+        // if (!!globalData.player1.avatar) {
             // 首次游戏，设置头像
             this.goToStage('avatar');
-        } else {
-            this.goToStage('gate');
-        }
+        // } else {
+            // this.goToStage('gate');
+        // }
     }
 
     exit() {

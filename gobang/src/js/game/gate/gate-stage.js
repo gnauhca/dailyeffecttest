@@ -19,6 +19,9 @@ export default class PlayStage extends Stage {
         return {
             doSetting: (setting)=>{
                 this.game.goToStage('play', setting);
+            },
+            back: (setting)=>{
+                this.game.goToStage('avatar');
             }
         }
     }

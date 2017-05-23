@@ -35,8 +35,13 @@ export default class Stage {
         actor.id = 'actor_' + (new Date).getTime() + (Math.random() * 1000000)|0;
         this.actors.push(actor);
         actor.init(...initArgs);
+        actor.initWidget();
 
         return actor;
+    }
+
+    removeActor(actor) {
+        this.actors.splice(this.actors.indexOf(actor), 1);
     }
 
 
@@ -46,9 +51,11 @@ export default class Stage {
     }
 
     // 向当前 stage 所有的 actor 发送消息
-    dispatch(msg, data) {
+    dispatch() {
+        let args = [...arguments];
+        let msg = args.shift();
         this.actors.forEach(
-            a=>a.stageDispatchHandlers[msg] && a.stageDispatchHandlers[msg](data)
+            a=>a.stageDispatchHandlers[msg] && a.stageDispatchHandlers[msg](...args)
         );
     }
 
