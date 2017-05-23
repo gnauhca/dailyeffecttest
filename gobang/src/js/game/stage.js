@@ -7,7 +7,7 @@ export default class Stage {
         this.activateData;
 
         this.actors = [];
-        this.actorBroadcastHandlers = this.handleActorBroadcast();
+        this.actorDispatchHandlers = this.handleActorDispatch();
         this.actorFactory;
     }
 
@@ -45,17 +45,17 @@ export default class Stage {
     }
 
 
-    handleActorBroadcast() {
+    handleActorDispatch() {
         // 重写此方法，返回包含多个消息处理函数的对象，用于处理 actor 对 stage 发出的消息
         return {};
     }
 
     // 向当前 stage 所有的 actor 发送消息
-    dispatch() {
+    broadcast() {
         let args = [...arguments];
         let msg = args.shift();
         this.actors.forEach(
-            a=>a.stageDispatchHandlers[msg] && a.stageDispatchHandlers[msg](...args)
+            a=>a.stageBroadcastHandlers[msg] && a.stageBroadcastHandlers[msg](...args)
         );
     }
 

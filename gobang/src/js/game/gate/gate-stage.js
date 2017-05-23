@@ -15,7 +15,7 @@ export default class PlayStage extends Stage {
     }
 
 
-    handleActorBroadcast() {
+    handleActorDispatch() {
         return {
             doSetting: (setting)=>{
                 this.game.goToStage('play', setting);

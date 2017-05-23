@@ -35,6 +35,8 @@ export default class SettingWidget extends Widget {
         [...this.eTime].forEach((t)=>{
             t.classList.remove('selected');
         });
+        this.time = 5;
+        this.eTime[0].classList.add('selected');
     }
 
 

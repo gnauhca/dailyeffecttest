@@ -18,7 +18,7 @@ export default class ControlerActor extends Actor {
         this.limitTime = limitTime;
     }
 
-    handleStageDispatch() {
+    handleStageBoardcast() {
         return {
             setPlaying: (playingActor)=>{
                 this.playingPlayer = playingActor.role;
@@ -76,7 +76,7 @@ export default class ControlerActor extends Actor {
     }
 
     timeup() {
-        this.broadcast('timeup', this.playerTime);
+        this.dispatch('timeup', this.playerTime);
     }
 
     startTick() {

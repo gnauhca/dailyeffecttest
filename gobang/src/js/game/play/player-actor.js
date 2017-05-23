@@ -15,7 +15,7 @@ export default class PlayerActor extends Actor {
         this.widget.init(this.role, this.isRobot); 
     }
 
-    handleStageDispatch() {
+    handleStageBoardcast() {
         return {
             setPlaying: (playingActor, chessboardData, pieceStack) => {
 
@@ -52,26 +52,26 @@ export default class PlayerActor extends Actor {
     handleWidgetEvent() {
         return {
             undo: ()=>{
-                this.broadcast('undo', this, (isSuccess)=>{ 
+                this.dispatch('undo', this, (isSuccess)=>{ 
                     this.widgetData.undoState = isSuccess?'undoundo':'undo';
                 });
             },
             undoundo: ()=>{
-                this.broadcast('undoundo', this);
+                this.dispatch('undoundo', this);
                 this.widgetData.undoState = 'undo';
             },
             askDraw: ()=>{
-                this.broadcast('askDraw', this);
+                this.dispatch('askDraw', this);
             },
             giveIn: ()=>{
-                this.broadcast('giveIn', this);
+                this.dispatch('giveIn', this);
             }
         }
     }
 
     putPiece(crood) {
         if (this.myTurn) {
-            this.broadcast('putPiece', {pieceType: this.pieceType, crood: crood});
+            this.dispatch('putPiece', {pieceType: this.pieceType, crood: crood});
         }
     }
 

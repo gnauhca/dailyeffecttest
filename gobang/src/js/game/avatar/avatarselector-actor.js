@@ -17,6 +17,6 @@ export default class AvatarSelectorActor extends Actor {
 
     selectAvatar(selected) {
         // console.log(selected);
-        this.broadcast('selectAvatar', selected);
+        this.dispatch('selectAvatar', selected);
     }
 }

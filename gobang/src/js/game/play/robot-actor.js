@@ -14,7 +14,7 @@ export default class RobotActor extends PlayerActor {
         this.widget.init(this.role, this.isRobot); 
     }
 
-    handleStageDispatch() {
+    handleStageBoardcast() {
         return {
             setPlaying: (playingActor, chessboardData, pieceStack) => {
                 this.myTurn = playingActor === this;

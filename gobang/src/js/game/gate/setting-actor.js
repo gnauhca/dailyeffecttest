@@ -17,13 +17,13 @@ export default class SettingActor extends Actor {
                 this.doSetting(setting);
             },
             'back': () => {
-                this.broadcast('back');
+                this.dispatch('back');
             }
         }
     }
 
     doSetting(setting) {
-        this.broadcast('doSetting', setting);
+        this.dispatch('doSetting', setting);
     }
 
     makeWidgetData() {

@@ -37,7 +37,7 @@ export default class PlayStage extends Stage {
         this.controlerActor = this.createActor('Controler');
     }
 
-    handleActorBroadcast() {
+    handleActorDispatch() {
         return {
             // 下子
             putPiece: (data)=>{
@@ -199,14 +199,14 @@ export default class PlayStage extends Stage {
 
         this.controlerActor.showMsg('重新分配黑白子...', 1000, ()=>{
             this.setPlaying(playingActor); // 黑子先走
-            this.dispatch('start');
+            this.broadcast('start');
             this.unlock();
         });
     }
 
     setPlaying(playingActor) {
         this.playingActor = playingActor;
-        this.dispatch('setPlaying', this.playingActor, this.chessboradActor.getChessboardData(), this.pieceStack);
+        this.broadcast('setPlaying', this.playingActor, this.chessboradActor.getChessboardData(), this.pieceStack);
     }
 
     getOtherPlayer(player) {
@@ -219,16 +219,16 @@ export default class PlayStage extends Stage {
 
     // 执行确认操作时，需要锁定游戏
     lock() {
-        this.dispatch('lock');
+        this.broadcast('lock');
     }
 
     unlock() {
-        this.dispatch('unlock');
+        this.broadcast('unlock');
     }
 
     gameover(overData) {
         this.lock();
-        this.dispatch('gameover', overData);
+        this.broadcast('gameover', overData);
     }
 
 

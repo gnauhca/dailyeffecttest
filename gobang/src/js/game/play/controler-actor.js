@@ -6,7 +6,7 @@ export default class ControlerActor extends PlayActor {
         super.init();
     }
 
-    handleStageDispatch() {
+    handleStageBoardcast() {
         return {
             start: ()=>{
                 
@@ -21,10 +21,10 @@ export default class ControlerActor extends PlayActor {
     handleWidgetEvent() {
         return {
             restart: ()=>{
-                this.broadcast('restart');
+                this.dispatch('restart');
             },
             back: ()=>{
-                this.broadcast('back');
+                this.dispatch('back');
             }
         }
     }

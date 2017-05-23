@@ -29,7 +29,7 @@ export default class ChessboardActor extends PlayActor {
         }
     }
 
-    handleStageDispatch() {
+    handleStageBoardcast() {
         return {
             setPlaying: (playingActor)=>{
                 this.playingActor = playingActor;

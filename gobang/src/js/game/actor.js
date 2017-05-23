@@ -4,7 +4,7 @@ export default class Actor {
         this.widget = widget;
         this.widgetData;
         this.resetData;
-        this.stageDispatchHandlers = this.handleStageDispatch();
+        this.stageBroadcastHandlers = this.handleStageBoardcast();
         this.widgetEventHandlers = this.handleWidgetEvent();
     }
 
@@ -18,7 +18,7 @@ export default class Actor {
         this.widget.init();
     }
 
-    handleStageDispatch() {
+    handleStageBoardcast() {
         // 重写此方法，返回包含多个消息处理函数的对象，用于处理 stage 对 actor 发出的消息
         return {};
     }
@@ -30,11 +30,11 @@ export default class Actor {
     }
 
     // 向 stage 发送消息
-    broadcast() {
+    dispatch() {
         let args = [...arguments];
         let msg = args.shift();
 
-        this.stage.actorBroadcastHandlers[msg] && this.stage.actorBroadcastHandlers[msg](...args);
+        this.stage.actorDispatchHandlers[msg] && this.stage.actorDispatchHandlers[msg](...args);
     }
 
     makeWidgetData(actorResetData) {

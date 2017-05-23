@@ -18,7 +18,7 @@ export default class AvatarStage extends Stage {
     }
 
 
-    handleActorBroadcast() {
+    handleActorDispatch() {
         return {
             selectAvatar: (selected)=>{
                 globalData.player1.avatar = selected.player1Avatar;

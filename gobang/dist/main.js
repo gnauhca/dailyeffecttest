@@ -77,7 +77,7 @@ class Actor {
         this.widget = widget;
         this.widgetData;
         this.resetData;
-        this.stageDispatchHandlers = this.handleStageDispatch();
+        this.stageBroadcastHandlers = this.handleStageBoardcast();
         this.widgetEventHandlers = this.handleWidgetEvent();
     }
 
@@ -91,7 +91,7 @@ class Actor {
         this.widget.init();
     }
 
-    handleStageDispatch() {
+    handleStageBoardcast() {
         // 重写此方法，返回包含多个消息处理函数的对象，用于处理 stage 对 actor 发出的消息
         return {};
     }
@@ -103,11 +103,11 @@ class Actor {
     }
 
     // 向 stage 发送消息
-    broadcast() {
+    dispatch() {
         let args = [...arguments];
         let msg = args.shift();
 
-        this.stage.actorBroadcastHandlers[msg] && this.stage.actorBroadcastHandlers[msg](...args);
+        this.stage.actorDispatchHandlers[msg] && this.stage.actorDispatchHandlers[msg](...args);
     }
 
     makeWidgetData(actorResetData) {
@@ -168,7 +168,7 @@ class Stage {
         this.activateData;
 
         this.actors = [];
-        this.actorBroadcastHandlers = this.handleActorBroadcast();
+        this.actorDispatchHandlers = this.handleActorDispatch();
         this.actorFactory;
     }
 
@@ -206,17 +206,17 @@ class Stage {
     }
 
 
-    handleActorBroadcast() {
+    handleActorDispatch() {
         // 重写此方法，返回包含多个消息处理函数的对象，用于处理 actor 对 stage 发出的消息
         return {};
     }
 
     // 向当前 stage 所有的 actor 发送消息
-    dispatch() {
+    broadcast() {
         let args = [...arguments];
         let msg = args.shift();
         this.actors.forEach(
-            a=>a.stageDispatchHandlers[msg] && a.stageDispatchHandlers[msg](...args)
+            a=>a.stageBroadcastHandlers[msg] && a.stageBroadcastHandlers[msg](...args)
         );
     }
 
@@ -359,7 +359,7 @@ class PlayerActor extends __WEBPACK_IMPORTED_MODULE_0__actor_js__["a" /* default
         this.widget.init(this.role, this.isRobot); 
     }
 
-    handleStageDispatch() {
+    handleStageBoardcast() {
         return {
             setPlaying: (playingActor, chessboardData, pieceStack) => {
 
@@ -396,26 +396,26 @@ class PlayerActor extends __WEBPACK_IMPORTED_MODULE_0__actor_js__["a" /* default
     handleWidgetEvent() {
         return {
             undo: ()=>{
-                this.broadcast('undo', this, (isSuccess)=>{ 
+                this.dispatch('undo', this, (isSuccess)=>{ 
                     this.widgetData.undoState = isSuccess?'undoundo':'undo';
                 });
             },
             undoundo: ()=>{
-                this.broadcast('undoundo', this);
+                this.dispatch('undoundo', this);
                 this.widgetData.undoState = 'undo';
             },
             askDraw: ()=>{
-                this.broadcast('askDraw', this);
+                this.dispatch('askDraw', this);
             },
             giveIn: ()=>{
-                this.broadcast('giveIn', this);
+                this.dispatch('giveIn', this);
             }
         }
     }
 
     putPiece(crood) {
         if (this.myTurn) {
-            this.broadcast('putPiece', {pieceType: this.pieceType, crood: crood});
+            this.dispatch('putPiece', {pieceType: this.pieceType, crood: crood});
         }
     }
 
@@ -552,7 +552,7 @@ exports = module.exports = __webpack_require__(14)();
 
 
 // module
-exports.push([module.i, "/* RESET*/\nhtml, body, div, ul, ol, li, dl, dt, dd, h1, h2, h3, h4, h5, h6, pre, form, p, blockquote, fieldset, input, abbr, article, aside, command, details, figcaption, figure, footer, header, hgroup, mark, meter, nav, output, progress, section, summary, time {\n  margin: 0;\n  padding: 0; }\n\nh1, h2, h3, h4, h5, h6, pre, code, address, caption, cite, code, em, strong, th, figcaption {\n  font-size: 1em;\n  font-weight: normal;\n  font-style: normal; }\n\nfieldset, iframe {\n  border: none; }\n\ncaption, th {\n  text-align: left; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\narticle, aside, footer, header, hgroup, nav, section, figure, figcaption {\n  display: block; }\n\n/* LAYOUT */\n* {\n  margin: 0;\n  padding: 0; }\n\nhtml, body {\n  width: 100%;\n  height: 100%;\n  position: relative; }\n\nhtml {\n  background-color: #fff; }\n\n.clear {\n  clear: both; }\n\n.clearer {\n  clear: both;\n  display: block;\n  margin: 0;\n  padding: 0;\n  height: 0;\n  line-height: 1px;\n  font-size: 1px; }\n\n.selfclear {\n  zoom: 1; }\n\n.selfclear:after {\n  content: '.';\n  display: block;\n  height: 0;\n  clear: both;\n  visibility: hidden; }\n\nimg {\n  border: 0; }\n\na {\n  text-decoration: none;\n  color: #515151; }\n  a:focus {\n    outline: none; }\n\ni {\n  font-style: normal; }\n\nul, li {\n  list-style: none; }\n\nbody {\n  font: 14px/1.5 'microsoft yahei';\n  color: #515151; }\n\n.clearfix:after, .clearfix:before {\n  content: \"\";\n  display: table;\n  height: 0px;\n  clear: both;\n  visibility: hidden; }\n\n.clearfix {\n  *zoom: 1; }\n\n.fl {\n  float: left; }\n\n.fr {\n  float: right; }\n\n.br0 {\n  border: none; }\n\n.key-color {\n  color: #333; }\n\n.maim-color {\n  color: #666; }\n\n.auxiliary-color {\n  color: #999; }\n\n@font-face {\n  font-family: \"ziti\";\n  src: url(" + __webpack_require__(6) + ");\n  /* IE9 */\n  src: url(" + __webpack_require__(6) + "?#iefix) format(\"embedded-opentype\"), url(" + __webpack_require__(17) + ") format(\"woff\"), url(" + __webpack_require__(16) + ") format(\"truetype\"), url(" + __webpack_require__(15) + "#ziti) format(\"svg\");\n  /* iOS 4.1- */\n  font-style: normal;\n  font-weight: normal; }\n\nbody {\n  font-family: \"ziti\";\n  font-size: 30px;\n  color: #000; }\n\n.container {\n  width: 1368px;\n  height: 768px;\n  overflow: hidden;\n  background: url(" + __webpack_require__(40) + ") no-repeat;\n  background-size: 100%; }\n\n.pic {\n  background-position: center;\n  background-repeat: no-repeat;\n  background-size: 100%; }\n\n.btn {\n  display: inline-block;\n  font-size: 30px;\n  padding: 10px;\n  border: 1px solid #666; }\n\n.pointer {\n  cursor: pointer; }\n\n.show {\n  display: block !important; }\n\n.page {\n  display: none;\n  position: relative;\n  width: 100%;\n  height: 100%; }\n\n.page.show {\n  display: block; }\n\n.avatar-1-1 {\n  background-image: url(" + __webpack_require__(22) + "); }\n\n.avatar-1-2 {\n  background-image: url(" + __webpack_require__(27) + "); }\n\n.avatar-2-1 {\n  background-image: url(" + __webpack_require__(32) + "); }\n\n.avatar-2-2 {\n  background-image: url(" + __webpack_require__(37) + "); }\n\n.avatar-robot {\n  background-image: url(" + __webpack_require__(38) + "); }\n\n#avatar h1 {\n  font-size: 50px;\n  padding: 50px 80px; }\n\n#avatar .avatar-select {\n  display: flex;\n  width: 90%;\n  margin: 0 auto;\n  justify-content: space-around;\n  padding: 10px;\n  border: 1px solid rgba(0, 0, 0, 0.2); }\n\n#avatar .avatars {\n  margin-top: 30px; }\n\n#avatar .avatar {\n  position: relative;\n  display: inline-block;\n  width: 200px;\n  height: 200px;\n  margin: 30px; }\n  #avatar .avatar.selected:after {\n    position: absolute;\n    top: 50%;\n    left: 50%;\n    width: 100%;\n    padding-top: 100%;\n    transform: translate(-50%, -50%);\n    display: block;\n    content: '';\n    background: url(" + __webpack_require__(2) + ") no-repeat center;\n    background-size: 100%; }\n\n#avatar .select-ok {\n  float: right;\n  margin-top: 80px;\n  margin-right: 60px; }\n\n#gate .gate-select {\n  padding: 120px 0 0 450px; }\n  #gate .gate-select h2 {\n    font-size: 50px;\n    padding: 10px; }\n\n#gate .options {\n  width: 600px;\n  height: 160px; }\n  #gate .options .option {\n    float: left;\n    position: relative;\n    width: 130px;\n    height: 50px;\n    line-height: 50px;\n    margin: 10px;\n    text-align: center; }\n    #gate .options .option.selected:after {\n      position: absolute;\n      top: 50%;\n      left: 50%;\n      width: 100%;\n      padding-top: 100%;\n      transform: translate(-50%, -50%);\n      display: block;\n      content: '';\n      background: url(" + __webpack_require__(2) + ") no-repeat center;\n      background-size: 100%; }\n\n#gate .back {\n  position: absolute;\n  top: 30px;\n  left: 60px;\n  width: 80px;\n  height: 80px;\n  background-image: url(" + __webpack_require__(39) + "); }\n\n#play .confirm {\n  display: none;\n  position: absolute;\n  top: 0;\n  left: 0;\n  z-index: 100;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.1); }\n  #play .confirm .confirm-box {\n    width: 450px;\n    height: 150px;\n    position: absolute;\n    left: 50%;\n    top: 50%;\n    transform: translate(-50%, -50%);\n    padding: 20px;\n    background-size: 70%;\n    box-shadow: 5px 3px 8px rgba(0, 0, 0, 0.3);\n    background-image: url(" + __webpack_require__(7) + "); }\n    #play .confirm .confirm-box .confirm-msg {\n      font-size: 30px;\n      margin-bottom: 30px; }\n    #play .confirm .confirm-box .confirm-handle {\n      display: none; }\n      #play .confirm .confirm-box .confirm-handle .confirm-btn {\n        margin: 20px;\n        font-size: 20px;\n        float: right;\n        cursor: pointer; }\n\n#play .chessboard {\n  position: absolute;\n  left: 50%;\n  top: 3%;\n  transform: translate(-50%, 0);\n  display: flex;\n  flex-wrap: wrap;\n  width: 600px;\n  padding: 40px;\n  background: url(" + __webpack_require__(42) + ") center no-repeat;\n  background-size: 100%; }\n  #play .chessboard .square {\n    width: 40px;\n    height: 40px;\n    cursor: pointer; }\n    #play .chessboard .square, #play .chessboard .square i {\n      background-repeat: no-repeat;\n      background-position: center;\n      background-size: 100%; }\n    #play .chessboard .square i {\n      display: block;\n      width: 100%;\n      height: 100%; }\n    #play .chessboard .square.black i {\n      background-image: url(" + __webpack_require__(8) + "); }\n    #play .chessboard .square.white i {\n      background-image: url(" + __webpack_require__(9) + "); }\n  #play .chessboard.playing-black .square:hover {\n    background-image: url(" + __webpack_require__(41) + "); }\n  #play .chessboard.playing-white .square:hover {\n    background-image: url(" + __webpack_require__(43) + "); }\n  #play .chessboard .white:hover, #play .chessboard .black:hover,\n  #play .chessboard.forbidden .square:hover, #play .chessboard.forbidden .square:hover {\n    background: none !important;\n    cursor: not-allowed; }\n\n#play .time {\n  display: flex;\n  justify-content: space-around; }\n\n#play .player {\n  width: 30%;\n  height: 100%;\n  box-sizing: border-box;\n  padding: 80px 60px 50px 60px; }\n  #play .player .avatar {\n    width: 160px;\n    height: 160px;\n    margin: 30px auto;\n    background-size: 100%; }\n  #play .player .piece {\n    position: relative;\n    width: 150px;\n    height: 150px;\n    margin: 0 auto; }\n    #play .player .piece.white {\n      background-image: url(" + __webpack_require__(9) + "); }\n    #play .player .piece.black {\n      background-image: url(" + __webpack_require__(8) + "); }\n    #play .player .piece:after {\n      position: absolute;\n      top: 50%;\n      left: 50%;\n      width: 100%;\n      padding-top: 100%;\n      transform: translate(-50%, -50%);\n      display: block;\n      content: '';\n      background: url(" + __webpack_require__(2) + ") no-repeat center;\n      background-size: 100%;\n      opacity: 0;\n      transition: opacity 0.3s; }\n  #play .player.playing .piece:after {\n    opacity: 1; }\n  #play .player.player1 {\n    float: left; }\n  #play .player.player2 {\n    float: right; }\n  #play .player .player-handle {\n    text-align: center; }\n  #play .player .player-btn {\n    cursor: pointer; }\n    #play .player .player-btn.disabled {\n      opacity: 0.5;\n      cursor: not-allowed; }\n  #play .player.playing .avatar-1-1 {\n    background-image: url(" + __webpack_require__(19) + "); }\n  #play .player.playing .avatar-1-2 {\n    background-image: url(" + __webpack_require__(24) + "); }\n  #play .player.playing .avatar-2-1 {\n    background-image: url(" + __webpack_require__(29) + "); }\n  #play .player.playing .avatar-2-2 {\n    background-image: url(" + __webpack_require__(34) + "); }\n  #play .player.wait .avatar-1-1 {\n    background-image: url(" + __webpack_require__(20) + "); }\n  #play .player.wait .avatar-1-2 {\n    background-image: url(" + __webpack_require__(25) + "); }\n  #play .player.wait .avatar-2-1 {\n    background-image: url(" + __webpack_require__(30) + "); }\n  #play .player.wait .avatar-2-2 {\n    background-image: url(" + __webpack_require__(35) + "); }\n  #play .player.lose .avatar-1-1 {\n    background-image: url(" + __webpack_require__(18) + "); }\n  #play .player.lose .avatar-1-2 {\n    background-image: url(" + __webpack_require__(23) + "); }\n  #play .player.lose .avatar-2-1 {\n    background-image: url(" + __webpack_require__(28) + "); }\n  #play .player.lose .avatar-2-2 {\n    background-image: url(" + __webpack_require__(33) + "); }\n  #play .player.win .avatar-1-1 {\n    background-image: url(" + __webpack_require__(21) + "); }\n  #play .player.win .avatar-1-2 {\n    background-image: url(" + __webpack_require__(26) + "); }\n  #play .player.win .avatar-2-1 {\n    background-image: url(" + __webpack_require__(31) + "); }\n  #play .player.win .avatar-2-2 {\n    background-image: url(" + __webpack_require__(36) + "); }\n\n#play .gameover {\n  display: none;\n  position: absolute;\n  top: 0;\n  left: 0;\n  z-index: 100;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.1); }\n  #play .gameover .gameover-box {\n    width: 450px;\n    height: 150px;\n    position: absolute;\n    left: 50%;\n    top: 50%;\n    transform: translate(-50%, -50%);\n    background-image: url(" + __webpack_require__(7) + ");\n    padding: 20px;\n    background-size: 70%;\n    box-shadow: 5px 3px 8px rgba(0, 0, 0, 0.3); }\n    #play .gameover .gameover-box .gameover-msg {\n      font-size: 30px;\n      margin-bottom: 30px; }\n    #play .gameover .gameover-box .gameover-handle .gameover-btn {\n      margin: 20px;\n      font-size: 20px;\n      float: right;\n      cursor: pointer; }\n", ""]);
+exports.push([module.i, "/* RESET*/\nhtml, body, div, ul, ol, li, dl, dt, dd, h1, h2, h3, h4, h5, h6, pre, form, p, blockquote, fieldset, input, abbr, article, aside, command, details, figcaption, figure, footer, header, hgroup, mark, meter, nav, output, progress, section, summary, time {\n  margin: 0;\n  padding: 0; }\n\nh1, h2, h3, h4, h5, h6, pre, code, address, caption, cite, code, em, strong, th, figcaption {\n  font-size: 1em;\n  font-weight: normal;\n  font-style: normal; }\n\nfieldset, iframe {\n  border: none; }\n\ncaption, th {\n  text-align: left; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\narticle, aside, footer, header, hgroup, nav, section, figure, figcaption {\n  display: block; }\n\n/* LAYOUT */\n* {\n  margin: 0;\n  padding: 0; }\n\nhtml, body {\n  width: 100%;\n  height: 100%;\n  position: relative; }\n\nhtml {\n  background-color: #fff; }\n\n.clear {\n  clear: both; }\n\n.clearer {\n  clear: both;\n  display: block;\n  margin: 0;\n  padding: 0;\n  height: 0;\n  line-height: 1px;\n  font-size: 1px; }\n\n.selfclear {\n  zoom: 1; }\n\n.selfclear:after {\n  content: '.';\n  display: block;\n  height: 0;\n  clear: both;\n  visibility: hidden; }\n\nimg {\n  border: 0; }\n\na {\n  text-decoration: none;\n  color: #515151; }\n  a:focus {\n    outline: none; }\n\ni {\n  font-style: normal; }\n\nul, li {\n  list-style: none; }\n\nbody {\n  font: 14px/1.5 'microsoft yahei';\n  color: #515151; }\n\n.clearfix:after, .clearfix:before {\n  content: \"\";\n  display: table;\n  height: 0px;\n  clear: both;\n  visibility: hidden; }\n\n.clearfix {\n  *zoom: 1; }\n\n.fl {\n  float: left; }\n\n.fr {\n  float: right; }\n\n.br0 {\n  border: none; }\n\n.key-color {\n  color: #333; }\n\n.maim-color {\n  color: #666; }\n\n.auxiliary-color {\n  color: #999; }\n\n@font-face {\n  font-family: \"ziti\";\n  src: url(" + __webpack_require__(6) + ");\n  /* IE9 */\n  src: url(" + __webpack_require__(6) + "?#iefix) format(\"embedded-opentype\"), url(" + __webpack_require__(17) + ") format(\"woff\"), url(" + __webpack_require__(16) + ") format(\"truetype\"), url(" + __webpack_require__(15) + "#ziti) format(\"svg\");\n  /* iOS 4.1- */\n  font-style: normal;\n  font-weight: normal; }\n\nbody {\n  font-family: \"ziti\";\n  font-size: 30px;\n  color: #000; }\n\n.container {\n  width: 1368px;\n  height: 768px;\n  overflow: hidden;\n  background: url(" + __webpack_require__(40) + ") no-repeat;\n  background-size: 100%; }\n\n.pic {\n  background-position: center;\n  background-repeat: no-repeat;\n  background-size: 100%; }\n\n.btn {\n  display: inline-block;\n  font-size: 30px;\n  padding: 10px;\n  border: 1px solid #666; }\n\n.pointer {\n  cursor: pointer; }\n\n.show {\n  display: block !important; }\n\n.page {\n  display: none;\n  position: relative;\n  width: 100%;\n  height: 100%; }\n\n.page.show {\n  display: block; }\n\n.avatar-1-1 {\n  background-image: url(" + __webpack_require__(22) + "); }\n\n.avatar-1-2 {\n  background-image: url(" + __webpack_require__(27) + "); }\n\n.avatar-2-1 {\n  background-image: url(" + __webpack_require__(32) + "); }\n\n.avatar-2-2 {\n  background-image: url(" + __webpack_require__(37) + "); }\n\n.avatar-robot {\n  background-image: url(" + __webpack_require__(38) + "); }\n\n#avatar h1 {\n  font-size: 50px;\n  padding: 50px 80px; }\n\n#avatar .avatar-select {\n  display: flex;\n  width: 90%;\n  margin: 0 auto;\n  justify-content: space-around;\n  padding: 10px;\n  border: 1px solid rgba(0, 0, 0, 0.2); }\n\n#avatar .avatars {\n  margin-top: 30px; }\n\n#avatar .avatar {\n  position: relative;\n  display: inline-block;\n  width: 200px;\n  height: 200px;\n  margin: 30px; }\n  #avatar .avatar.selected:after {\n    position: absolute;\n    top: 50%;\n    left: 50%;\n    width: 100%;\n    padding-top: 100%;\n    transform: translate(-50%, -50%);\n    display: block;\n    content: '';\n    background: url(" + __webpack_require__(2) + ") no-repeat center;\n    background-size: 100%; }\n\n#avatar .select-ok {\n  float: right;\n  margin-top: 80px;\n  margin-right: 60px; }\n\n#gate .gate-select {\n  padding: 120px 0 0 450px; }\n  #gate .gate-select h2 {\n    font-size: 50px;\n    padding: 10px; }\n\n#gate .options {\n  width: 600px;\n  height: 160px; }\n  #gate .options .option {\n    float: left;\n    position: relative;\n    width: 130px;\n    height: 50px;\n    line-height: 50px;\n    margin: 10px;\n    text-align: center; }\n    #gate .options .option.selected:after {\n      position: absolute;\n      top: 50%;\n      left: 50%;\n      width: 100%;\n      padding-top: 100%;\n      transform: translate(-50%, -50%);\n      display: block;\n      content: '';\n      background: url(" + __webpack_require__(2) + ") no-repeat center;\n      background-size: 100%; }\n\n#gate .back {\n  position: absolute;\n  top: 30px;\n  left: 60px;\n  width: 80px;\n  height: 80px;\n  background-image: url(" + __webpack_require__(39) + "); }\n\n#play .confirm {\n  display: none;\n  position: absolute;\n  top: 0;\n  left: 0;\n  z-index: 100;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.1); }\n  #play .confirm .confirm-box {\n    width: 450px;\n    height: 150px;\n    position: absolute;\n    left: 50%;\n    top: 50%;\n    transform: translate(-50%, -50%);\n    padding: 20px;\n    background-size: 70%;\n    box-shadow: 5px 3px 8px rgba(0, 0, 0, 0.3);\n    background-image: url(" + __webpack_require__(7) + "); }\n    #play .confirm .confirm-box .confirm-msg {\n      font-size: 30px;\n      margin-bottom: 30px; }\n    #play .confirm .confirm-box .confirm-handle {\n      display: none; }\n      #play .confirm .confirm-box .confirm-handle .confirm-btn {\n        margin: 20px;\n        font-size: 20px;\n        float: right;\n        cursor: pointer; }\n\n#play .chessboard {\n  position: absolute;\n  left: 50%;\n  top: 3%;\n  transform: translate(-50%, 0);\n  display: flex;\n  flex-wrap: wrap;\n  width: 600px;\n  padding: 40px;\n  background: url(" + __webpack_require__(42) + ") center no-repeat;\n  background-size: 100%; }\n  #play .chessboard .square {\n    width: 40px;\n    height: 40px;\n    cursor: pointer; }\n    #play .chessboard .square, #play .chessboard .square i {\n      background-repeat: no-repeat;\n      background-position: center;\n      background-size: 100%; }\n    #play .chessboard .square i {\n      display: block;\n      width: 100%;\n      height: 100%; }\n    #play .chessboard .square.black i {\n      background-image: url(" + __webpack_require__(8) + "); }\n    #play .chessboard .square.white i {\n      background-image: url(" + __webpack_require__(9) + "); }\n  #play .chessboard.playing-black .square:hover {\n    background-image: url(" + __webpack_require__(41) + "); }\n  #play .chessboard.playing-white .square:hover {\n    background-image: url(" + __webpack_require__(43) + "); }\n  #play .chessboard .white:hover, #play .chessboard .black:hover,\n  #play .chessboard.forbidden .square:hover, #play .chessboard.forbidden .square:hover {\n    background: none !important;\n    cursor: not-allowed; }\n\n#play .time {\n  display: flex;\n  justify-content: space-around;\n  line-height: 40px; }\n  #play .time .time-total {\n    font-size: 40px; }\n\n#play .player {\n  width: 30%;\n  height: 100%;\n  box-sizing: border-box;\n  padding: 80px 60px 50px 60px; }\n  #play .player .avatar {\n    width: 160px;\n    height: 160px;\n    margin: 30px auto;\n    background-size: 100%; }\n  #play .player .piece {\n    position: relative;\n    width: 150px;\n    height: 150px;\n    margin: 0 auto; }\n    #play .player .piece.white {\n      background-image: url(" + __webpack_require__(9) + "); }\n    #play .player .piece.black {\n      background-image: url(" + __webpack_require__(8) + "); }\n    #play .player .piece:after {\n      position: absolute;\n      top: 50%;\n      left: 50%;\n      width: 100%;\n      padding-top: 100%;\n      transform: translate(-50%, -50%);\n      display: block;\n      content: '';\n      background: url(" + __webpack_require__(2) + ") no-repeat center;\n      background-size: 100%;\n      opacity: 0;\n      transition: opacity 0.3s; }\n  #play .player.playing .piece:after {\n    opacity: 1; }\n  #play .player.player1 {\n    float: left; }\n  #play .player.player2 {\n    float: right; }\n  #play .player .player-handle {\n    text-align: center; }\n  #play .player .player-btn {\n    cursor: pointer; }\n    #play .player .player-btn.disabled {\n      opacity: 0.5;\n      cursor: not-allowed; }\n  #play .player.playing .avatar-1-1 {\n    background-image: url(" + __webpack_require__(19) + "); }\n  #play .player.playing .avatar-1-2 {\n    background-image: url(" + __webpack_require__(24) + "); }\n  #play .player.playing .avatar-2-1 {\n    background-image: url(" + __webpack_require__(29) + "); }\n  #play .player.playing .avatar-2-2 {\n    background-image: url(" + __webpack_require__(34) + "); }\n  #play .player.wait .avatar-1-1 {\n    background-image: url(" + __webpack_require__(20) + "); }\n  #play .player.wait .avatar-1-2 {\n    background-image: url(" + __webpack_require__(25) + "); }\n  #play .player.wait .avatar-2-1 {\n    background-image: url(" + __webpack_require__(30) + "); }\n  #play .player.wait .avatar-2-2 {\n    background-image: url(" + __webpack_require__(35) + "); }\n  #play .player.lose .avatar-1-1 {\n    background-image: url(" + __webpack_require__(18) + "); }\n  #play .player.lose .avatar-1-2 {\n    background-image: url(" + __webpack_require__(23) + "); }\n  #play .player.lose .avatar-2-1 {\n    background-image: url(" + __webpack_require__(28) + "); }\n  #play .player.lose .avatar-2-2 {\n    background-image: url(" + __webpack_require__(33) + "); }\n  #play .player.win .avatar-1-1 {\n    background-image: url(" + __webpack_require__(21) + "); }\n  #play .player.win .avatar-1-2 {\n    background-image: url(" + __webpack_require__(26) + "); }\n  #play .player.win .avatar-2-1 {\n    background-image: url(" + __webpack_require__(31) + "); }\n  #play .player.win .avatar-2-2 {\n    background-image: url(" + __webpack_require__(36) + "); }\n\n#play .gameover {\n  display: none;\n  position: absolute;\n  top: 0;\n  left: 0;\n  z-index: 100;\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.1); }\n  #play .gameover .gameover-box {\n    width: 450px;\n    height: 150px;\n    position: absolute;\n    left: 50%;\n    top: 50%;\n    transform: translate(-50%, -50%);\n    background-image: url(" + __webpack_require__(7) + ");\n    padding: 20px;\n    background-size: 70%;\n    box-shadow: 5px 3px 8px rgba(0, 0, 0, 0.3); }\n    #play .gameover .gameover-box .gameover-msg {\n      font-size: 30px;\n      margin-bottom: 30px; }\n    #play .gameover .gameover-box .gameover-handle .gameover-btn {\n      margin: 20px;\n      font-size: 20px;\n      float: right;\n      cursor: pointer; }\n", ""]);
 
 // exports
 
@@ -1132,7 +1132,7 @@ class AvatarStage extends __WEBPACK_IMPORTED_MODULE_1__stage_js__["a" /* default
     }
 
 
-    handleActorBroadcast() {
+    handleActorDispatch() {
         return {
             selectAvatar: (selected)=>{
                 __WEBPACK_IMPORTED_MODULE_0_Src_js_global_data_js__["a" /* globalData */].player1.avatar = selected.player1Avatar;
@@ -1181,7 +1181,7 @@ class AvatarSelectorActor extends __WEBPACK_IMPORTED_MODULE_0__actor_js__["a" /*
 
     selectAvatar(selected) {
         // console.log(selected);
-        this.broadcast('selectAvatar', selected);
+        this.dispatch('selectAvatar', selected);
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = AvatarSelectorActor;
@@ -1211,7 +1211,7 @@ class PlayStage extends __WEBPACK_IMPORTED_MODULE_0__stage_js__["a" /* default *
     }
 
 
-    handleActorBroadcast() {
+    handleActorDispatch() {
         return {
             doSetting: (setting)=>{
                 this.game.goToStage('play', setting);
@@ -1257,13 +1257,13 @@ class SettingActor extends __WEBPACK_IMPORTED_MODULE_0__actor_js__["a" /* defaul
                 this.doSetting(setting);
             },
             'back': () => {
-                this.broadcast('back');
+                this.dispatch('back');
             }
         }
     }
 
     doSetting(setting) {
-        this.broadcast('doSetting', setting);
+        this.dispatch('doSetting', setting);
     }
 
     makeWidgetData() {
@@ -1312,7 +1312,7 @@ class ChessboardActor extends __WEBPACK_IMPORTED_MODULE_0__actor_js__["a" /* def
         }
     }
 
-    handleStageDispatch() {
+    handleStageBoardcast() {
         return {
             setPlaying: (playingActor)=>{
                 this.playingActor = playingActor;
@@ -1456,7 +1456,7 @@ class ControlerActor extends __WEBPACK_IMPORTED_MODULE_0__actor_js__["a" /* defa
         super.init();
     }
 
-    handleStageDispatch() {
+    handleStageBoardcast() {
         return {
             start: ()=>{
                 
@@ -1471,10 +1471,10 @@ class ControlerActor extends __WEBPACK_IMPORTED_MODULE_0__actor_js__["a" /* defa
     handleWidgetEvent() {
         return {
             restart: ()=>{
-                this.broadcast('restart');
+                this.dispatch('restart');
             },
             back: ()=>{
-                this.broadcast('back');
+                this.dispatch('back');
             }
         }
     }
@@ -1547,7 +1547,7 @@ class PlayStage extends __WEBPACK_IMPORTED_MODULE_2__stage_js__["a" /* default *
         this.controlerActor = this.createActor('Controler');
     }
 
-    handleActorBroadcast() {
+    handleActorDispatch() {
         return {
             // 下子
             putPiece: (data)=>{
@@ -1709,14 +1709,14 @@ class PlayStage extends __WEBPACK_IMPORTED_MODULE_2__stage_js__["a" /* default *
 
         this.controlerActor.showMsg('重新分配黑白子...', 1000, ()=>{
             this.setPlaying(playingActor); // 黑子先走
-            this.dispatch('start');
+            this.broadcast('start');
             this.unlock();
         });
     }
 
     setPlaying(playingActor) {
         this.playingActor = playingActor;
-        this.dispatch('setPlaying', this.playingActor, this.chessboradActor.getChessboardData(), this.pieceStack);
+        this.broadcast('setPlaying', this.playingActor, this.chessboradActor.getChessboardData(), this.pieceStack);
     }
 
     getOtherPlayer(player) {
@@ -1729,16 +1729,16 @@ class PlayStage extends __WEBPACK_IMPORTED_MODULE_2__stage_js__["a" /* default *
 
     // 执行确认操作时，需要锁定游戏
     lock() {
-        this.dispatch('lock');
+        this.broadcast('lock');
     }
 
     unlock() {
-        this.dispatch('unlock');
+        this.broadcast('unlock');
     }
 
     gameover(overData) {
         this.lock();
-        this.dispatch('gameover', overData);
+        this.broadcast('gameover', overData);
     }
 
 
@@ -1770,7 +1770,7 @@ class RobotActor extends __WEBPACK_IMPORTED_MODULE_0__player_actor_js__["a" /* d
         this.widget.init(this.role, this.isRobot); 
     }
 
-    handleStageDispatch() {
+    handleStageBoardcast() {
         return {
             setPlaying: (playingActor, chessboardData, pieceStack) => {
                 this.myTurn = playingActor === this;
@@ -1850,7 +1850,7 @@ class ControlerActor extends __WEBPACK_IMPORTED_MODULE_0__actor_js__["a" /* defa
         this.limitTime = limitTime;
     }
 
-    handleStageDispatch() {
+    handleStageBoardcast() {
         return {
             setPlaying: (playingActor)=>{
                 this.playingPlayer = playingActor.role;
@@ -1908,7 +1908,7 @@ class ControlerActor extends __WEBPACK_IMPORTED_MODULE_0__actor_js__["a" /* defa
     }
 
     timeup() {
-        this.broadcast('timeup', this.playerTime);
+        this.dispatch('timeup', this.playerTime);
     }
 
     startTick() {
@@ -2230,6 +2230,8 @@ class SettingWidget extends __WEBPACK_IMPORTED_MODULE_0__widget_js__["a" /* defa
         [...this.eTime].forEach((t)=>{
             t.classList.remove('selected');
         });
+        this.time = 5;
+        this.eTime[0].classList.add('selected');
     }
 
 

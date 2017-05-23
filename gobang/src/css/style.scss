@@ -275,6 +275,10 @@ body {
     .time {
         display: flex;
         justify-content: space-around;
+        line-height: 40px;
+        .time-total {
+            font-size: 40px;
+        }
     }
     
     .player {
