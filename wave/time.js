@@ -1,4 +1,4 @@
-// import TWEEN from 'tween.js';
+import TWEEN from 'tween.js';
 
 /* 时间 */
 var TIME = {
@@ -154,5 +154,5 @@ for (let i = 0; i < 10000; i+=100) {
 }
 
 
-// export {TIME, Time};
+export {TIME, Time, TWEEN};
 
