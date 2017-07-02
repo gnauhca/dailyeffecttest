@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Simple three.js brightness shader</title>
+		<meta charset="utf-8">
+		<style>
+			body {
+				background-color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			#info {
+				color: #fff;
+				position: absolute;
+				bottom: 20px;
+				padding: 5px 20px;
+				font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+				font-weight: 100;
+				font-size: 18px;
+				background-color: #000;
+			}
+
+			a{
+				color: #DDD;				
+			}
+			
+		</style>
+	</head>
+	<body>
+
+		<div id="info">Simple three.js brightness shader. <a href="http://www.airtightinteractive.com/?p=1306">View Blog Post</a>.</div>
+		<div id="container"></div>
+
+		<!-- Include latest three code directly from github -->
+		<script src="../js/three.min.js"></script>
+		<script src='../js/libs/dat.gui.min.js'></script>
+		<script src="../js/libs/stats.min.js"></script>
+		<script src="../js/postprocessing/EffectComposer.js"></script>
+		<script src="../js/postprocessing/RenderPass.js"></script>
+		<script src="../js/postprocessing/ShaderPass.js"></script>
+		<script src="../js/postprocessing/MaskPass.js"></script> 
+		<script src="../js/shaders/CopyShader.js"></script>
+
+		<!-- Load Test Shader -->
+		<script src="TestShader.js"></script>
+
+
+		<script>
+
+			//Simple three.js brightness shader.
+			//Using Three.js r.55
+			//by Felix Turner - www.airtight.cc
+
+			var camera, scene, renderer;
+			var composer;
+			var cube;
+			var testParams, testPass;			
+			init();
+			animate();
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 20, 3000);
+				camera.position.z = 1000;
+
+				scene = new THREE.Scene();
+
+				//Create an image texture
+				var imgTexture = THREE.ImageUtils.loadTexture( "../img/sky.jpeg" );
+				var imgMaterial = new THREE.MeshBasicMaterial( { 
+					map : imgTexture
+				} );
+
+				//create plane
+				var geometry = new THREE.PlaneGeometry(1800*2, 1600,1,1);
+				var plane = new THREE.Mesh(geometry, imgMaterial);
+				scene.add(plane);
+				plane.position.z = - 500;
+
+				
+				//Create an image texture
+				var imgTexture2 = THREE.ImageUtils.loadTexture( "../img/testcard.jpg" );
+				var imgMaterial2 = new THREE.MeshBasicMaterial( { 
+					map : imgTexture2
+				} );
+
+				//create cube
+				var geometry = new THREE.CubeGeometry(500, 500, 500);
+				cube = new THREE.Mesh(geometry, imgMaterial2);
+				scene.add(cube);
+				
+				//init renderer
+				renderer = new THREE.WebGLRenderer({});
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				//add stats
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+
+				document.body.appendChild( renderer.domElement );
+
+				//POST PROCESSING
+				//Create Effects Composer
+				composer = new THREE.EffectComposer( renderer);
+				//Create Shader Passes
+				var renderPass = new THREE.RenderPass( scene, camera );
+				testPass = new THREE.ShaderPass( THREE.TestShader );
+				//Add Shader Passes to Composer - order is important
+				composer.addPass( renderPass );
+				composer.addPass( testPass );
+				//set last pass in composer chain to renderToScreen
+				testPass.renderToScreen = true;
+
+				//Init DAT GUI control panel
+				testParams = {
+					amount: 1.0
+				}
+
+				var gui = new dat.GUI();
+				gui.add(testParams, 'amount', 0, 4).step(0.1).onChange(onParamsChange);
+				onParamsChange();
+			}
+
+			function onParamsChange() {
+				//copy gui params into shader uniforms
+				testPass.uniforms[ "amount" ].value = testParams.amount;
+			}
+
+			function animate() {
+				requestAnimationFrame( animate );
+				cube.rotation.y -= 0.01;
+				cube.rotation.x += 0.005;
+				composer.render( 0.1);
+				stats.update();
+			}
+
+		</script>
+	</body>
+</html>
