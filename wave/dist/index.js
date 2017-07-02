@@ -318,10 +318,10 @@
 	    color: 0x3062ff,
 	    opacity: 0.8,
 	    position: new _three2.default.Vector3(),
-	    xCount: 200,
-	    zCount: 200,
-	    xDis: 160, // x 宽
-	    zDis: 160, // z 宽
+	    xCount: 300,
+	    zCount: 300,
+	    xDis: 200, // x 宽
+	    zDis: 200, // z 宽
 	    size: 0.6, // 点大小
 	    frequency1: 0.03,
 	    frequency2: 0.06,
@@ -344,16 +344,16 @@
 	    position: new _three2.default.Vector3(0, 6, -50),
 	    xCount: 200,
 	    zCount: 200,
-	    xDis: 160, // x 宽
-	    zDis: 160, // z 宽
+	    xDis: 200, // x 宽
+	    zDis: 200, // z 宽
 	    size: 0.4, // 点大小
 	    frequency1: 0.06,
 	    frequency2: 0.052,
 	
-	    maxWaveHeight1: 6,
-	    minWaveHeight1: 3,
-	    maxWaveHeight2: 4,
-	    minWaveHeight2: 2,
+	    maxWaveHeight1: 8,
+	    minWaveHeight1: 4,
+	    maxWaveHeight2: 6,
+	    minWaveHeight2: 4,
 	
 	    initOffset1: 0,
 	    initOffset2: 0,
