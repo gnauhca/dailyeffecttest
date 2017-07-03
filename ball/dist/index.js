@@ -46,13 +46,19 @@
 
 	'use strict';
 	
-	var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _vec = __webpack_require__(1);
 	
-	var _time = __webpack_require__(6);
+	var _time = __webpack_require__(2);
+	
+	var _stats = __webpack_require__(5);
+	
+	var _stats2 = _interopRequireDefault(_stats);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
@@ -60,178 +66,74 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	__webpack_require__(2);
+	var stats = new _stats2.default();
+	stats.showPanel(1); // 0: fps, 1: ms, 2: mb, 3+: custom
+	document.body.appendChild(stats.dom);
 	
-	var objs = [];
-	var balls = [];
-	var connections = [];
+	var obstruction = 0.1; // 空气阻力
+	var bigRaduis = 15;
+	var smallRaduis = 10;
 	
-	var obstruction = 0.1; // 物体每过一秒损失速度
-	
-	var C = 0;
-	
-	var Obj = function () {
-	    function Obj() {
-	        var ttl = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-	
-	        _classCallCheck(this, Obj);
-	
-	        this.isDie = false;
-	        this.ttl = ttl;
-	        this.dieTtl = 100000;
-	        this.maxBlur = 5; // 5px
-	        this.opacity;
-	        this.blur;
-	        objs.push(this);
-	    }
-	
-	    _createClass(Obj, [{
-	        key: 'update',
-	        value: function update(delta) {
-	            this.ttl += delta;
-	            if (this.ttl >= this.dieTtl) {
-	                this.ttl = this.dieTtl;
-	                this.die();
-	                return false;
-	            }
-	            this.opacity = (this.dieTtl - this.ttl) / this.dieTtl;
-	            this.blur = (1 - this.opacity) * this.maxBlur;
-	        }
-	    }, {
-	        key: 'die',
-	        value: function die() {
-	            this.isDie = true;
-	            objs.splice(balls.indexOf(this), 1);
-	        }
-	    }]);
-	
-	    return Obj;
-	}();
-	
-	var Ball = function (_Obj) {
-	    _inherits(Ball, _Obj);
-	
+	var Ball = function () {
 	    function Ball(options) {
 	        _classCallCheck(this, Ball);
 	
-	        var _this = _possibleConstructorReturn(this, (Ball.__proto__ || Object.getPrototypeOf(Ball)).call(this, options.initTtl));
-	
-	        _this.aid = C++;
 	        var defaults = {
-	            radius: 20,
-	            initTtl: 0, // 寿命值
 	            initPosition: new _vec.Vector2(),
-	            a: new _vec.Vector2(), // 加速度 v/s Vec2
-	            aTime: 1000, // 加速时间
-	            breakTtl: 0, // 分裂时间
+	            radius: 15,
 	            initV: new _vec.Vector2() // 初始速度
 	        };
 	
 	        for (var key in defaults) {
 	            options[key] = options[key] || defaults[key];
 	        }
-	        _this.position = options.initPosition;
-	        _this.v = options.initV;
-	        _this.aTimePass = 0;
+	        this.position = options.initPosition.clone();
+	        this.v = options.initV;
+	        this.a = new _vec.Vector2(); // 加速度
 	
-	        _this.leaveTtl; // 与对方球分开的时间
-	
-	        _this.options = options;
-	        balls.push(_this);
-	        return _this;
+	        this.options = options;
 	    }
 	
 	    _createClass(Ball, [{
-	        key: 'break',
-	        value: function _break() {
-	            var breakA1 = new _vec.Vector2(-4, -4);
-	            // let breakA1 = new Vec2(Math.random(), Math.random()).setLength(Math.random() * 10);
-	            var breakA2 = breakA1.clone().multiplyScalar(-1);
-	
-	            var ball1 = new Ball({
-	                radius: 15,
-	                initTtl: this.ttl, // 寿命值
-	                initPosition: this.position.clone(),
-	                a: breakA1, // 加速度 v/s Vec2
-	                aTime: 1000, // 加速时间
-	                breakTtl: this.ttl + 8000, // 分裂时间
-	                initV: this.v.clone() // 初始速度
-	            });
-	            var ball2 = new Ball({
-	                radius: 10,
-	                initTtl: this.ttl, // 寿命值
-	                initPosition: this.position.clone(),
-	                a: breakA2, // 加速度 v/s Vec2
-	                aTime: 1000, // 加速时间
-	                breakTtl: 0, // 分裂时间
-	                initV: this.v.clone() // 初始速度
-	            });
-	
-	            var connection = new Connection(ball1, ball2, this.ttl);
-	
-	            this.die();
-	        }
-	    }, {
-	        key: 'leaveFromOtherBall',
-	        value: function leaveFromOtherBall() {
-	            this.leaveTtl = this.ttl;
-	        }
-	    }, {
 	        key: 'update',
 	        value: function update(delta) {
-	            _get(Ball.prototype.__proto__ || Object.getPrototypeOf(Ball.prototype), 'update', this).call(this, delta);
-	
-	            if (this.isDie) return;
 	
 	            var second = delta * 0.001;
 	            var options = this.options;
 	
-	            this.aTimePass += delta;
-	            if (this.aTimePass <= options.aTime) {
-	                this.v.add(this.options.a.clone().multiplyScalar(second));
-	            }
-	
-	            if (options.radius >= 15 && this.ttl > options.breakTtl) {
-	                // 分裂
-	                this.break();
-	            }
+	            this.v.add(this.a.clone().multiplyScalar(second));
 	
 	            this.v.sub(this.v.clone().setLength(obstruction * second)); // 阻力减速
 	            this.position.add(this.v.clone().multiplyScalar(second));
+	            // console.log(this.position);
 	        }
 	    }, {
 	        key: 'draw',
-	        value: function draw(ctx) {
+	        value: function draw(ctx, opacity, blur) {
+	
 	            var options = this.options;
+	
+	            opacity = Math.min(opacity, 1);
 	
 	            ctx.save();
 	
-	            ctx.shadowColor = 'red';
-	            ctx.shadowBlur = this.blur;
-	            ctx.globalAlpha = this.opacity;
+	            // ctx.shadowColor = 'red';
+	            // ctx.shadowBlur = this.blur;
+	            ctx.globalAlpha = opacity;
 	            ctx.fillStyle = 'red';
 	
 	            ctx.beginPath();
 	            ctx.arc(this.position.x, this.position.y, options.radius, 0, Math.PI * 2);
 	            ctx.fill();
 	
-	            var grd = ctx.createRadialGradient(this.position.x, this.position.y, 0, this.position.x, this.position.y, options.radius * 0.8);
-	            grd.addColorStop(0, 'rgba(255,0,255,0.3)');
-	            grd.addColorStop(1, 'rgba(255,0,255,0)');
-	
 	            // 中间透明
-	            var mOpacity = 0;
-	            if (typeof this.leaveTtl !== 'undefined') {
-	                if (this.options.breakTtl) {
-	                    // 此球还会分裂
-	                    var mOpacityHalfTtl = (this.options.breakTtl - this.leaveTtl) * 0.5;
-	                    mOpacity = (mOpacityHalfTtl - Math.abs(this.ttl - this.leaveTtl - mOpacityHalfTtl)) / mOpacityHalfTtl;
-	                } else {
-	                    // 此球不会分裂
-	                    mOpacity = (this.ttl - this.leaveTtl) / (this.dieTtl - this.leaveTtl);
-	                }
-	                // console.log(mOpacity);
-	                ctx.globalAlpha = mOpacity;
+	
+	            if (_typeof(this.isBreakBall)) {
+	                var grd = ctx.createRadialGradient(this.position.x, this.position.y, 0, this.position.x, this.position.y, options.radius * 0.8);
+	                grd.addColorStop(0, 'rgba(255,0,255,0.3)');
+	                grd.addColorStop(1, 'rgba(255,0,255,0)');
+	
+	                ctx.globalAlpha = opacity * 0.5;
 	                ctx.globalCompositeOperation = 'destination-out';
 	                ctx.fillStyle = grd;
 	                ctx.beginPath();
@@ -244,56 +146,31 @@
 	    }, {
 	        key: 'die',
 	        value: function die() {
-	            _get(Ball.prototype.__proto__ || Object.getPrototypeOf(Ball.prototype), 'die', this).call(this);
-	            // console.log(balls.length);
-	            balls.splice(balls.indexOf(this), 1);
+	            //
 	        }
 	    }]);
 	
 	    return Ball;
-	}(Obj);
+	}();
 	
-	var Connection = function (_Obj2) {
-	    _inherits(Connection, _Obj2);
-	
-	    function Connection(ball1, ball2, ttl) {
+	var Connection = function () {
+	    function Connection(ball1, ball2) {
 	        _classCallCheck(this, Connection);
 	
-	        var _this2 = _possibleConstructorReturn(this, (Connection.__proto__ || Object.getPrototypeOf(Connection)).call(this, ttl));
+	        this.maxDis = (ball1.options.radius + ball2.options.radius) * 1.5;
 	
-	        _this2.maxDis = (ball1.options.radius + ball2.options.radius) * 1.5;
+	        this.isDie = false;
 	
-	        _this2.ball1 = ball1;
-	        _this2.ball2 = ball2;
-	
-	        // ball1.connection = this;
-	        // ball2.connection = this;
-	
-	        // ball1.otherBall = ball2;
-	        // ball2.otherBall = ball1;
-	
-	        _this2.dieTtl = ttl + 4000;
-	
-	        connections.push(_this2);
-	        return _this2;
+	        this.isSeparate = false;
+	        this.ball1 = ball1;
+	        this.ball2 = ball2;
 	    }
 	
 	    _createClass(Connection, [{
 	        key: 'update',
 	        value: function update() {
-	            var dis = new _vec.Vector2().subVectors(this.ball1.position, this.ball2.position);
-	            var disLength = dis.length();
-	
-	            // console.log(this.ball1.leaveTtl, disLength, this.ball1.options.radius + this.ball2.options.radius);
-	            if (!this.leaveTtl && disLength > this.ball1.options.radius + this.ball2.options.radius) {
-	                this.ball1.leaveFromOtherBall();
-	                this.ball2.leaveFromOtherBall();
-	            }
-	            if (this.ball1.isDie || this.ball2.isDie || disLength > this.maxDis) {
-	                //disLength >= this.maxDis) {
-	                this.isDie || this.die();
-	                return false;
-	            }
+	            this.isSeparate = this.isSeparate || new _vec.Vector2().subVectors(this.ball1.position, this.ball2.position).length() > this.ball1.options.radius + this.ball2.options.radius + 10;
+	            // console.log(this.isSeparate);
 	        }
 	    }, {
 	        key: 'calPoints',
@@ -349,14 +226,14 @@
 	        }
 	    }, {
 	        key: 'draw',
-	        value: function draw(ctx) {
-	            var keyPoints = this.calPoints(this.ball1.position, this.ball1.options.radius, this.ball2.position, this.ball2.options.radius, 0.3, 5.4, this.maxDis);
+	        value: function draw(ctx, opacity, blur) {
+	            var keyPoints = this.calPoints(this.ball1.position.clone(), this.ball1.options.radius, this.ball2.position.clone(), this.ball2.options.radius, 0.3, 5.4, this.maxDis);
 	
 	            ctx.save();
 	            if (keyPoints) {
-	                ctx.shadowColor = 'red';
-	                ctx.shadowBlur = this.blur;
-	                ctx.globalAlpha = this.opacity;
+	                // ctx.shadowColor = 'red';
+	                // ctx.shadowBlur = this.blur;
+	                ctx.globalAlpha = opacity;
 	                ctx.globalCompositeOperation = 'source-over';
 	                ctx.fillStyle = 'red';
 	                ctx.beginPath();
@@ -373,19 +250,157 @@
 	    }, {
 	        key: 'die',
 	        value: function die() {
-	            _get(Connection.prototype.__proto__ || Object.getPrototypeOf(Connection.prototype), 'die', this).call(this);
-	            this.ball1.connection = null;
-	            this.ball2.connection = null;
-	            connections.splice(connections.indexOf(this), 1);
+	            this.isDie = true;
+	            this.ball1 = null;
+	            this.ball2 = null;
 	        }
 	    }]);
 	
 	    return Connection;
-	}(Obj);
+	}();
 	
-	var Gradient = function Gradient() {
-	    _classCallCheck(this, Gradient);
-	};
+	var BreakBall = function () {
+	    function BreakBall(options) {
+	        _classCallCheck(this, BreakBall);
+	
+	        var defaults = {
+	            maxOpacity: 1,
+	
+	            bornPos: new _vec.Vector2(),
+	            bornA: new _vec.Vector2(5, 5), // 出生加速
+	            bornADur: 1000, // 出生加速时间
+	
+	            breakTime: 2000, // 分裂时间
+	            breakA: 5, // 标量，方向在运行的时候确定
+	            breakADur: 1000, // 分裂加速时间
+	            dieTime: 5000 // 消亡时间
+	        };
+	
+	        for (var key in defaults) {
+	            options[key] = options[key] || defaults[key];
+	        }
+	        this.options = options;
+	
+	        // 0 born
+	        // 1 a done
+	        // 2 break
+	        // 3 break a done
+	        // 4 die
+	        this.status = 0;
+	
+	        this.timePass = 0;
+	        this.separateTime = 0;
+	        this.opacity = 1;
+	
+	        this.ball1Radius = bigRaduis * (1.2 - Math.random() * 0.4);
+	        this.ball2Radius = smallRaduis * (1.2 - Math.random() * 0.4);
+	
+	        this.ball1 = new Ball({
+	            initPosition: options.bornPos.clone(),
+	            radius: this.ball1Radius,
+	            initV: new _vec.Vector2() // 初始速度
+	        });
+	        this.ball1.a = options.bornA;
+	        this.ball2;
+	        this.connection;
+	    }
+	
+	    _createClass(BreakBall, [{
+	        key: 'update',
+	        value: function update(delta) {
+	            var options = this.options;
+	            var second = delta / 1000;
+	            var opacity = 1;
+	
+	            this.timePass += delta;
+	
+	            switch (this.status) {
+	                case 0:
+	                    if (this.timePass < options.bornADur) {
+	                        opacity = this.timePass / options.bornADur;
+	                    } else {
+	                        this.status = 1;
+	                        this.ball1.a = new _vec.Vector2();
+	                    }
+	                    break;
+	                case 1:
+	                    if (this.timePass >= options.breakTime) {
+	                        this.status = 2;
+	                        this.break(); // 生成 ball2, 设置分裂加速度
+	                    }
+	                    break;
+	                case 2:
+	                    // console.log(this.ball1.v, this.ball2.v);
+	                    // console.log(this.ball1.v, this.ball2.v);
+	                    // console.log(this.ball1.position, this.ball2.position);
+	                    if (this.timePass >= options.breakTime + options.breakADur) {
+	                        this.status = 3;
+	                        this.ball1.a = new _vec.Vector2();
+	                        this.ball2.a = new _vec.Vector2();
+	                    }
+	                    break;
+	                case 3:
+	                    if (!this.separateTime && this.connection.isSeparate) {
+	                        this.separateTime = this.timePass;
+	                    }
+	                    if (this.separateTime) {
+	                        if (this.timePass < this.separateTime + this.options.destoryDur) {
+	                            opacity = 1 - (this.timePass - this.separateTime) / this.options.destoryDur;
+	                        } else {
+	                            this.status = 4;
+	                            this.die();
+	                        }
+	                    }
+	                    break;
+	            }
+	
+	            // console.log(this.status, opacity);
+	            this.opacity = Math.min(opacity, 1) * this.options.maxOpacity;
+	
+	            this.ball1 && this.ball1.update(delta);
+	            this.ball2 && this.ball2.update(delta);
+	            this.connection && !this.connection.isDie && this.connection.update(delta);
+	        }
+	    }, {
+	        key: 'draw',
+	        value: function draw(ctx) {
+	            this.ball1 && this.ball1.draw(ctx, this.opacity, this.blur);
+	            this.ball2 && this.ball2.draw(ctx, this.opacity, this.blur);
+	            this.connection && !this.isDie && this.connection.draw(ctx, this.opacity, this.blur);
+	        }
+	    }, {
+	        key: 'break',
+	        value: function _break() {
+	            this.ball2 = new Ball({
+	                initPosition: this.ball1.position,
+	                radius: this.ball2Radius,
+	                initV: new _vec.Vector2() // 初始速度            
+	            });
+	
+	            var breakA1 = new _vec.Vector2(Math.random(), Math.random());
+	            breakA1.setLength(this.options.breakA);
+	
+	            var breakA2 = breakA1.clone().multiplyScalar(-1);
+	
+	            this.ball1.a = breakA1; // 分裂加速度
+	            this.ball2.a = breakA2; // 分裂加速度
+	            this.connection = new Connection(this.ball1, this.ball2);
+	        }
+	    }, {
+	        key: 'die',
+	        value: function die() {
+	            this.isDie = true;
+	            this.ball1.die();
+	            this.ball2.die();
+	            this.connection.die();
+	            this.ball1 = null;
+	            this.ball2 = null;
+	            this.connection = null;
+	        }
+	    }]);
+	
+	    return BreakBall;
+	}();
 	
 	var Painter = function (_Time) {
 	    _inherits(Painter, _Time);
@@ -393,28 +408,31 @@
 	    function Painter(cvs) {
 	        _classCallCheck(this, Painter);
 	
-	        var _this3 = _possibleConstructorReturn(this, (Painter.__proto__ || Object.getPrototypeOf(Painter)).call(this));
+	        var _this = _possibleConstructorReturn(this, (Painter.__proto__ || Object.getPrototypeOf(Painter)).call(this));
 	
-	        _this3.cvs = cvs;
-	        _this3.width = cvs.width;
-	        _this3.height = cvs.height;
-	        _this3.ctx = _this3.cvs.getContext('2d');
-	        _this3.tick;
+	        _this.cvs = cvs;
+	        _this.width = cvs.width;
+	        _this.height = cvs.height;
+	        _this.ctx = _this.cvs.getContext('2d');
 	
-	        _this3.offCvs = document.createElement('canvas');
-	        _this3.offCvs.width = _this3.width;
-	        _this3.offCvs.height = _this3.height;
-	        _this3.offCtx = _this3.offCvs.getContext('2d');
+	        _this.tick;
 	
-	        var grd = _this3.offCtx.createLinearGradient(0, 0, _this3.width, _this3.height);
-	        for (var i = 0; i <= 20; i++) {
-	            grd.addColorStop(i / 20, i % 2 === 0 ? 'yellow' : 'green');
+	        _this.breakBalls = [];
+	
+	        _this.offCvs = document.createElement('canvas');
+	        _this.offCvs.width = _this.width;
+	        _this.offCvs.height = _this.height;
+	        _this.offCtx = _this.offCvs.getContext('2d');
+	
+	        var grd = _this.offCtx.createLinearGradient(0, 0, _this.width, 0);
+	        for (var i = 0; i <= 10; i++) {
+	            grd.addColorStop(i / 10, i % 2 === 0 ? '#ff4621' : '#fffc21');
 	        }
-	        _this3.offCtx.fillStyle = grd;
-	        _this3.offCtx.fillRect(0, 0, _this3.width, _this3.height);
+	        _this.offCtx.fillStyle = grd;
+	        _this.offCtx.fillRect(0, 0, _this.width, _this.height);
 	
-	        _this3.maxBallCount = 10;
-	        return _this3;
+	        _this.maxBallCount = 20;
+	        return _this;
 	    }
 	
 	    _createClass(Painter, [{
@@ -425,49 +443,55 @@
 	    }, {
 	        key: 'tick',
 	        value: function tick(delta) {
-	            var _this4 = this;
-	
-	            if (balls.length < this.maxBallCount) {
+	            stats.update();
+	            if (this.breakBalls.length < this.maxBallCount) {
 	                var a = new _vec.Vector2(Math.random() * 1, Math.random() * 1).setLength(Math.random() * 200);
 	                var initTtl = Math.random() * 1000;
 	
-	                /*new Ball({
-	                    radius: 20,
-	                    initTtl: initTtl, // 寿命值
-	                    initPosition: new Vec2(Math.random() * this.width, Math.random() * this.height),
-	                    a: a, // 加速度 v/s Vec2
-	                    aTime: Math.random() * 1000, // 加速时间
-	                    breakTtl: initTtl + Math.random() * 2000, // 分裂时间
-	                    initV: this.v, // 初始速度
-	                });*/
+	                /*this.breakBalls.push(new BreakBall({
+	                    maxOpacity: 1,
+	                    bornPos: new Vec2(150, 150),
+	                    bornA: new Vec2(5, 5), // 出生加速
+	                    bornADur: 1000, // 出生加速时间
+	                     breakTime: 2000, // 分裂时间
+	                    breakA: 4, // 标量，方向在运行的时候确定
+	                    breakADur: 3000, // 分裂加速时间
+	                    dieTime: 6000, // 消亡时间
+	                }));*/
 	
-	                new Ball({
-	                    radius: 15,
-	                    initTtl: 0, // 寿命值
-	                    initPosition: new _vec.Vector2(500, 300),
-	                    a: new _vec.Vector2(-50, 30), // 加速度 v/s Vec2
-	                    aTime: 1000, // 加速时间
-	                    breakTtl: 2000, // 分裂时间
-	                    initV: new _vec.Vector2(5, 3) // 初始速度
-	                });
+	                var aniTime = Math.random() * 3000 + 5000;
+	                var bornADur = aniTime * 0.2;
+	                var breakTime = aniTime * 0.4;
+	                var breakADur = aniTime * 0.2;
+	                var breakA = (2000 - breakADur) * 10 / 2000;
+	
+	                this.breakBalls.push(new BreakBall({
+	                    maxOpacity: Math.random() + 0.8,
+	                    bornPos: new _vec.Vector2(Math.random() * this.width, Math.random() * this.height),
+	                    bornA: new _vec.Vector2(Math.random() - 0.5, Math.random() - 0.5).setLength(Math.random() * 20), // 出生加速
+	                    bornADur: bornADur, // 出生加速时间
+	
+	                    breakTime: breakTime, // 分裂时间
+	                    breakA: 4, // 标量，方向在运行的时候确定
+	                    breakADur: breakADur, // 分裂加速时间
+	                    destoryDur: Math.random() * 300 + 1000
+	                    // dieTime: dieTime, // 消亡时间
+	                }));
 	            }
 	            this.ctx.save();
 	            this.ctx.clearRect(0, 0, this.width, this.height);
-	            balls.forEach(function (b) {
-	                b.update(delta);
-	                if (!b.connection) {
-	                    b.draw(_this4.ctx);
+	
+	            for (var i = this.breakBalls.length - 1; i >= 0; i--) {
+	                if (this.breakBalls[i].isDie) {
+	                    this.breakBalls.splice(i, 1);
+	                } else {
+	                    this.breakBalls[i].update(delta);
+	                    this.breakBalls[i].draw(this.ctx);
 	                }
-	            });
-	            connections.forEach(function (c) {
-	                c.update(delta);
-	                c.ball1.draw(_this4.ctx);
-	                c.ball2.draw(_this4.ctx);
-	                c.draw(_this4.ctx);
-	            });
+	            }
 	
 	            this.ctx.globalCompositeOperation = "source-in";
-	            // this.ctx.drawImage(this.offCvs, 0, 0);
+	            this.ctx.drawImage(this.offCvs, 0, 0);
 	            // console.log(balls.length);
 	            this.ctx.restore();
 	        }
@@ -931,353 +955,6 @@
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(3);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(5)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./node_modules/css-loader/index.js!./node_modules/sass-loader/index.js!./index.scss", function() {
-				var newContent = require("!!./node_modules/css-loader/index.js!./node_modules/sass-loader/index.js!./index.scss");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(4)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "/* RESET*/\nhtml, body, div, ul, ol, li, dl, dt, dd, h1, h2, h3, h4, h5, h6, pre, form, p, blockquote, fieldset, input, abbr, article, aside, command, details, figcaption, figure, footer, header, hgroup, mark, meter, nav, output, progress, section, summary, time {\n  margin: 0;\n  padding: 0; }\n\nh1, h2, h3, h4, h5, h6, pre, code, address, caption, cite, code, em, strong, th, figcaption {\n  font-size: 1em;\n  font-weight: normal;\n  font-style: normal; }\n\nfieldset, iframe {\n  border: none; }\n\ncaption, th {\n  text-align: left; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\narticle, aside, footer, header, hgroup, nav, section, figure, figcaption {\n  display: block; }\n\n/* LAYOUT */\n* {\n  margin: 0;\n  padding: 0; }\n\nhtml, body {\n  width: 100%;\n  height: 100%;\n  position: relative; }\n\nhtml {\n  background-color: #fff; }\n\n.clear {\n  clear: both; }\n\n.clearer {\n  clear: both;\n  display: block;\n  margin: 0;\n  padding: 0;\n  height: 0;\n  line-height: 1px;\n  font-size: 1px; }\n\n.selfclear {\n  zoom: 1; }\n\n.selfclear:after {\n  content: '.';\n  display: block;\n  height: 0;\n  clear: both;\n  visibility: hidden; }\n\nimg {\n  border: 0; }\n\na {\n  text-decoration: none;\n  color: #515151; }\n  a:focus {\n    outline: none; }\n\ni {\n  font-style: normal; }\n\nul, li {\n  list-style: none; }\n\nbody {\n  font: 14px/1.5 'microsoft yahei';\n  color: #515151; }\n\n.clearfix:after, .clearfix:before {\n  content: \"\";\n  display: table;\n  height: 0px;\n  clear: both;\n  visibility: hidden; }\n\n.clearfix {\n  *zoom: 1; }\n\n.fl {\n  float: left; }\n\n.fr {\n  float: right; }\n\n.br0 {\n  border: none; }\n\n.key-color {\n  color: #333; }\n\n.maim-color {\n  color: #666; }\n\n.auxiliary-color {\n  color: #999; }\n", ""]);
-	
-	// exports
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-	"use strict";
-	
-	/*
-		MIT License http://www.opensource.org/licenses/mit-license.php
-		Author Tobias Koppers @sokra
-	*/
-	// css base code, injected by the css-loader
-	module.exports = function () {
-		var list = [];
-	
-		// return the list of modules as css string
-		list.toString = function toString() {
-			var result = [];
-			for (var i = 0; i < this.length; i++) {
-				var item = this[i];
-				if (item[2]) {
-					result.push("@media " + item[2] + "{" + item[1] + "}");
-				} else {
-					result.push(item[1]);
-				}
-			}
-			return result.join("");
-		};
-	
-		// import a list of modules into the list
-		list.i = function (modules, mediaQuery) {
-			if (typeof modules === "string") modules = [[null, modules, ""]];
-			var alreadyImportedModules = {};
-			for (var i = 0; i < this.length; i++) {
-				var id = this[i][0];
-				if (typeof id === "number") alreadyImportedModules[id] = true;
-			}
-			for (i = 0; i < modules.length; i++) {
-				var item = modules[i];
-				// skip already imported module
-				// this implementation is not 100% perfect for weird media query combinations
-				//  when a module is imported multiple times with different media queries.
-				//  I hope this will never occur (Hey this way we have smaller bundles)
-				if (typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
-					if (mediaQuery && !item[2]) {
-						item[2] = mediaQuery;
-					} else if (mediaQuery) {
-						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
-					}
-					list.push(item);
-				}
-			}
-		};
-		return list;
-	};
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-	/*
-		MIT License http://www.opensource.org/licenses/mit-license.php
-		Author Tobias Koppers @sokra
-	*/
-	var stylesInDom = {},
-		memoize = function(fn) {
-			var memo;
-			return function () {
-				if (typeof memo === "undefined") memo = fn.apply(this, arguments);
-				return memo;
-			};
-		},
-		isOldIE = memoize(function() {
-			return /msie [6-9]\b/.test(self.navigator.userAgent.toLowerCase());
-		}),
-		getHeadElement = memoize(function () {
-			return document.head || document.getElementsByTagName("head")[0];
-		}),
-		singletonElement = null,
-		singletonCounter = 0,
-		styleElementsInsertedAtTop = [];
-	
-	module.exports = function(list, options) {
-		if(false) {
-			if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
-		}
-	
-		options = options || {};
-		// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
-		// tags it will allow on a page
-		if (typeof options.singleton === "undefined") options.singleton = isOldIE();
-	
-		// By default, add <style> tags to the bottom of <head>.
-		if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
-	
-		var styles = listToStyles(list);
-		addStylesToDom(styles, options);
-	
-		return function update(newList) {
-			var mayRemove = [];
-			for(var i = 0; i < styles.length; i++) {
-				var item = styles[i];
-				var domStyle = stylesInDom[item.id];
-				domStyle.refs--;
-				mayRemove.push(domStyle);
-			}
-			if(newList) {
-				var newStyles = listToStyles(newList);
-				addStylesToDom(newStyles, options);
-			}
-			for(var i = 0; i < mayRemove.length; i++) {
-				var domStyle = mayRemove[i];
-				if(domStyle.refs === 0) {
-					for(var j = 0; j < domStyle.parts.length; j++)
-						domStyle.parts[j]();
-					delete stylesInDom[domStyle.id];
-				}
-			}
-		};
-	}
-	
-	function addStylesToDom(styles, options) {
-		for(var i = 0; i < styles.length; i++) {
-			var item = styles[i];
-			var domStyle = stylesInDom[item.id];
-			if(domStyle) {
-				domStyle.refs++;
-				for(var j = 0; j < domStyle.parts.length; j++) {
-					domStyle.parts[j](item.parts[j]);
-				}
-				for(; j < item.parts.length; j++) {
-					domStyle.parts.push(addStyle(item.parts[j], options));
-				}
-			} else {
-				var parts = [];
-				for(var j = 0; j < item.parts.length; j++) {
-					parts.push(addStyle(item.parts[j], options));
-				}
-				stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
-			}
-		}
-	}
-	
-	function listToStyles(list) {
-		var styles = [];
-		var newStyles = {};
-		for(var i = 0; i < list.length; i++) {
-			var item = list[i];
-			var id = item[0];
-			var css = item[1];
-			var media = item[2];
-			var sourceMap = item[3];
-			var part = {css: css, media: media, sourceMap: sourceMap};
-			if(!newStyles[id])
-				styles.push(newStyles[id] = {id: id, parts: [part]});
-			else
-				newStyles[id].parts.push(part);
-		}
-		return styles;
-	}
-	
-	function insertStyleElement(options, styleElement) {
-		var head = getHeadElement();
-		var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
-		if (options.insertAt === "top") {
-			if(!lastStyleElementInsertedAtTop) {
-				head.insertBefore(styleElement, head.firstChild);
-			} else if(lastStyleElementInsertedAtTop.nextSibling) {
-				head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
-			} else {
-				head.appendChild(styleElement);
-			}
-			styleElementsInsertedAtTop.push(styleElement);
-		} else if (options.insertAt === "bottom") {
-			head.appendChild(styleElement);
-		} else {
-			throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
-		}
-	}
-	
-	function removeStyleElement(styleElement) {
-		styleElement.parentNode.removeChild(styleElement);
-		var idx = styleElementsInsertedAtTop.indexOf(styleElement);
-		if(idx >= 0) {
-			styleElementsInsertedAtTop.splice(idx, 1);
-		}
-	}
-	
-	function createStyleElement(options) {
-		var styleElement = document.createElement("style");
-		styleElement.type = "text/css";
-		insertStyleElement(options, styleElement);
-		return styleElement;
-	}
-	
-	function createLinkElement(options) {
-		var linkElement = document.createElement("link");
-		linkElement.rel = "stylesheet";
-		insertStyleElement(options, linkElement);
-		return linkElement;
-	}
-	
-	function addStyle(obj, options) {
-		var styleElement, update, remove;
-	
-		if (options.singleton) {
-			var styleIndex = singletonCounter++;
-			styleElement = singletonElement || (singletonElement = createStyleElement(options));
-			update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
-			remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
-		} else if(obj.sourceMap &&
-			typeof URL === "function" &&
-			typeof URL.createObjectURL === "function" &&
-			typeof URL.revokeObjectURL === "function" &&
-			typeof Blob === "function" &&
-			typeof btoa === "function") {
-			styleElement = createLinkElement(options);
-			update = updateLink.bind(null, styleElement);
-			remove = function() {
-				removeStyleElement(styleElement);
-				if(styleElement.href)
-					URL.revokeObjectURL(styleElement.href);
-			};
-		} else {
-			styleElement = createStyleElement(options);
-			update = applyToTag.bind(null, styleElement);
-			remove = function() {
-				removeStyleElement(styleElement);
-			};
-		}
-	
-		update(obj);
-	
-		return function updateStyle(newObj) {
-			if(newObj) {
-				if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
-					return;
-				update(obj = newObj);
-			} else {
-				remove();
-			}
-		};
-	}
-	
-	var replaceText = (function () {
-		var textStore = [];
-	
-		return function (index, replacement) {
-			textStore[index] = replacement;
-			return textStore.filter(Boolean).join('\n');
-		};
-	})();
-	
-	function applyToSingletonTag(styleElement, index, remove, obj) {
-		var css = remove ? "" : obj.css;
-	
-		if (styleElement.styleSheet) {
-			styleElement.styleSheet.cssText = replaceText(index, css);
-		} else {
-			var cssNode = document.createTextNode(css);
-			var childNodes = styleElement.childNodes;
-			if (childNodes[index]) styleElement.removeChild(childNodes[index]);
-			if (childNodes.length) {
-				styleElement.insertBefore(cssNode, childNodes[index]);
-			} else {
-				styleElement.appendChild(cssNode);
-			}
-		}
-	}
-	
-	function applyToTag(styleElement, obj) {
-		var css = obj.css;
-		var media = obj.media;
-	
-		if(media) {
-			styleElement.setAttribute("media", media)
-		}
-	
-		if(styleElement.styleSheet) {
-			styleElement.styleSheet.cssText = css;
-		} else {
-			while(styleElement.firstChild) {
-				styleElement.removeChild(styleElement.firstChild);
-			}
-			styleElement.appendChild(document.createTextNode(css));
-		}
-	}
-	
-	function updateLink(linkElement, obj) {
-		var css = obj.css;
-		var sourceMap = obj.sourceMap;
-	
-		if(sourceMap) {
-			// http://stackoverflow.com/a/26603875
-			css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
-		}
-	
-		var blob = new Blob([css], { type: "text/css" });
-	
-		var oldSrc = linkElement.href;
-	
-		linkElement.href = URL.createObjectURL(blob);
-	
-		if(oldSrc)
-			URL.revokeObjectURL(oldSrc);
-	}
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
@@ -1287,7 +964,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _tween = __webpack_require__(7);
+	var _tween = __webpack_require__(3);
 	
 	var _tween2 = _interopRequireDefault(_tween);
 	
@@ -1472,7 +1149,7 @@
 	exports.TWEEN = _tween2.default;
 
 /***/ }),
-/* 7 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -2276,10 +1953,10 @@
 			root.TWEEN = TWEEN;
 		}
 	})(undefined);
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
-/* 8 */
+/* 4 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -2469,6 +2146,182 @@
 	process.umask = function () {
 	    return 0;
 	};
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+	/**
+	 * @author mrdoob / http://mrdoob.com/
+	 */
+	
+	var Stats = function Stats() {
+	
+		var mode = 0;
+	
+		var container = document.createElement('div');
+		container.style.cssText = 'position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;z-index:10000';
+		container.addEventListener('click', function (event) {
+	
+			event.preventDefault();
+			showPanel(++mode % container.children.length);
+		}, false);
+	
+		//
+	
+		function addPanel(panel) {
+	
+			container.appendChild(panel.dom);
+			return panel;
+		}
+	
+		function showPanel(id) {
+	
+			for (var i = 0; i < container.children.length; i++) {
+	
+				container.children[i].style.display = i === id ? 'block' : 'none';
+			}
+	
+			mode = id;
+		}
+	
+		//
+	
+		var beginTime = (performance || Date).now(),
+		    prevTime = beginTime,
+		    frames = 0;
+	
+		var fpsPanel = addPanel(new Stats.Panel('FPS', '#0ff', '#002'));
+		var msPanel = addPanel(new Stats.Panel('MS', '#0f0', '#020'));
+	
+		if (self.performance && self.performance.memory) {
+	
+			var memPanel = addPanel(new Stats.Panel('MB', '#f08', '#201'));
+		}
+	
+		showPanel(0);
+	
+		return {
+	
+			REVISION: 16,
+	
+			dom: container,
+	
+			addPanel: addPanel,
+			showPanel: showPanel,
+	
+			begin: function begin() {
+	
+				beginTime = (performance || Date).now();
+			},
+	
+			end: function end() {
+	
+				frames++;
+	
+				var time = (performance || Date).now();
+	
+				msPanel.update(time - beginTime, 200);
+	
+				if (time > prevTime + 1000) {
+	
+					fpsPanel.update(frames * 1000 / (time - prevTime), 100);
+	
+					prevTime = time;
+					frames = 0;
+	
+					if (memPanel) {
+	
+						var memory = performance.memory;
+						memPanel.update(memory.usedJSHeapSize / 1048576, memory.jsHeapSizeLimit / 1048576);
+					}
+				}
+	
+				return time;
+			},
+	
+			update: function update() {
+	
+				beginTime = this.end();
+			},
+	
+			// Backwards Compatibility
+	
+			domElement: container,
+			setMode: showPanel
+	
+		};
+	};
+	
+	Stats.Panel = function (name, fg, bg) {
+	
+		var min = Infinity,
+		    max = 0,
+		    round = Math.round;
+		var PR = round(window.devicePixelRatio || 1);
+	
+		var WIDTH = 80 * PR,
+		    HEIGHT = 48 * PR,
+		    TEXT_X = 3 * PR,
+		    TEXT_Y = 2 * PR,
+		    GRAPH_X = 3 * PR,
+		    GRAPH_Y = 15 * PR,
+		    GRAPH_WIDTH = 74 * PR,
+		    GRAPH_HEIGHT = 30 * PR;
+	
+		var canvas = document.createElement('canvas');
+		canvas.width = WIDTH;
+		canvas.height = HEIGHT;
+		canvas.style.cssText = 'width:80px;height:48px';
+	
+		var context = canvas.getContext('2d');
+		context.font = 'bold ' + 9 * PR + 'px Helvetica,Arial,sans-serif';
+		context.textBaseline = 'top';
+	
+		context.fillStyle = bg;
+		context.fillRect(0, 0, WIDTH, HEIGHT);
+	
+		context.fillStyle = fg;
+		context.fillText(name, TEXT_X, TEXT_Y);
+		context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
+	
+		context.fillStyle = bg;
+		context.globalAlpha = 0.9;
+		context.fillRect(GRAPH_X, GRAPH_Y, GRAPH_WIDTH, GRAPH_HEIGHT);
+	
+		return {
+	
+			dom: canvas,
+	
+			update: function update(value, maxValue) {
+	
+				min = Math.min(min, value);
+				max = Math.max(max, value);
+	
+				context.fillStyle = bg;
+				context.globalAlpha = 1;
+				context.fillRect(0, 0, WIDTH, GRAPH_Y);
+				context.fillStyle = fg;
+				context.fillText(round(value) + ' ' + name + ' (' + round(min) + '-' + round(max) + ')', TEXT_X, TEXT_Y);
+	
+				context.drawImage(canvas, GRAPH_X + PR, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT, GRAPH_X, GRAPH_Y, GRAPH_WIDTH - PR, GRAPH_HEIGHT);
+	
+				context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, GRAPH_HEIGHT);
+	
+				context.fillStyle = bg;
+				context.globalAlpha = 0.9;
+				context.fillRect(GRAPH_X + GRAPH_WIDTH - PR, GRAPH_Y, PR, round((1 - value / maxValue) * GRAPH_HEIGHT));
+			}
+	
+		};
+	};
+	
+	exports.default = Stats;
 
 /***/ })
 /******/ ]);

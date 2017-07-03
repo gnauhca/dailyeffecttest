@@ -1,155 +1,71 @@
 import {Vector2 as Vec2} from './vec2.js';
 import {TIME, Time} from './time.js';
 
-require('./index.scss');
+import Stats from './stats.js';
+var stats = new Stats();
+stats.showPanel( 1 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+document.body.appendChild( stats.dom );
 
-let objs = [];
-let balls = [];
-let connections = [];
+let obstruction = 0.1; // 空气阻力
+let bigRaduis = 15;
+let smallRaduis = 10;
 
-
-let obstruction = 0.1; // 物体每过一秒损失速度
-
-let C = 0;
-class Obj {
-    constructor(ttl=0) {
-        this.isDie = false;
-        this.ttl = ttl;
-        this.dieTtl = 100000;
-        this.maxBlur = 5; // 5px
-        this.opacity;
-        this.blur;
-        objs.push(this);
-    }
-    update(delta) {
-        this.ttl += delta;
-        if (this.ttl >= this.dieTtl) {
-            this.ttl = this.dieTtl;
-            this.die();
-            return false;
-        }
-        this.opacity = (this.dieTtl - this.ttl) / this.dieTtl;
-        this.blur = (1 - this.opacity) * this.maxBlur;
-    }
-    die() {
-        this.isDie = true;
-        objs.splice(balls.indexOf(this), 1);
-    }
-}
-
-class Ball extends Obj{
+class Ball {
     constructor(options) {
-        super(options.initTtl);
-        this.aid = C++;
         let defaults = {
-            radius: 20,
-            initTtl: 0, // 寿命值
             initPosition: new Vec2(),
-            a: new Vec2(), // 加速度 v/s Vec2
-            aTime: 1000, // 加速时间
-            breakTtl: 0, // 分裂时间
+            radius: 15,
             initV: new Vec2, // 初始速度
         };
 
         for (let key in defaults) {
             options[key] = options[key] || defaults[key];
         }
-        this.position = options.initPosition;
+        this.position = options.initPosition.clone();
         this.v = options.initV;
-        this.aTimePass = 0;
-
-        this.leaveTtl; // 与对方球分开的时间
+        this.a = new Vec2; // 加速度
 
         this.options = options;
-        balls.push(this);
-    }
-
-    break() {
-        let breakA1 = new Vec2(-4, -4);
-        // let breakA1 = new Vec2(Math.random(), Math.random()).setLength(Math.random() * 10);
-        let breakA2 = breakA1.clone().multiplyScalar(-1);
-
-        let ball1 = new Ball({
-            radius: 15,
-            initTtl: this.ttl, // 寿命值
-            initPosition: this.position.clone(),
-            a: breakA1, // 加速度 v/s Vec2
-            aTime: 1000, // 加速时间
-            breakTtl: this.ttl + 8000, // 分裂时间
-            initV: this.v.clone(), // 初始速度
-        });
-        let ball2 = new Ball({
-            radius: 10,
-            initTtl: this.ttl, // 寿命值
-            initPosition: this.position.clone(),
-            a: breakA2, // 加速度 v/s Vec2
-            aTime: 1000, // 加速时间
-            breakTtl: 0, // 分裂时间
-            initV: this.v.clone(), // 初始速度
-        });
-
-        let connection = new Connection(ball1, ball2, this.ttl);
-
-        this.die();
-    }
-
-    leaveFromOtherBall() {
-        this.leaveTtl = this.ttl;
     }
 
     update(delta) {
-        super.update(delta);
-
-        if (this.isDie) return;
 
         let second = delta * 0.001;
         let options = this.options;
 
-        this.aTimePass += delta;
-        if (this.aTimePass <= options.aTime) {
-            this.v.add(this.options.a.clone().multiplyScalar(second));
-        }
-
-        if (options.radius >= 15 && this.ttl > options.breakTtl) { 
-            // 分裂
-            this.break();
-        }
+        this.v.add(this.a.clone().multiplyScalar(second));
         
         this.v.sub(this.v.clone().setLength(obstruction * second)); // 阻力减速
         this.position.add(this.v.clone().multiplyScalar(second));
+        // console.log(this.position);
     }
 
-    draw(ctx) {
+    draw(ctx, opacity, blur) {
+
         let options = this.options;
+
+        opacity = Math.min(opacity, 1);
 
         ctx.save();
 
-        ctx.shadowColor = 'red';
-        ctx.shadowBlur = this.blur;
-        ctx.globalAlpha = this.opacity;
+        // ctx.shadowColor = 'red';
+        // ctx.shadowBlur = this.blur;
+        ctx.globalAlpha = opacity;
         ctx.fillStyle = 'red';
 
         ctx.beginPath();
         ctx.arc(this.position.x, this.position.y, options.radius, 0, Math.PI * 2);
         ctx.fill();
 
-        let grd = ctx.createRadialGradient(this.position.x, this.position.y, 0, this.position.x, this.position.y, options.radius * 0.8);
-        grd.addColorStop(0, 'rgba(255,0,255,0.3)');
-        grd.addColorStop(1, 'rgba(255,0,255,0)');
 
         // 中间透明
-        let mOpacity = 0;
-        if (typeof this.leaveTtl !== 'undefined') {
-            if (this.options.breakTtl) {
-                // 此球还会分裂
-                let mOpacityHalfTtl = (this.options.breakTtl - this.leaveTtl) * 0.5;
-                mOpacity = (mOpacityHalfTtl - Math.abs(this.ttl - this.leaveTtl - mOpacityHalfTtl)) / mOpacityHalfTtl;
-            } else {
-                // 此球不会分裂
-                mOpacity = (this.ttl - this.leaveTtl) / (this.dieTtl - this.leaveTtl);
-            }
-            // console.log(mOpacity);
-            ctx.globalAlpha = mOpacity;
+        
+        if (typeof this.isBreakBall) {
+            let grd = ctx.createRadialGradient(this.position.x, this.position.y, 0, this.position.x, this.position.y, options.radius * 0.8);
+            grd.addColorStop(0, 'rgba(255,0,255,0.3)');
+            grd.addColorStop(1, 'rgba(255,0,255,0)');
+            
+            ctx.globalAlpha = opacity * 0.5;
             ctx.globalCompositeOperation = 'destination-out';
             ctx.fillStyle = grd;
             ctx.beginPath();
@@ -161,44 +77,25 @@ class Ball extends Obj{
     }
 
     die() {
-        super.die();
-        // console.log(balls.length);
-        balls.splice(balls.indexOf(this), 1);
+        //
     }
 }
 
-class Connection extends Obj{
-    constructor(ball1, ball2, ttl) {
-        super(ttl);
+class Connection {
+    constructor(ball1, ball2) {
         this.maxDis = (ball1.options.radius + ball2.options.radius) * 1.5;
 
+        this.isDie = false;
+
+        this.isSeparate = false;
         this.ball1 = ball1;
         this.ball2 = ball2;
 
-        // ball1.connection = this;
-        // ball2.connection = this;
-
-        // ball1.otherBall = ball2;
-        // ball2.otherBall = ball1;
-
-        this.dieTtl = ttl + 4000;
-
-        connections.push(this);
     }
 
     update() {
-        let dis = new Vec2().subVectors( this.ball1.position, this.ball2.position );
-        let disLength = dis.length();
-
-        // console.log(this.ball1.leaveTtl, disLength, this.ball1.options.radius + this.ball2.options.radius);
-        if (!this.leaveTtl && disLength > this.ball1.options.radius + this.ball2.options.radius) {
-            this.ball1.leaveFromOtherBall();
-            this.ball2.leaveFromOtherBall();
-        }
-        if (this.ball1.isDie || this.ball2.isDie || disLength > this.maxDis) {//disLength >= this.maxDis) {
-            this.isDie || this.die(); 
-            return false;
-        }
+        this.isSeparate = this.isSeparate || (new Vec2().subVectors(this.ball1.position, this.ball2.position)).length() > this.ball1.options.radius + this.ball2.options.radius + 10;
+        // console.log(this.isSeparate);
     }
 
     calPoints(c1, r1, c2, r2, v, h, max) {
@@ -254,11 +151,11 @@ class Connection extends Obj{
         return [p1a, p2a, p2b, p1b, handle1, handle2, handle3, handle4];
     }
 
-    draw(ctx) {
+    draw(ctx, opacity, blur) {
         let keyPoints = this.calPoints(
-            this.ball1.position, 
+            this.ball1.position.clone(), 
             this.ball1.options.radius,
-            this.ball2.position, 
+            this.ball2.position.clone(), 
             this.ball2.options.radius, 
             0.3,
             5.4,
@@ -267,9 +164,9 @@ class Connection extends Obj{
 
         ctx.save();
         if (keyPoints) {
-            ctx.shadowColor = 'red';
-            ctx.shadowBlur = this.blur;
-            ctx.globalAlpha = this.opacity;
+            // ctx.shadowColor = 'red';
+            // ctx.shadowBlur = this.blur;
+            ctx.globalAlpha = opacity;
             ctx.globalCompositeOperation = 'source-over';
             ctx.fillStyle = 'red';
             ctx.beginPath();
@@ -285,15 +182,147 @@ class Connection extends Obj{
     }
 
     die() {
-        super.die();
-        this.ball1.connection = null;
-        this.ball2.connection = null;
-        connections.splice(connections.indexOf(this), 1);
+        this.isDie = true;
+        this.ball1 = null;
+        this.ball2 = null;            
     }
 }
 
-class Gradient {} 
+class BreakBall {
+    constructor(options) {
+        let defaults = {
+            maxOpacity: 1,
 
+            bornPos: new Vec2(),
+            bornA: new Vec2(5, 5), // 出生加速
+            bornADur: 1000, // 出生加速时间
+
+            breakTime: 2000, // 分裂时间
+            breakA: 5, // 标量，方向在运行的时候确定
+            breakADur: 1000, // 分裂加速时间
+            dieTime: 5000, // 消亡时间
+        };
+
+        for (let key in defaults) {
+            options[key] = options[key] || defaults[key];
+        }
+        this.options = options;
+
+        // 0 born
+        // 1 a done
+        // 2 break
+        // 3 break a done
+        // 4 die
+        this.status = 0; 
+
+
+        this.timePass = 0;
+        this.separateTime = 0;
+        this.opacity = 1;
+
+
+        this.ball1Radius = bigRaduis * (1.2 - Math.random() * 0.4);
+        this.ball2Radius = smallRaduis * (1.2 - Math.random() * 0.4);
+
+        this.ball1 = new Ball({
+            initPosition: options.bornPos.clone(),
+            radius: this.ball1Radius,
+            initV: new Vec2, // 初始速度
+        });
+        this.ball1.a = options.bornA;
+        this.ball2;
+        this.connection;
+    }
+
+    update(delta) {
+        let options = this.options;
+        let second = delta / 1000;
+        let opacity = 1;
+
+        this.timePass += delta;
+
+        switch (this.status) {
+            case 0: 
+                if (this.timePass < options.bornADur) {
+                    opacity = this.timePass / options.bornADur;
+                } else {
+                    this.status = 1;
+                    this.ball1.a = new Vec2;
+                }    
+                break;
+            case 1: 
+                if (this.timePass >= options.breakTime) {
+                    this.status = 2;
+                    this.break(); // 生成 ball2, 设置分裂加速度
+                }
+                break;
+            case 2: 
+                // console.log(this.ball1.v, this.ball2.v);
+                // console.log(this.ball1.v, this.ball2.v);
+                // console.log(this.ball1.position, this.ball2.position);
+                if (this.timePass >= options.breakTime + options.breakADur) {
+                    this.status = 3;
+                    this.ball1.a = new Vec2;
+                    this.ball2.a = new Vec2;
+                }
+                break;
+            case 3: 
+                if (!this.separateTime && this.connection.isSeparate) {
+                    this.separateTime = this.timePass;
+                }
+                if (this.separateTime) {
+                    if (this.timePass < this.separateTime + this.options.destoryDur) {
+                        opacity = 1 - (this.timePass - this.separateTime) / 
+                                    this.options.destoryDur;
+                    } else {
+                        this.status = 4;
+                        this.die();
+                    }
+                }
+                break;
+        }
+
+        // console.log(this.status, opacity);
+        this.opacity = Math.min(opacity, 1) * this.options.maxOpacity;
+
+        this.ball1 && this.ball1.update(delta);
+        this.ball2 && this.ball2.update(delta);
+        this.connection && !this.connection.isDie && this.connection.update(delta);
+    }
+
+    draw(ctx) {
+        this.ball1 && this.ball1.draw(ctx, this.opacity, this.blur);
+        this.ball2 && this.ball2.draw(ctx, this.opacity, this.blur);
+        this.connection && !this.isDie && this.connection.draw(ctx, this.opacity, this.blur);
+    }
+
+    break() {
+        this.ball2 = new Ball({
+            initPosition: this.ball1.position,
+            radius: this.ball2Radius,
+            initV: new Vec2, // 初始速度            
+        });
+
+        let breakA1 = new Vec2(Math.random(), Math.random());
+        breakA1.setLength(this.options.breakA);
+        
+        let breakA2 = breakA1.clone().multiplyScalar(-1);
+
+        this.ball1.a = breakA1;// 分裂加速度
+        this.ball2.a = breakA2;// 分裂加速度
+        this.connection = new Connection(this.ball1, this.ball2);
+    }
+
+    die() {
+        this.isDie = true;
+        this.ball1.die();
+        this.ball2.die();
+        this.connection.die();
+        this.ball1 = null;
+        this.ball2 = null;
+        this.connection = null;
+    }
+}
 
 class Painter extends Time {
     constructor(cvs) {
@@ -302,21 +331,24 @@ class Painter extends Time {
         this.width = cvs.width;
         this.height = cvs.height;
         this.ctx = this.cvs.getContext('2d');
+
         this.tick;
+
+        this.breakBalls = [];
 
         this.offCvs = document.createElement('canvas');
         this.offCvs.width = this.width;
         this.offCvs.height = this.height;
         this.offCtx = this.offCvs.getContext('2d');
 
-        let grd=this.offCtx.createLinearGradient(0, 0, this.width, this.height);
-        for (let i = 0; i <= 20; i++) {
-            grd.addColorStop(i/20, i % 2 === 0 ? 'yellow' : 'green');
+        let grd=this.offCtx.createLinearGradient(0, 0, this.width, 0);
+        for (let i = 0; i <= 10; i++) {
+            grd.addColorStop(i/10, i % 2 === 0 ? '#ff4621' : '#fffc21');
         }
         this.offCtx.fillStyle = grd;
         this.offCtx.fillRect(0, 0, this.width, this.height);
 
-        this.maxBallCount = 10;
+        this.maxBallCount =  20;
     }
 
     start() {
@@ -324,49 +356,57 @@ class Painter extends Time {
     }
 
     tick(delta) {
-        if (balls.length < this.maxBallCount) {
+        stats.update();
+        if (this.breakBalls.length < this.maxBallCount) {
             let a = new Vec2(Math.random() * 1, Math.random() * 1).setLength(Math.random() * 200);
             let initTtl = Math.random() * 1000;
 
-            /*new Ball({
-                radius: 20,
-                initTtl: initTtl, // 寿命值
-                initPosition: new Vec2(Math.random() * this.width, Math.random() * this.height),
-                a: a, // 加速度 v/s Vec2
-                aTime: Math.random() * 1000, // 加速时间
-                breakTtl: initTtl + Math.random() * 2000, // 分裂时间
-                initV: this.v, // 初始速度
-            });*/ 
+            /*this.breakBalls.push(new BreakBall({
+                maxOpacity: 1,
+                bornPos: new Vec2(150, 150),
+                bornA: new Vec2(5, 5), // 出生加速
+                bornADur: 1000, // 出生加速时间
 
-            new Ball({
-                radius: 15,
-                initTtl: 0, // 寿命值
-                initPosition: new Vec2(500, 300),
-                a: new Vec2(-50, 30), // 加速度 v/s Vec2
-                aTime: 1000, // 加速时间
-                breakTtl: 2000, // 分裂时间
-                initV: new Vec2(5, 3), // 初始速度
-            });
+                breakTime: 2000, // 分裂时间
+                breakA: 4, // 标量，方向在运行的时候确定
+                breakADur: 3000, // 分裂加速时间
+                dieTime: 6000, // 消亡时间
+            }));*/
+
+
+            let aniTime = Math.random() * 3000 + 5000;
+            let bornADur = aniTime * 0.2;
+            let breakTime = aniTime * 0.4;
+            let breakADur = aniTime * 0.2;
+            let breakA = (2000 - breakADur) * 10 / 2000
+
+            this.breakBalls.push(new BreakBall({
+                maxOpacity: Math.random() + 0.8,
+                bornPos: new Vec2(Math.random() * this.width, Math.random() * this.height),
+                bornA: new Vec2(Math.random() - 0.5, Math.random()-0.5).setLength(Math.random() * 20), // 出生加速
+                bornADur: bornADur, // 出生加速时间
+
+                breakTime: breakTime, // 分裂时间
+                breakA: 4, // 标量，方向在运行的时候确定
+                breakADur: breakADur, // 分裂加速时间
+                destoryDur: Math.random() * 300 + 1000
+                // dieTime: dieTime, // 消亡时间
+            }));
         }
         this.ctx.save();
         this.ctx.clearRect(0, 0, this.width, this.height);
-        balls.forEach(b=>{
-            b.update(delta);
-            if (!b.connection) {
-                b.draw(this.ctx);
-            }
-        });
-        connections.forEach(c=>{
-            c.update(delta);
-            c.ball1.draw(this.ctx);
-            c.ball2.draw(this.ctx);
-            c.draw(this.ctx);
-        });
 
-        
+        for(let i = this.breakBalls.length - 1; i >= 0; i--) {
+            if (this.breakBalls[i].isDie) {
+                this.breakBalls.splice(i, 1);
+            } else {
+                this.breakBalls[i].update(delta);
+                this.breakBalls[i].draw(this.ctx);
+            }
+        }
 
         this.ctx.globalCompositeOperation = "source-in";
-        // this.ctx.drawImage(this.offCvs, 0, 0);
+        this.ctx.drawImage(this.offCvs, 0, 0);
         // console.log(balls.length);
         this.ctx.restore();
     }

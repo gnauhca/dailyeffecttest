@@ -268,7 +268,7 @@ class Scene extends Time {
 
 let wave1 = new Wave({
     color: 0x3062ff,
-    opacity: 0.8,
+    opacity: 0.7,
     position: new THREE.Vector3,
     xCount: 300,
     zCount: 300,
@@ -289,13 +289,12 @@ let wave1 = new Wave({
     offsetSpeed2: 0.4,
     offsetSign: 1 // -1 or 1
 });
-
 let wave2 = new Wave({
     color: 0x3bdee0,
-    opacity: 0.1,
+    opacity: 0.2,
     position: new THREE.Vector3(0, 6, -50),
-    xCount: 200,
-    zCount: 200,
+    xCount: 180,
+    zCount: 180,
     xDis: 200, // x 宽
     zDis: 200, // z 宽
     size: 0.4, // 点大小
