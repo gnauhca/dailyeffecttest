@@ -1,11 +1,12 @@
-import {Vector2 as Vec2} from './vec2.js';
 import {TIME, Time} from './time.js';
+import THREE from 'three';
+// import Stats from './stats.js';
+// var stats = new Stats();
+// stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+// document.body.appendChild( stats.dom );
 
-import Stats from './stats.js';
-var stats = new Stats();
-stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-document.body.appendChild( stats.dom );
 
+let Vec2 = THREE.Vector2;
 let obstruction = 0.01; // 空气阻力
 let bigRaduis = 15;
 let smallRaduis = 10;
@@ -326,17 +327,26 @@ class BreakBall {
     }
 }
 
-class Painter extends Time {
-    constructor(cvs) {
+class Ani extends Time {
+    constructor() {
         super();
+
+        this.cvs;
+        this.width;
+        this.height;
+        this.offCtx;
+
+        this.tick;
+        this.breakBalls = [];
+
+        this.maxBallCount =  6;
+    }
+
+    setUp(cvs) {
         this.cvs = cvs;
         this.width = cvs.width;
         this.height = cvs.height;
         this.ctx = this.cvs.getContext('2d');
-
-        this.tick;
-
-        this.breakBalls = [];
 
         this.offCvs = document.createElement('canvas');
         this.offCvs.width = this.width;
@@ -345,20 +355,23 @@ class Painter extends Time {
 
         let grd=this.offCtx.createLinearGradient(0, 0, this.width, 0);
         for (let i = 0; i <= 10; i++) {
-            grd.addColorStop(i/10, i % 2 === 0 ? '#0678d0' : '#1bb4ba');
+            grd.addColorStop(i/10, i % 2 === 0 ? '#077cd0' : '#1cb5b9');
         }
         this.offCtx.fillStyle = grd;
         this.offCtx.fillRect(0, 0, this.width, this.height);
-
-        this.maxBallCount =  6;
     }
 
     start() {
         this.tick = this.addTick(this.tick);
     }
 
+    stop() {
+        this.removeTick(this.tick);
+        this.tick = null;
+    }
+
     tick(delta) {
-        stats.update();
+        // stats.update();
         if (this.breakBalls.length < this.maxBallCount) {
 
             let maxOpacity = Math.random() + 0.8;
@@ -410,15 +423,6 @@ class Painter extends Time {
 }
 
 
+let ani = new Ani();
 
-let cvs = document.createElement('canvas');
-
-cvs.width = 1920;
-cvs.height = 1079;
-
-document.body.appendChild(cvs);
-
-let painter = new Painter(cvs);
-
-painter.start();
-TIME.start();
+export {ani};

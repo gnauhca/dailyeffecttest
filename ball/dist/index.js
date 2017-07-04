@@ -46,8 +46,6 @@
 
 	'use strict';
 	
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
 	var _vec = __webpack_require__(1);
@@ -67,10 +65,10 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var stats = new _stats2.default();
-	stats.showPanel(1); // 0: fps, 1: ms, 2: mb, 3+: custom
+	stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
 	document.body.appendChild(stats.dom);
 	
-	var obstruction = 0.1; // 空气阻力
+	var obstruction = 0.01; // 空气阻力
 	var bigRaduis = 15;
 	var smallRaduis = 10;
 	
@@ -118,7 +116,7 @@
 	            ctx.save();
 	
 	            // ctx.shadowColor = 'red';
-	            // ctx.shadowBlur = this.blur;
+	            // ctx.shadowBlur = blur;
 	            ctx.globalAlpha = opacity;
 	            ctx.fillStyle = 'red';
 	
@@ -128,18 +126,18 @@
 	
 	            // 中间透明
 	
-	            if (_typeof(this.isBreakBall)) {
-	                var grd = ctx.createRadialGradient(this.position.x, this.position.y, 0, this.position.x, this.position.y, options.radius * 0.8);
-	                grd.addColorStop(0, 'rgba(255,0,255,0.3)');
+	            /*if (typeof this.isBreakBall) {
+	                let grd = ctx.createRadialGradient(this.position.x, this.position.y, 0, this.position.x, this.position.y, options.radius * 0.8);
+	                grd.addColorStop(0, 'rgba(255,0,255,0.2)');
 	                grd.addColorStop(1, 'rgba(255,0,255,0)');
-	
-	                ctx.globalAlpha = opacity * 0.5;
+	                
+	                ctx.globalAlpha = (1 - opacity) * 0.5;
 	                ctx.globalCompositeOperation = 'destination-out';
 	                ctx.fillStyle = grd;
 	                ctx.beginPath();
 	                ctx.arc(this.position.x, this.position.y, options.radius, 0, Math.PI * 2);
 	                ctx.fill();
-	            }
+	            }*/
 	
 	            ctx.restore();
 	        }
@@ -232,7 +230,7 @@
 	            ctx.save();
 	            if (keyPoints) {
 	                // ctx.shadowColor = 'red';
-	                // ctx.shadowBlur = this.blur;
+	                // ctx.shadowBlur = blur;
 	                ctx.globalAlpha = opacity;
 	                ctx.globalCompositeOperation = 'source-over';
 	                ctx.fillStyle = 'red';
@@ -265,15 +263,16 @@
 	
 	        var defaults = {
 	            maxOpacity: 1,
+	            blur: 0,
 	
 	            bornPos: new _vec.Vector2(),
 	            bornA: new _vec.Vector2(5, 5), // 出生加速
-	            bornADur: 1000, // 出生加速时间
+	            bornADur: 1000, // 出生加速耗时
 	
 	            breakTime: 2000, // 分裂时间
 	            breakA: 5, // 标量，方向在运行的时候确定
-	            breakADur: 1000, // 分裂加速时间
-	            dieTime: 5000 // 消亡时间
+	            breakADur: 1000, // 分裂加速耗时
+	            destoryDur: 1000 // 消亡耗时
 	        };
 	
 	        for (var key in defaults) {
@@ -291,6 +290,7 @@
 	        this.timePass = 0;
 	        this.separateTime = 0;
 	        this.opacity = 1;
+	        this.blur = options.blur;
 	
 	        this.ball1Radius = bigRaduis * (1.2 - Math.random() * 0.4);
 	        this.ball2Radius = smallRaduis * (1.2 - Math.random() * 0.4);
@@ -426,12 +426,12 @@
 	
 	        var grd = _this.offCtx.createLinearGradient(0, 0, _this.width, 0);
 	        for (var i = 0; i <= 10; i++) {
-	            grd.addColorStop(i / 10, i % 2 === 0 ? '#ff4621' : '#fffc21');
+	            grd.addColorStop(i / 10, i % 2 === 0 ? '#0678d0' : '#1bb4ba');
 	        }
 	        _this.offCtx.fillStyle = grd;
 	        _this.offCtx.fillRect(0, 0, _this.width, _this.height);
 	
-	        _this.maxBallCount = 20;
+	        _this.maxBallCount = 6;
 	        return _this;
 	    }
 	
@@ -445,37 +445,31 @@
 	        value: function tick(delta) {
 	            stats.update();
 	            if (this.breakBalls.length < this.maxBallCount) {
-	                var a = new _vec.Vector2(Math.random() * 1, Math.random() * 1).setLength(Math.random() * 200);
-	                var initTtl = Math.random() * 1000;
 	
-	                /*this.breakBalls.push(new BreakBall({
-	                    maxOpacity: 1,
-	                    bornPos: new Vec2(150, 150),
-	                    bornA: new Vec2(5, 5), // 出生加速
-	                    bornADur: 1000, // 出生加速时间
-	                     breakTime: 2000, // 分裂时间
-	                    breakA: 4, // 标量，方向在运行的时候确定
-	                    breakADur: 3000, // 分裂加速时间
-	                    dieTime: 6000, // 消亡时间
-	                }));*/
+	                var maxOpacity = Math.random() + 0.8;
+	                var blur = Math.random() * 8 | 0;
+	                var bornPos = new _vec.Vector2(this.width * 0.1 + Math.random() * this.width * 0.3 + (Math.random() > 0.5 ? this.width * 0.6 : 0), Math.random() * this.height * 0.3 + this.height * 0.3);
+	                var bornA = new _vec.Vector2(Math.random() - 0.5, Math.random() - 0.5).setLength(Math.random() * 20);
 	
 	                var aniTime = Math.random() * 3000 + 5000;
 	                var bornADur = aniTime * 0.2;
 	                var breakTime = aniTime * 0.4;
 	                var breakADur = aniTime * 0.2;
-	                var breakA = (2000 - breakADur) * 10 / 2000;
+	                var breakA = 8 + Math.random() * 6;
+	                var destoryDur = Math.random() * 300 + 1000;
 	
 	                this.breakBalls.push(new BreakBall({
-	                    maxOpacity: Math.random() + 0.8,
-	                    bornPos: new _vec.Vector2(Math.random() * this.width, Math.random() * this.height),
-	                    bornA: new _vec.Vector2(Math.random() - 0.5, Math.random() - 0.5).setLength(Math.random() * 20), // 出生加速
-	                    bornADur: bornADur, // 出生加速时间
+	                    maxOpacity: maxOpacity,
+	                    blur: blur,
+	
+	                    bornPos: bornPos,
+	                    bornA: bornA, // 出生加速度
+	                    bornADur: bornADur, // 出生加速耗时
 	
 	                    breakTime: breakTime, // 分裂时间
-	                    breakA: 4, // 标量，方向在运行的时候确定
-	                    breakADur: breakADur, // 分裂加速时间
-	                    destoryDur: Math.random() * 300 + 1000
-	                    // dieTime: dieTime, // 消亡时间
+	                    breakA: breakA, // 标量，方向在运行的时候确定
+	                    breakADur: breakADur, // 分裂加速耗时
+	                    destoryDur: destoryDur // 消亡耗时
 	                }));
 	            }
 	            this.ctx.save();
@@ -502,8 +496,8 @@
 	
 	var cvs = document.createElement('canvas');
 	
-	cvs.width = window.innerWidth;
-	cvs.height = window.innerHeight;
+	cvs.width = 1920;
+	cvs.height = 1079;
 	
 	document.body.appendChild(cvs);
 	

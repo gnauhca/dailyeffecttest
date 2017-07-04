@@ -1,14 +1,14 @@
 {
-  "name": "wave",
+  "name": "wave-ball",
   "version": "1.0.0",
-  "description": "wave",
+  "description": "wave-ball",
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack --watch"
   },
   "keywords": [
-    "wave"
+    "wave-ball"
   ],
   "author": "zzc",
   "license": "MIT",
@@ -26,6 +26,7 @@
     "node-sass": "^3.8.0",
     "sass-loader": "^3.2.1",
     "style-loader": "^0.13.1",
+    "three.js": "^0.77.1",
     "to-string-loader": "^1.1.5",
     "tojson-loader": "^1.0.4",
     "tween.js": "^16.3.4",

@@ -224,7 +224,7 @@ class Wave extends Time {
     }
 }
 
-class Scene extends Time {
+class Ani extends Time {
 
     constructor() {
         super();
@@ -316,10 +316,10 @@ let wave2 = new Wave({
 
 
 
-let scene = new Scene();
-scene.addWave(wave1);
-scene.addWave(wave2);
+let ani = new Ani();
+ani.addWave(wave1);
+ani.addWave(wave2);
 
-scene.start();
+ani.start();
 
-window.TIME.start();
+// window.TIME.start();
