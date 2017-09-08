@@ -1,0 +1,33 @@
+@import './_reset.scss';
+
+.select-wrap {
+  position: relative;
+  height: 500px;
+  perspective: 1200px;
+  text-align: center;
+  .select-options {
+    position: absolute;
+    top: 225px;
+    width: 0;
+    height: 50px;
+    transform-style: preserve-3d;
+    margin: 0 auto;
+    display: inline-block;
+    transform: translateZ(-150px) rotateX(0deg);
+    .select-option {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 50px;
+      line-height: 50px;
+      font-size: 20px;
+      // border: 1px solid red;
+
+      @for $i from 1 through 100 {
+        &:nth-child(#{$i}) {
+          transform: rotateX(-18deg * ($i - 1)) translateZ(150px);
+        }
+      }
+    }
+  }
+}
