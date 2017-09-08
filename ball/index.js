@@ -1,10 +1,10 @@
 import {Vector2 as Vec2} from './vec2.js';
 import {TIME, Time} from './time.js';
 
-import Stats from './stats.js';
-var stats = new Stats();
-stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-document.body.appendChild( stats.dom );
+// import Stats from './stats.js';
+// var stats = new Stats();
+// stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+// document.body.appendChild( stats.dom );
 
 let obstruction = 0.01; // 空气阻力
 let bigRaduis = 15;
@@ -350,7 +350,7 @@ class Painter extends Time {
         this.offCtx.fillStyle = grd;
         this.offCtx.fillRect(0, 0, this.width, this.height);
 
-        this.maxBallCount =  6;
+        this.maxBallCount =  10;
     }
 
     start() {
@@ -358,13 +358,14 @@ class Painter extends Time {
     }
 
     tick(delta) {
-        stats.update();
+        // stats.update();
         if (this.breakBalls.length < this.maxBallCount) {
 
             let maxOpacity = Math.random() + 0.8;
             let blur = (Math.random() * 8) | 0;
             let bornPos = new Vec2(
-                this.width * 0.1 + Math.random() * this.width * 0.3 + (Math.random() > 0.5 ? this.width * 0.6 : 0), 
+                // this.width * 0.1 + Math.random() * this.width * 0.3 + (Math.random() > 0.5 ? this.width * 0.6 : 0), 
+                Math.random() * this.width,
                 Math.random() * this.height * 0.3 + this.height * 0.3
             );
             let bornA = new Vec2(Math.random() - 0.5, Math.random()-0.5).setLength(Math.random() * 20);

@@ -1,33 +1,17 @@
-var webpack = require('webpack');
+let webpack = require('webpack');
+let path = require('path');
 
 module.exports = {
     entry: {
-        'index': 'index.js',
+        'index': './index.js',
     },
     output: {
-        'path': './dist',
+        'path': path.join(__dirname, './dist'),
         'filename': '[name].js'
     },
-    resolve: {
-        root: process.cwd(),
-        modulesDirectories: ['node_modules']
-    },
+    // devtool: 'source-map',
 
-    devtool: 'source-map',
-
-    module: {
-        loaders: [
-            { test: /.*\.scss$/, loaders: ['style', 'css', 'sass'] },
-            {
-                test: /.*?\.js$/,
-                loader: 'babel', 
-                query: { 
-                    presets: [ 'es2015'],
-                    plugins: ["transform-object-assign"]
-                }
-            }
-        ]
-    },
+    module: {},
 
     devServer: {
         'content-base': '/',
