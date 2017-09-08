@@ -32,11 +32,24 @@ let waveFragmentShader = `
     void main() { 
         
         gl_FragColor = vec4(color, opacity) * texture2D( texture, gl_PointCoord ); 
+        // gl_FragColor = vec4(1,1,1,1); 
     }
 
 `;
 
-let pointImg = './point.png';
+let pointCvs = document.createElement('canvas');
+let pointCtx = pointCvs.getContext('2d');
+
+pointCvs.width = 32;
+pointCvs.height = 32;
+
+var grd = pointCtx.createRadialGradient(16, 16, 5, 16, 16, 16);
+grd.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+grd.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+pointCtx.fillStyle = grd;
+pointCtx.fillRect(0, 0, 32, 32);
+// document.body.appendChild(pointCvs);
 
 class Wave extends Time {
     constructor(options) {
@@ -95,7 +108,7 @@ class Wave extends Time {
         let uniforms = {
 
             texture: {
-                value: new THREE.TextureLoader().load( pointImg )
+                value: new THREE.CanvasTexture(pointCvs)
             },
             color: {
                 value: new THREE.Color(options.color)
@@ -180,6 +193,7 @@ class Wave extends Time {
         function changeWHP() {
             that.obj.material.uniforms.waveHeight1.value = this.waveHeight1;
             that.obj.material.uniforms.waveHeight2.value = this.waveHeight2;
+            // console.log(this.waveHeight1);
         }
 
         let waveHeight = {
@@ -238,13 +252,16 @@ class Ani extends Time {
         this.scene.add(this.camera);//add到场景中
         // this.scene.fog = new THREE.Fog(0x000000, 100, 500);
 
-        let spot1 = new THREE.SpotLight(0xffffff, 1);//点光源
-        spot1.position.set(100, 500, 100);
-
-        this.renderer = new THREE.WebGLRenderer({antialias: true});//渲染
-        this.renderer.setClearColor(0x000000);
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer = new THREE.WebGLRenderer({antialias: true , alpha: true});//渲染
+        this.renderer.setClearColor(0x000000, 0);
+        this.renderer.setSize(window.innerWidth, window.innerWidth * 9 / 16);
         document.querySelector('body').appendChild(this.renderer.domElement);//将渲染Element添加到Dom中
+    }
+
+    resize() {
+        // console.log(1);
+        this.camera.aspect = 16 / 9;
+        this.renderer.setSize(window.innerWidth, window.innerWidth * 9 / 16);
     }
 
     addWave(wave) {
@@ -322,4 +339,10 @@ ani.addWave(wave2);
 
 ani.start();
 
-// window.TIME.start();
+
+window.addEventListener('resize', () => {
+    // console.log(1132);
+    ani.resize()
+});
+
+window.TIME.start();

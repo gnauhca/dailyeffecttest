@@ -106,11 +106,11 @@ let waveFragmentShader = `
     void main() { 
         
         gl_FragColor = vec4(color, opacity) * texture2D( texture, gl_PointCoord ); 
-        // gl_FragColor = vec4(1,1,1,1); 
     }
 
 `;
 
+let pointImg = './point.png';
 let pointCvs = document.createElement('canvas');
 let pointCtx = pointCvs.getContext('2d');
 
@@ -267,7 +267,6 @@ class Wave extends __WEBPACK_IMPORTED_MODULE_0__time_js__["b" /* Time */] {
         function changeWHP() {
             that.obj.material.uniforms.waveHeight1.value = this.waveHeight1;
             that.obj.material.uniforms.waveHeight2.value = this.waveHeight2;
-            // console.log(this.waveHeight1);
         }
 
         let waveHeight = {

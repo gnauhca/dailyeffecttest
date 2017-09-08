@@ -1,0 +1,153 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/Users/chazzhou/.nvm/versions/node/v6.11.0/bin/node',
+1 verbose cli   '/Users/chazzhou/.nvm/versions/node/v6.11.0/bin/npm',
+1 verbose cli   'i',
+1 verbose cli   'tween.js@17.1.0',
+1 verbose cli   '--save-dev' ]
+2 info using npm@3.10.10
+3 info using node@v6.11.0
+4 silly loadCurrentTree Starting
+5 silly install loadCurrentTree
+6 silly install readLocalPackageData
+7 silly fetchPackageMetaData tween.js@17.1.0
+8 silly fetchNamedPackageData tween.js
+9 silly mapToRegistry name tween.js
+10 silly mapToRegistry using default registry
+11 silly mapToRegistry registry https://registry.npmjs.org/
+12 silly mapToRegistry data Result {
+12 silly mapToRegistry   raw: 'tween.js',
+12 silly mapToRegistry   scope: null,
+12 silly mapToRegistry   escapedName: 'tween.js',
+12 silly mapToRegistry   name: 'tween.js',
+12 silly mapToRegistry   rawSpec: '',
+12 silly mapToRegistry   spec: 'latest',
+12 silly mapToRegistry   type: 'tag' }
+13 silly mapToRegistry uri https://registry.npmjs.org/tween.js
+14 verbose request uri https://registry.npmjs.org/tween.js
+15 verbose request no auth needed
+16 info attempt registry request try #1 at 4:25:00 PM
+17 verbose request using bearer token for auth
+18 verbose request id 7b1d0b1a02ce838e
+19 verbose etag W/"59553af3-8951"
+20 verbose lastModified Thu, 29 Jun 2017 17:37:55 GMT
+21 http request GET https://registry.npmjs.org/tween.js
+22 http 304 https://registry.npmjs.org/tween.js
+23 verbose headers { server: 'nginx/1.10.1',
+23 verbose headers   'last-modified': 'Thu, 29 Jun 2017 17:37:55 GMT',
+23 verbose headers   etag: '"59553af3-8951"',
+23 verbose headers   'cache-control': 'max-age=300',
+23 verbose headers   'accept-ranges': 'bytes',
+23 verbose headers   date: 'Fri, 08 Sep 2017 08:25:00 GMT',
+23 verbose headers   via: '1.1 varnish',
+23 verbose headers   connection: 'keep-alive',
+23 verbose headers   'x-served-by': 'cache-nrt6133-NRT',
+23 verbose headers   'x-cache': 'MISS',
+23 verbose headers   'x-cache-hits': '0',
+23 verbose headers   'x-timer': 'S1504859101.521272,VS0,VE178',
+23 verbose headers   vary: 'Accept-Encoding, Accept' }
+24 silly get cb [ 304,
+24 silly get   { server: 'nginx/1.10.1',
+24 silly get     'last-modified': 'Thu, 29 Jun 2017 17:37:55 GMT',
+24 silly get     etag: '"59553af3-8951"',
+24 silly get     'cache-control': 'max-age=300',
+24 silly get     'accept-ranges': 'bytes',
+24 silly get     date: 'Fri, 08 Sep 2017 08:25:00 GMT',
+24 silly get     via: '1.1 varnish',
+24 silly get     connection: 'keep-alive',
+24 silly get     'x-served-by': 'cache-nrt6133-NRT',
+24 silly get     'x-cache': 'MISS',
+24 silly get     'x-cache-hits': '0',
+24 silly get     'x-timer': 'S1504859101.521272,VS0,VE178',
+24 silly get     vary: 'Accept-Encoding, Accept' } ]
+25 verbose etag https://registry.npmjs.org/tween.js from cache
+26 verbose get saving tween.js to /Users/chazzhou/.npm/registry.npmjs.org/tween.js/.cache.json
+27 verbose correctMkdir /Users/chazzhou/.npm correctMkdir not in flight; initializing
+28 silly fetchNamedPackageData No valid target from cache, forcing network
+29 verbose request uri https://registry.npmjs.org/tween.js
+30 verbose request no auth needed
+31 info attempt registry request try #1 at 4:25:01 PM
+32 verbose request using bearer token for auth
+33 http request GET https://registry.npmjs.org/tween.js
+34 http 200 https://registry.npmjs.org/tween.js
+35 verbose headers { server: 'nginx/1.10.3',
+35 verbose headers   'content-type': 'application/json',
+35 verbose headers   'last-modified': 'Thu, 29 Jun 2017 17:37:55 GMT',
+35 verbose headers   etag: 'W/"59553af3-8951"',
+35 verbose headers   'content-encoding': 'gzip',
+35 verbose headers   'cache-control': 'max-age=300',
+35 verbose headers   'transfer-encoding': 'chunked',
+35 verbose headers   'accept-ranges': 'bytes',
+35 verbose headers   date: 'Fri, 08 Sep 2017 08:25:00 GMT',
+35 verbose headers   via: '1.1 varnish',
+35 verbose headers   connection: 'keep-alive',
+35 verbose headers   'x-served-by': 'cache-nrt6133-NRT',
+35 verbose headers   'x-cache': 'MISS',
+35 verbose headers   'x-cache-hits': '0',
+35 verbose headers   'x-timer': 'S1504859101.831373,VS0,VE132',
+35 verbose headers   vary: 'Accept-Encoding, Accept' }
+36 silly get cb [ 200,
+36 silly get   { server: 'nginx/1.10.3',
+36 silly get     'content-type': 'application/json',
+36 silly get     'last-modified': 'Thu, 29 Jun 2017 17:37:55 GMT',
+36 silly get     etag: 'W/"59553af3-8951"',
+36 silly get     'content-encoding': 'gzip',
+36 silly get     'cache-control': 'max-age=300',
+36 silly get     'transfer-encoding': 'chunked',
+36 silly get     'accept-ranges': 'bytes',
+36 silly get     date: 'Fri, 08 Sep 2017 08:25:00 GMT',
+36 silly get     via: '1.1 varnish',
+36 silly get     connection: 'keep-alive',
+36 silly get     'x-served-by': 'cache-nrt6133-NRT',
+36 silly get     'x-cache': 'MISS',
+36 silly get     'x-cache-hits': '0',
+36 silly get     'x-timer': 'S1504859101.831373,VS0,VE132',
+36 silly get     vary: 'Accept-Encoding, Accept' } ]
+37 verbose get saving tween.js to /Users/chazzhou/.npm/registry.npmjs.org/tween.js/.cache.json
+38 verbose correctMkdir /Users/chazzhou/.npm correctMkdir not in flight; initializing
+39 silly fetchPackageMetaData Error: No compatible version found: tween.js@17.1.0
+39 silly fetchPackageMetaData Valid install targets:
+39 silly fetchPackageMetaData 16.6.0, 16.5.0, 16.4.0, 16.3.5, 16.3.4, 16.3.3, 16.3.2, 16.3.1, 16.3.0, 16.2.0, 16.1.1, 16.1.0, 16.0.0, 15.0.0, 0.14.0, 0.13.0, 0.12.0, 0.11.0
+39 silly fetchPackageMetaData
+39 silly fetchPackageMetaData     at pickVersionFromRegistryDocument (/Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/lib/fetch-package-metadata.js:178:16)
+39 silly fetchPackageMetaData     at /Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/node_modules/iferr/index.js:13:50
+39 silly fetchPackageMetaData     at /Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/lib/utils/pulse-till-done.js:20:8
+39 silly fetchPackageMetaData     at saved (/Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/lib/cache/caching-client.js:174:7)
+39 silly fetchPackageMetaData     at /Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/node_modules/graceful-fs/polyfills.js:241:18
+39 silly fetchPackageMetaData     at FSReqWrap.oncomplete (fs.js:123:15)
+39 silly fetchPackageMetaData  error for tween.js@17.1.0 { Error: No compatible version found: tween.js@17.1.0
+39 silly fetchPackageMetaData Valid install targets:
+39 silly fetchPackageMetaData 16.6.0, 16.5.0, 16.4.0, 16.3.5, 16.3.4, 16.3.3, 16.3.2, 16.3.1, 16.3.0, 16.2.0, 16.1.1, 16.1.0, 16.0.0, 15.0.0, 0.14.0, 0.13.0, 0.12.0, 0.11.0
+39 silly fetchPackageMetaData
+39 silly fetchPackageMetaData     at pickVersionFromRegistryDocument (/Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/lib/fetch-package-metadata.js:178:16)
+39 silly fetchPackageMetaData     at /Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/node_modules/iferr/index.js:13:50
+39 silly fetchPackageMetaData     at /Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/lib/utils/pulse-till-done.js:20:8
+39 silly fetchPackageMetaData     at saved (/Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/lib/cache/caching-client.js:174:7)
+39 silly fetchPackageMetaData     at /Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/node_modules/graceful-fs/polyfills.js:241:18
+39 silly fetchPackageMetaData     at FSReqWrap.oncomplete (fs.js:123:15) code: 'ETARGET' }
+40 silly rollbackFailedOptional Starting
+41 silly rollbackFailedOptional Finishing
+42 silly runTopLevelLifecycles Finishing
+43 silly install printInstalled
+44 verbose stack Error: No compatible version found: tween.js@17.1.0
+44 verbose stack Valid install targets:
+44 verbose stack 16.6.0, 16.5.0, 16.4.0, 16.3.5, 16.3.4, 16.3.3, 16.3.2, 16.3.1, 16.3.0, 16.2.0, 16.1.1, 16.1.0, 16.0.0, 15.0.0, 0.14.0, 0.13.0, 0.12.0, 0.11.0
+44 verbose stack
+44 verbose stack     at pickVersionFromRegistryDocument (/Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/lib/fetch-package-metadata.js:178:16)
+44 verbose stack     at /Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/node_modules/iferr/index.js:13:50
+44 verbose stack     at /Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/lib/utils/pulse-till-done.js:20:8
+44 verbose stack     at saved (/Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/lib/cache/caching-client.js:174:7)
+44 verbose stack     at /Users/chazzhou/.nvm/versions/node/v6.11.0/lib/node_modules/npm/node_modules/graceful-fs/polyfills.js:241:18
+44 verbose stack     at FSReqWrap.oncomplete (fs.js:123:15)
+45 verbose cwd /Users/chazzhou/zzc/production/github/dailyeffecttest/wave
+46 error Darwin 16.5.0
+47 error argv "/Users/chazzhou/.nvm/versions/node/v6.11.0/bin/node" "/Users/chazzhou/.nvm/versions/node/v6.11.0/bin/npm" "i" "tween.js@17.1.0" "--save-dev"
+48 error node v6.11.0
+49 error npm  v3.10.10
+50 error code ETARGET
+51 error notarget No compatible version found: tween.js@17.1.0
+51 error notarget Valid install targets:
+51 error notarget 16.6.0, 16.5.0, 16.4.0, 16.3.5, 16.3.4, 16.3.3, 16.3.2, 16.3.1, 16.3.0, 16.2.0, 16.1.1, 16.1.0, 16.0.0, 15.0.0, 0.14.0, 0.13.0, 0.12.0, 0.11.0
+52 error notarget This is most likely not a problem with npm itself.
+52 error notarget In most cases you or one of your dependencies are requesting
+52 error notarget a package version that doesn't exist.
+53 verbose exit [ 1, true ]
