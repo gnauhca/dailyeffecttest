@@ -77,7 +77,7 @@ class IosSelector {
     // console.log('move');
     touchData.endY = e.touches[0].clientY;
 
-    let scrollAdd = (touchData.endY - touchData.startY) / this.itemHeight;
+    let scrollAdd = (touchData.startY - touchData.endY) / this.itemHeight;
     touchData.touchScroll = this.moveTo(this.scroll + scrollAdd);
   }
 
@@ -152,7 +152,7 @@ class IosSelector {
         circleListHTML += `<li class="select-option"
                       style="
                         height: ${this.itemHeight}px;
-                        transform: rotateX(${-this.itemAngle * (i + sourceLength - 1)}deg) translateZ(${this.radius}px);
+                        transform: rotateX(${-this.itemAngle * (i + sourceLength)}deg) translateZ(${this.radius}px);
                       "
                       data-index="${i + sourceLength}"
                       >${source[i].text}</li>`;
@@ -190,12 +190,12 @@ class IosSelector {
 
   moveTo(scroll) {
     while(scroll < 0) {
-      scroll += this.halfCount;
+      scroll += this.source.length;
     }
-    scroll = scroll % this.halfCount;
+    scroll = scroll % this.source.length;
 
-    this.elems.circleList.style.transform = `translateZ(${-this.radius}px) rotateX(${-this.itemAngle * scroll}deg)`;
-
+    this.elems.circleList.style.transform = `translateZ(${-this.radius}px) rotateX(${this.itemAngle * scroll}deg)`;
+         
     [...this.elems.circleItems].forEach(itemElem => {
       if (Math.abs(itemElem.dataset.index - scroll) > this.quarterCount) {
         itemElem.style.visibility = 'hidden';
