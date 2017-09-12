@@ -58,6 +58,7 @@ class IosSelector {
       this.events[eventName] = ((eventName) => {
         return (e) => {
           if (this.elems.el.contains(e.target) || e.target === this.elems.el) {
+            e.preventDefault();
             this['_' + eventName](e, touchData);
           }
         };
@@ -120,7 +121,7 @@ class IosSelector {
 
     let template = `
       <div class="select-wrap">
-        <ul class="select-options" style="transform: translateZ(${-this.radius}px) rotateX(0deg);">
+        <ul class="select-options" style="transform: translate3d(0, 0, ${-this.radius}px) rotateX(0deg);">
           {{circleListHTML}}
           <!-- <li class="select-option">a0</li> -->
         </ul>
@@ -150,7 +151,7 @@ class IosSelector {
       circleListHTML += `<li class="select-option"
                     style="
                       height: ${this.itemHeight}px;
-                      transform: rotateX(${-this.itemAngle * i}deg) translateZ(${this.radius}px);
+                      transform: rotateX(${-this.itemAngle * i}deg) translate3d(0, 0, ${this.radius}px);
                     "
                     data-index="${i}"
                     >${source[i].text}</li>`
@@ -173,7 +174,7 @@ class IosSelector {
         circleListHTML = `<li class="select-option"
                       style="
                         height: ${this.itemHeight}px;
-                        transform: rotateX(${this.itemAngle * (i + 1)}deg) translateZ(${this.radius}px);
+                        transform: rotateX(${this.itemAngle * (i + 1)}deg) translate3d(0, 0, ${this.radius}px);
                       "
                       data-index="${-i - 1}"
                       >${source[sourceLength - i - 1].text}</li>` + circleListHTML;
@@ -181,7 +182,7 @@ class IosSelector {
         circleListHTML += `<li class="select-option"
                       style="
                         height: ${this.itemHeight}px;
-                        transform: rotateX(${-this.itemAngle * (i + sourceLength)}deg) translateZ(${this.radius}px);
+                        transform: rotateX(${-this.itemAngle * (i + sourceLength)}deg) translate3d(0, 0, ${this.radius}px);
                       "
                       data-index="${i + sourceLength}"
                       >${source[i].text}</li>`;
@@ -213,7 +214,7 @@ class IosSelector {
       scroll = scroll % this.source.length;
     }
 
-    this.elems.circleList.style.transform = `translateZ(${-this.radius}px) rotateX(${this.itemAngle * scroll}deg)`;
+    this.elems.circleList.style.transform = `translate3d(0, 0, ${-this.radius}px) rotateX(${this.itemAngle * scroll}deg)`;
          
     [...this.elems.circleItems].forEach(itemElem => {
       if (Math.abs(itemElem.dataset.index - scroll) > this.quarterCount) {
@@ -224,7 +225,7 @@ class IosSelector {
     });
 
     // console.log(scroll);
-    // console.log(`translateZ(${-this.radius}px) rotateX(${-this.itemAngle * scroll}deg)`);
+    // console.log(`translate3d(0, 0, ${-this.radius}px) rotateX(${-this.itemAngle * scroll}deg)`);
     return scroll;
   }
 
