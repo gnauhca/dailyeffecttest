@@ -109,7 +109,7 @@ class IosSelector {
     this.scroll = touchData.touchScroll;
     this._move(v);
 
-    console.log('end');
+    // console.log('end');
   }
 
   _create(source) {
