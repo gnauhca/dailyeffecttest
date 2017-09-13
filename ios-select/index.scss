@@ -1,28 +1,50 @@
 @import './_reset.scss';
-
 .select-wrap {
+  // margin-top: 200px;
   position: relative;
-  height: 500px;
-  perspective: 1200px;
+  // top: 200px;
+  height: 300px;
+  // perspective: 1200px;
   text-align: center;
+  overflow: hidden;
+  &:before, &:after {
+    position: absolute;
+    z-index: 1;
+    display: block;
+    content: '';
+    width: 100%;
+    height: 50%;
+  }
+  &:before {
+    top: 0;
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+  }
+  &:after {
+    bottom: 0;
+    background-image: linear-gradient(to top, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+  }
+
   .select-options {
     position: absolute;
-    top: 225px;
-    width: 0;
-    height: 50px;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 0;
     transform-style: preserve-3d;
     margin: 0 auto;
-    display: inline-block;
+    display: block;
     transform: translateZ(-150px) rotateX(0deg);
+    -webkit-font-smoothing: subpixel-antialiased;
+    font-size: 20px;
+    color: #666;
     .select-option {
       position: absolute;
       top: 0;
       left: 0;
+      width: 100%;
       height: 50px;
-      line-height: 50px;
-      font-size: 20px;
-      // border: 1px solid red;
 
+      -webkit-font-smoothing: subpixel-antialiased;
       @for $i from 1 through 100 {
         &:nth-child(#{$i}) {
           transform: rotateX(-18deg * ($i - 1)) translateZ(150px);
@@ -34,9 +56,17 @@
 
 
 .highlight {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  transform: translate(0, -50%);
+  width: 100%;
+  background-color: #fff;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  font-size: 28px;
+  overflow: hidden;
 }
 .highlight-list {
-  display: none;
+  // display: none;
 
 }

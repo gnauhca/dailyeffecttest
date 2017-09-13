@@ -8,7 +8,7 @@ class IosSelector {
       el: '', // dom 
       type: 'infinite', // infinite 无限滚动，normal 非无限 
       count: 20, // 圆环规格，圆环上选项个数，必须设置 4 的倍数
-      sensitivity: 1, // 灵敏度
+      sensitivity: 0.5, // 灵敏度
       source: [], // 选项 {value: xx, text: xx}
     };
 
@@ -29,6 +29,7 @@ class IosSelector {
       circleList: null,
       circleItems: null, // list
 
+      highlight: null,
       highlightList: null,
       highListItems: null // list
     };
@@ -38,7 +39,7 @@ class IosSelector {
       touchend: null
     }
 
-    this.itemHeight = this.elems.el.offsetHeight * 2 / this.options.count; // 每项高度
+    this.itemHeight = this.elems.el.offsetHeight * 3 / this.options.count; // 每项高度
     this.itemAngle = 360 / this.options.count; // 每项之间旋转度数
     this.radius = this.itemHeight / Math.tan(this.itemAngle * Math.PI / 180); // 圆环半径 
 
@@ -150,7 +151,9 @@ class IosSelector {
     for (let i = 0; i < source.length; i++) {
       circleListHTML += `<li class="select-option"
                     style="
+                      top: ${this.itemHeight * -0.5}px;
                       height: ${this.itemHeight}px;
+                      line-height: ${this.itemHeight}px;
                       transform: rotateX(${-this.itemAngle * i}deg) translate3d(0, 0, ${this.radius}px);
                     "
                     data-index="${i}"
@@ -173,7 +176,9 @@ class IosSelector {
         // 头
         circleListHTML = `<li class="select-option"
                       style="
+                        top: ${this.itemHeight * -0.5}px;
                         height: ${this.itemHeight}px;
+                        line-height: ${this.itemHeight}px;
                         transform: rotateX(${this.itemAngle * (i + 1)}deg) translate3d(0, 0, ${this.radius}px);
                       "
                       data-index="${-i - 1}"
@@ -181,7 +186,9 @@ class IosSelector {
         // 尾
         circleListHTML += `<li class="select-option"
                       style="
+                        top: ${this.itemHeight * -0.5}px;
                         height: ${this.itemHeight}px;
+                        line-height: ${this.itemHeight}px;
                         transform: rotateX(${-this.itemAngle * (i + sourceLength)}deg) translate3d(0, 0, ${this.radius}px);
                       "
                       data-index="${i + sourceLength}"
@@ -201,8 +208,14 @@ class IosSelector {
     this.elems.circleList = this.elems.el.querySelector('.select-options');
     this.elems.circleItems = this.elems.el.querySelectorAll('.select-option');
 
+
+    this.elems.highlight = this.elems.el.querySelector('.highlight');
     this.elems.highlightList = this.elems.el.querySelector('.highlight-list');
-    this.elems.highlightitem = this.elems.el.querySelectorAll('.highlight-item');
+    this.elems.highlightitems = this.elems.el.querySelectorAll('.highlight-item');
+
+    this.elems.highlight.style.height = this.itemHeight + 'px';
+    this.elems.highlight.style.lineHeight = this.itemHeight + 'px';
+
   }
 
 
@@ -215,7 +228,8 @@ class IosSelector {
     }
 
     this.elems.circleList.style.transform = `translate3d(0, 0, ${-this.radius}px) rotateX(${this.itemAngle * scroll}deg)`;
-         
+    this.elems.highlightList.style.transform = `translate3d(0, ${-(scroll + 1) * this.itemHeight}px, 0)`;
+
     [...this.elems.circleItems].forEach(itemElem => {
       if (Math.abs(itemElem.dataset.index - scroll) > this.quarterCount) {
         itemElem.style.visibility = 'hidden';
