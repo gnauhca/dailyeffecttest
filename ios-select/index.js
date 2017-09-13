@@ -8,7 +8,7 @@ class IosSelector {
       el: '', // dom 
       type: 'infinite', // infinite 无限滚动，normal 非无限 
       count: 20, // 圆环规格，圆环上选项个数，必须设置 4 的倍数
-      sensitivity: 0.5, // 灵敏度
+      sensitivity: 0.8, // 灵敏度
       source: [], // 选项 {value: xx, text: xx}
     };
 
@@ -52,7 +52,8 @@ class IosSelector {
     this._create(this.options.source);
 
     let touchData = {
-      startY: 0
+      startY: 0,
+      yArr: []
     };
 
     for (let eventName in this.events) {
@@ -73,19 +74,23 @@ class IosSelector {
   }
 
   _touchstart(e, touchData) {
+    console.log(e);
     document.addEventListener('touchmove', this.events.touchmove);
     touchData.startY = e.touches[0].clientY;
-    touchData.startTime = new Date().getTime();
+    touchData.yArr = [[e.touches[0].clientY, new Date().getTime()]];
+    touchData.touchScroll = this.scroll;
     window.cancelAnimationFrame(this.moveT);
 
     console.log('start');
   }
 
   _touchmove(e, touchData) {
-    // console.log('move');
-    touchData.endY = e.touches[0].clientY;
+    touchData.yArr.push([e.touches[0].clientY, new Date().getTime()]);
+    if (touchData.length > 5) {
+      touchData.unshift();
+    }
 
-    let scrollAdd = (touchData.startY - touchData.endY) / this.itemHeight;
+    let scrollAdd = (touchData.startY - e.touches[0].clientY) / this.itemHeight;
     let moveToScroll = scrollAdd + this.scroll;
 
     // 非无限滚动时，超出范围使滚动变得困难
@@ -101,13 +106,26 @@ class IosSelector {
   }
 
   _touchend(e, touchData) {
+    // console.log(e);
     document.removeEventListener('touchmove', this.events.touchmove);
-    // 计算速度
-    let endTime = new Date().getTime();
-    let v = ((touchData.startY - touchData.endY) / this.itemHeight) * 1000 / (new Date().getTime() - touchData.startTime);
-    let sign = v > 0 ? 1 : -1;
 
-    v = Math.abs(v) > 30 ? 30 * sign : v;
+    let v;
+
+    if (touchData.yArr.length === 1) {
+      v = 0;
+    } else {
+      let startTime = touchData.yArr[touchData.yArr.length - 2][1];
+      let endTime = touchData.yArr[touchData.yArr.length - 1][1];
+      let startY = touchData.yArr[touchData.yArr.length - 2][0];
+      let endY = touchData.yArr[touchData.yArr.length - 1][0];
+
+      // 计算速度
+      v = ((startY - endY) / this.itemHeight) * 1000 / (endTime - startTime);
+      let sign = v > 0 ? 1 : -1;
+
+      v = Math.abs(v) > 30 ? 30 * sign : v;
+    }
+
     this.scroll = touchData.touchScroll;
     this._move(v);
 
@@ -281,7 +299,7 @@ class IosSelector {
         moveScrollLen = totalScrollLen;
         this.scroll = finalScroll;
       }
-      this._moveTo(initScroll + moveScrollLen);
+      this.scroll = this._moveTo(initScroll + moveScrollLen);
     }
     tick();
   }
