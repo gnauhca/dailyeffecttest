@@ -7,7 +7,10 @@ module.exports = {
     },
     output: {
         'path': path.resolve(__dirname, './dist'),
-        'filename': '[name].js'
+        'filename': '[name].js',
+        library: "IosSelector",
+        libraryExport: "default",
+        libraryTarget: "umd"
     },
 
     devtool: 'source-map',
@@ -15,7 +18,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /.*\.scss$/, 
+                test: /.*\.scss$/,
                 use: ['style-loader', 'css-loader', 'sass-loader']
             }
         ]

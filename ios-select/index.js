@@ -1,5 +1,5 @@
 require('./index.scss');
-import { assign, assignIn } from 'lodash';
+// import { assign, assignIn } from 'lodash';
 
 
 class IosSelector {
@@ -10,16 +10,18 @@ class IosSelector {
       count: 20, // 圆环规格，圆环上选项个数，必须设置 4 的倍数
       sensitivity: 0.8, // 灵敏度
       source: [], // 选项 {value: xx, text: xx}
+      onChange: null
     };
 
-    this.options = assignIn(defaults, options);
+    this.options = Object.assign({}, defaults, options);
     this.options.count =  this.options.count - this.options.count % 4;
-    assign(this, this.options);
+    Object.assign(this, this.options);
 
     this.halfCount = this.options.count / 2;
     this.quarterCount = this.options.count / 4;
     this.a = this.options.sensitivity * 10; // 滚动减速度
     this.minV = Math.sqrt(1 / this.a); // 最小初速度
+    this.selected = this.source[0];
 
     this.exceedA = 100; // 超出减速 
     this.moveT = 0; // 滚动 tick
@@ -264,7 +266,7 @@ class IosSelector {
 
   _move(initV) {
 
-    console.log(initV);
+    // console.log(initV);
 
     let start = new Date().getTime() / 1000;
     let pass = 0;
@@ -282,12 +284,12 @@ class IosSelector {
     t = Math.sqrt(totalScrollLen * 2 / -a);
     initV = -a * t;
 
-    console.log(initV, t, a, totalScrollLen);
+    // console.log(initV, t, a, totalScrollLen);
 
     // scroll 取整后，微调 initV 
     initV = (totalScrollLen - a * t * t / 2) / t;
 
-    let moveScrollLen;
+    let moveScrollLen; // 已经移动的
 
     let tick = () => {
       pass = new Date().getTime() / 1000 - start;
@@ -295,11 +297,13 @@ class IosSelector {
       if (pass < t) {
         moveScrollLen = initV * pass + a * pass * pass / 2;
         this.moveT = window.requestAnimationFrame(tick);
+        this.scroll = this._moveTo(initScroll + moveScrollLen);
       } else {
         moveScrollLen = totalScrollLen;
-        this.scroll = finalScroll;
+        this.scroll = this._moveTo(initScroll + moveScrollLen);
+        this.selected = this.source[this.scroll];
+        this.onChange && this.onChange(this.selected);
       }
-      this.scroll = this._moveTo(initScroll + moveScrollLen);
     }
     tick();
   }
@@ -315,37 +319,30 @@ class IosSelector {
   }
 
   updateSource(source) {
-
+    this._create(source);
   }
 
   select(value) {
-
+    for (let i = 0; i < this.source.length; i++) {
+      if (this.source[i].value === value) {
+        this._moveTo(i);
+        return;
+      }
+    }
   }
 
-
-
   destroy() {
-
+    // document 事件解绑
+    for (let eventName in this.events) {
+      document.removeEventListener('eventName', this.events[eventName]);
+    }
+    // 元素移除
+    this.elems.el.innerHTML = '';
+    this.elems = null;
   }
 }
 
 
-
-let iosSelector = new IosSelector({
-  el: '#iosSelector',
-  count: 20,
-  source: [
-    { value: 1, text: '01' },
-    { value: 2, text: '02' },
-    { value: 3, text: '03' },
-    { value: 4, text: '04' },
-    { value: 5, text: '05' },
-    { value: 6, text: '06' },
-    { value: 7, text: '07' },
-    { value: 8, text: '08' }
-  ]
-});
-
-console.log(iosSelector);
+export default IosSelector;
 
 
