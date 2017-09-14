@@ -69,3 +69,17 @@
   // display: none;
 
 }
+
+
+/* date */
+.date-selector {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+
+  height: 400px;
+  >div {
+    flex: 1;
+  }
+}
+

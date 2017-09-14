@@ -27,7 +27,7 @@
 	</div>
 </div>-->
 
-<div id="iosSelector" style="position: relative; height: 300px; top: 100px;"></div>
+<!--<div id="iosSelector" style="position: relative; height: 300px; top: 100px;"></div>-->
 <!--
 <div class="highlight">
 	<ul class="highlight-list">
@@ -35,36 +35,103 @@
 	</ul>
 </div>
 -->
+
+<div class="date-selector">
+	<div class="year"></div>
+	<div class="month"></div>
+	<div class="day"></div>
+</div>
+
+
 <script src="dist/index.js"></script>
 <script>
-let iosSelector = new IosSelector({
-  el: '#iosSelector',
-  count: 20,
-  source: [
-    { value: 1, text: '01' },
-    { value: 2, text: '02' },
-    { value: 3, text: '03' },
-    { value: 4, text: '04' },
-    { value: 5, text: '05' },
-    { value: 6, text: '06' },
-    { value: 7, text: '07' },
-    { value: 8, text: '08' }
-  ],
-  onChange: (selected) => { console.log(selected);}
-});
+// let iosSelector = new IosSelector({
+//   el: '#iosSelector',
+//   count: 20,
+//   source: [
+//     { value: 1, text: '01' },
+//     { value: 2, text: '02' },
+//     { value: 3, text: '03' },
+//     { value: 4, text: '04' },
+//     { value: 5, text: '05' },
+//     { value: 6, text: '06' },
+//     { value: 7, text: '07' },
+//     { value: 8, text: '08' }
+//   ],
+//   onChange: (selected) => { console.log(selected);}
+// });
 
 
 function getYears() {
+	let currentYear = new Date().getFullYear();
+	let years = [];
 
+	for (let i = currentYear - 20; i < currentYear + 20; i++) {
+		years.push({
+			value: i,
+			text: i + '年'
+		});
+	}
+	return years;
 }
 
-function getMonths() {
-	
+function getMonths(year) {
+	let months = [];
+	for (let i = 1; i <= 12; i++) {
+		months.push({
+			value: i,
+			text: i + '月'
+		});
+	}
+	return months;
 }
 
-function getDays() {
+function getDays(year, month) {
+	let dayCount = new Date(year,month,0).getDate(); 
+	let days = [];
 
+	for (let i = 1; i <= dayCount; i++) {
+		days.push({
+			value: i,
+			text: i + '日'
+		});
+	}
+
+	return days; 
 }
+
+let currentYear = new Date().getFullYear();
+let currentMonth = 1;
+let currentDay = 1;
+
+yearSource = getYears();
+monthSource = getMonths();
+daySource = getDays(currentYear, currentMonth);
+
+let yearSelector = new IosSelector({
+	source: yearSource,
+	onChange: (selected) => {
+		daySource = getDays(currentYear, currentMonth);
+		daySelector.updateSource(daySource);
+	}
+});
+let monthSelector = new IosSelector({
+	source: monthSource,
+	onChange: (selected) => {
+		daySource = getDays(currentYear, currentMonth);
+		daySelector.updateSource(daySource);
+	}
+});
+let daySelector = new IosSelector({
+	source: [],
+	onChange: (selected) => {
+		let monthSource = getMonths(selected.value);
+
+	}
+});
+
+
+
 
 </script>
 </body>

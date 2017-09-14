@@ -10,6 +10,7 @@ class IosSelector {
       count: 20, // 圆环规格，圆环上选项个数，必须设置 4 的倍数
       sensitivity: 0.8, // 灵敏度
       source: [], // 选项 {value: xx, text: xx}
+      value: null,
       onChange: null
     };
 
@@ -63,7 +64,9 @@ class IosSelector {
         return (e) => {
           if (this.elems.el.contains(e.target) || e.target === this.elems.el) {
             e.preventDefault();
-            this['_' + eventName](e, touchData);
+            if (this.source.length) {
+              this['_' + eventName](e, touchData);
+            }
           }
         };
       })(eventName);
@@ -72,7 +75,9 @@ class IosSelector {
     document.addEventListener('touchstart', this.events.touchstart);
     // document.addEventListener('touchmove', this.events.touchmove);
     document.addEventListener('touchend', this.events.touchend);
-    this._moveTo(0);
+    if (this.source.length) {
+      this.select(this.value);
+    }
   }
 
   _touchstart(e, touchData) {
@@ -81,7 +86,7 @@ class IosSelector {
     touchData.startY = e.touches[0].clientY;
     touchData.yArr = [[e.touches[0].clientY, new Date().getTime()]];
     touchData.touchScroll = this.scroll;
-    window.cancelAnimationFrame(this.moveT);
+    this._stop();
 
     console.log('start');
   }
@@ -238,15 +243,18 @@ class IosSelector {
 
   }
 
+  _normalizeScroll(scroll) {
+    let normalizedScroll = scroll | 0;
+
+    while(normalizedScroll < 0) {
+      normalizedScroll += this.source.length;
+    }
+    normalizedScroll = normalizedScroll % this.source.length;
+    return normalizedScroll;
+  }
 
   _moveTo(scroll) {
-    if (this.type === 'infinite') {
-      while(scroll < 0) {
-        scroll += this.source.length;
-      }
-      scroll = scroll % this.source.length;
-    }
-
+    scroll = this._normalizeScroll(scroll);
     this.elems.circleList.style.transform = `translate3d(0, 0, ${-this.radius}px) rotateX(${this.itemAngle * scroll}deg)`;
     this.elems.highlightList.style.transform = `translate3d(0, ${-(scroll + 1) * this.itemHeight}px, 0)`;
 
@@ -262,7 +270,6 @@ class IosSelector {
     // console.log(`translate3d(0, 0, ${-this.radius}px) rotateX(${-this.itemAngle * scroll}deg)`);
     return scroll;
   }
-
 
   _move(initV) {
 
@@ -301,11 +308,14 @@ class IosSelector {
       } else {
         moveScrollLen = totalScrollLen;
         this.scroll = this._moveTo(initScroll + moveScrollLen);
-        this.selected = this.source[this.scroll];
-        this.onChange && this.onChange(this.selected);
+        this._selectByScroll(this.scroll);
       }
     }
     tick();
+  }
+
+  _stop() {
+    window.cancelAnimationFrame(this.moveT);
   }
 
   // 超出部分，非 infinite 情况
@@ -318,20 +328,34 @@ class IosSelector {
 
   }
 
+  _selectByScroll(scroll) {
+    scroll = this._normalizeScroll(scroll);
+    this.selected = this.source[scroll];
+    this.value = this.selected.value;
+    this.onChange && this.onChange(this.selected);
+  }
+
   updateSource(source) {
     this._create(source);
+    this._selectByScroll(this.scroll);
   }
 
   select(value) {
     for (let i = 0; i < this.source.length; i++) {
       if (this.source[i].value === value) {
-        this._moveTo(i);
+        window.cancelAnimationFrame(this.moveT);
+        this.scroll = this._moveTo(i);
+        this.selected = this.source[this.scroll];
+        this.value = this.selected.value;
+        this.onChange && this.onChange(this.selected);
         return;
       }
     }
+    throw new Error(`can not select value: ${value}, ${value} match nothing in current source`);
   }
 
   destroy() {
+    this._stop();
     // document 事件解绑
     for (let eventName in this.events) {
       document.removeEventListener('eventName', this.events[eventName]);
