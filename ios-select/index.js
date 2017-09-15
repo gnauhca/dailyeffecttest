@@ -1,6 +1,14 @@
 require('./index.scss');
 // import { assign, assignIn } from 'lodash';
 
+const easing = {
+  easeOutCubic: function(pos) {
+    return (Math.pow((pos-1), 3) +1);
+  },
+  easeOutQuart: function(pos) {
+    return -(Math.pow((pos-1), 4) -1);
+  },
+};
 
 class IosSelector {
   constructor(options) {
@@ -24,8 +32,9 @@ class IosSelector {
     this.minV = Math.sqrt(1 / this.a); // 最小初速度
     this.selected = this.source[0];
 
-    this.exceedA = 100; // 超出减速 
+    this.exceedA = 10; // 超出减速 
     this.moveT = 0; // 滚动 tick
+    this.moving = false;
 
     this.elems = {
       el: document.querySelector(this.options.el),
@@ -40,12 +49,11 @@ class IosSelector {
       touchstart: null,
       touchmove: null,
       touchend: null
-    }
+    };
 
     this.itemHeight = this.elems.el.offsetHeight * 3 / this.options.count; // 每项高度
     this.itemAngle = 360 / this.options.count; // 每项之间旋转度数
     this.radius = this.itemHeight / Math.tan(this.itemAngle * Math.PI / 180); // 圆环半径 
-
 
     this.scroll = 0; // 单位为一个 item 的高度（度数）
     this._init();
@@ -76,6 +84,7 @@ class IosSelector {
     // document.addEventListener('touchmove', this.events.touchmove);
     document.addEventListener('touchend', this.events.touchend);
     if (this.source.length) {
+      this.value = this.value !== null ? this.value : this.source[0].value;
       this.select(this.value);
     }
   }
@@ -107,9 +116,12 @@ class IosSelector {
       } else if (moveToScroll > this.source.length) {
         moveToScroll = this.source.length + (moveToScroll - this.source.length) * 0.3;
       }
+      console.log(moveToScroll);
+    } else {
+      moveToScroll = this._normalizeScroll(moveToScroll);
     }
 
-    touchData.touchScroll = this._moveTo(this.scroll + scrollAdd);
+    touchData.touchScroll = this._moveTo(moveToScroll);
   }
 
   _touchend(e, touchData) {
@@ -134,7 +146,7 @@ class IosSelector {
     }
 
     this.scroll = touchData.touchScroll;
-    this._move(v);
+    this._animateMoveByInitV(v);
 
     // console.log('end');
   }
@@ -238,13 +250,23 @@ class IosSelector {
     this.elems.highlightList = this.elems.el.querySelector('.highlight-list');
     this.elems.highlightitems = this.elems.el.querySelectorAll('.highlight-item');
 
+    if (this.type === 'infinite') {
+      this.elems.highlightList.style.top = -this.itemHeight + 'px';
+    }
+
     this.elems.highlight.style.height = this.itemHeight + 'px';
     this.elems.highlight.style.lineHeight = this.itemHeight + 'px';
 
   }
 
+  /**
+   * 对 scroll 取模，eg source.length = 5 scroll = 6.1 
+   * 取模之后 normalizedScroll = 1.1
+   * @param {init} scroll 
+   * @return 取模之后的 normalizedScroll
+   */
   _normalizeScroll(scroll) {
-    let normalizedScroll = scroll | 0;
+    let normalizedScroll = scroll;
 
     while(normalizedScroll < 0) {
       normalizedScroll += this.source.length;
@@ -253,10 +275,17 @@ class IosSelector {
     return normalizedScroll;
   }
 
+  /**
+   * 定位到 scroll，无动画
+   * @param {init} scroll 
+   * @return 返回指定 normalize 之后的 scroll
+   */
   _moveTo(scroll) {
-    scroll = this._normalizeScroll(scroll);
+    if (this.type === 'infinite') {
+      scroll = this._normalizeScroll(scroll);
+    }
     this.elems.circleList.style.transform = `translate3d(0, 0, ${-this.radius}px) rotateX(${this.itemAngle * scroll}deg)`;
-    this.elems.highlightList.style.transform = `translate3d(0, ${-(scroll + 1) * this.itemHeight}px, 0)`;
+    this.elems.highlightList.style.transform = `translate3d(0, ${-(scroll) * this.itemHeight}px, 0)`;
 
     [...this.elems.circleItems].forEach(itemElem => {
       if (Math.abs(itemElem.dataset.index - scroll) > this.quarterCount) {
@@ -271,65 +300,100 @@ class IosSelector {
     return scroll;
   }
 
-  _move(initV) {
+  /**
+   * 以初速度 initV 滚动
+   * @param {init} initV， initV 会被重置
+   * 以根据加速度确保滚动到整数 scroll (保证能通过 scroll 定位到一个选中值)
+   */
+  async _animateMoveByInitV(initV) {
 
     // console.log(initV);
 
+    let initScroll;
+    let finalScroll;
+    let finalV;
+
+    let totalScrollLen;
+    let a;
+    let t;
+
+    if (this.type === 'normal') {
+
+      if (this.scroll < 0 || this.scroll > this.source.length - 1) {
+        a = this.exceedA;
+        initScroll = this.scroll;
+        finalScroll = this.scroll < 0 ? 0 : this.source.length - 1;
+        totalScrollLen = initScroll - finalScroll;
+
+        t = Math.sqrt(Math.abs(totalScrollLen / a));
+        initV = a * t;
+        initV = this.scroll > 0 ? -initV : initV;
+        finalV = 0;
+        await this._animateToScroll(initScroll, finalScroll, t);
+      } else {
+        initScroll = this.scroll;
+        a = initV > 0 ? -this.a : this.a; // 减速加速度
+        t = Math.abs(initV / a); // 速度减到 0 花费时间
+        totalScrollLen = initV * t + a * t * t / 2; // 总滚动长度
+        finalScroll = Math.round(this.scroll + totalScrollLen); // 取整，确保准确最终 scroll 为整数
+        finalScroll = finalScroll < 0 ? 0 : (finalScroll > this.source.length - 1 ? this.source.length - 1 : finalScroll);
+
+        totalScrollLen = finalScroll - initScroll;
+        t = Math.sqrt(Math.abs(totalScrollLen / a));
+        await this._animateToScroll(this.scroll, finalScroll, t, 'easeOutQuart');
+      }
+
+    } else {
+      initScroll = this.scroll;
+
+      a = initV > 0 ? -this.a : this.a; // 减速加速度
+      t = Math.abs(initV / a); // 速度减到 0 花费时间
+      totalScrollLen = initV * t + a * t * t / 2; // 总滚动长度
+      finalScroll = Math.round(this.scroll + totalScrollLen); // 取整，确保准确最终 scroll 为整数
+      await this._animateToScroll(this.scroll, finalScroll, t, 'easeOutQuart');
+    }
+
+    // await this._animateToScroll(this.scroll, finalScroll, initV, 0);
+    
+    this._selectByScroll(this.scroll);
+  }
+
+  _animateToScroll(initScroll, finalScroll, t, easingName = 'easeOutQuart') {
+    if (initScroll === finalScroll || t === 0) {
+      this._moveTo(initScroll);
+      return;
+    }
+
     let start = new Date().getTime() / 1000;
     let pass = 0;
-    let initScroll = this.scroll;
+    let totalScrollLen = finalScroll - initScroll;
+    
+    // console.log(initScroll, finalScroll, initV, finalV, a);
+    return new Promise((resolve, reject) => {
+      this.moving = true;
+      let tick = () => {
+        pass = new Date().getTime() / 1000 - start;
 
-    let a = initV > 0 ? -this.a : this.a; // 减速加速度
-    let t = Math.abs(initV / a); // 速度减到 0 花费时间
-    let totalScrollLen = initV * t + a * t * t / 2; // 总滚动长度
-    let finalScroll = Math.round(this.scroll + totalScrollLen); // 取整，确保准确最终 scroll 为整数
-
-    totalScrollLen = finalScroll - this.scroll;
-
-    // 取整后反推加速度，初速度
-    a = totalScrollLen > 0 ? -this.a : this.a; 
-    t = Math.sqrt(totalScrollLen * 2 / -a);
-    initV = -a * t;
-
-    // console.log(initV, t, a, totalScrollLen);
-
-    // scroll 取整后，微调 initV 
-    initV = (totalScrollLen - a * t * t / 2) / t;
-
-    let moveScrollLen; // 已经移动的
-
-    let tick = () => {
-      pass = new Date().getTime() / 1000 - start;
-
-      if (pass < t) {
-        moveScrollLen = initV * pass + a * pass * pass / 2;
-        this.moveT = window.requestAnimationFrame(tick);
-        this.scroll = this._moveTo(initScroll + moveScrollLen);
-      } else {
-        moveScrollLen = totalScrollLen;
-        this.scroll = this._moveTo(initScroll + moveScrollLen);
-        this._selectByScroll(this.scroll);
-      }
-    }
-    tick();
+        if (pass < t) {
+          this.scroll = this._moveTo(initScroll + easing[easingName](pass / t) * totalScrollLen);
+          this.moveT = requestAnimationFrame(tick);
+        } else {
+          resolve();
+          this._stop();
+          this.scroll = this._moveTo(initScroll + totalScrollLen);
+        }
+      };
+      tick();
+    });
   }
 
   _stop() {
-    window.cancelAnimationFrame(this.moveT);
-  }
-
-  // 超出部分，非 infinite 情况
-  _exceedMove(initV) {
-
-  }
-
-  // 回弹
-  _exceedBackMove() {
-
+    this.moving = false;
+    cancelAnimationFrame(this.moveT);
   }
 
   _selectByScroll(scroll) {
-    scroll = this._normalizeScroll(scroll);
+    scroll = this._normalizeScroll(scroll) | 0;
     this.selected = this.source[scroll];
     this.value = this.selected.value;
     this.onChange && this.onChange(this.selected);
@@ -337,17 +401,26 @@ class IosSelector {
 
   updateSource(source) {
     this._create(source);
-    this._selectByScroll(this.scroll);
+
+    if (
+      !this.source.find(item => item.value === this.value) || 
+      !this.moving
+    ) {
+      this.value = this.value !== null ? this.value : this.source[0].value;
+      this.select(this.value);
+    }
   }
 
   select(value) {
     for (let i = 0; i < this.source.length; i++) {
       if (this.source[i].value === value) {
         window.cancelAnimationFrame(this.moveT);
-        this.scroll = this._moveTo(i);
-        this.selected = this.source[this.scroll];
-        this.value = this.selected.value;
-        this.onChange && this.onChange(this.selected);
+        // this.scroll = this._moveTo(i);
+        let initScroll = this._normalizeScroll(this.scroll);
+        let finalScroll = i;
+        let t = Math.sqrt(Math.abs((finalScroll -  initScroll) / this.a));
+        this._animateToScroll(initScroll, finalScroll, t);
+        setTimeout(() => this._selectByScroll(i));
         return;
       }
     }

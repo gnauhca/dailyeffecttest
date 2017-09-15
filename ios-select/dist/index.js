@@ -82,6 +82,14 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 __webpack_require__(1);
 // import { assign, assignIn } from 'lodash';
 
+const easing = {
+  easeOutCubic: function(pos) {
+    return (Math.pow((pos-1), 3) +1);
+  },
+  easeOutQuart: function(pos) {
+    return -(Math.pow((pos-1), 4) -1);
+  },
+};
 
 class IosSelector {
   constructor(options) {
@@ -105,8 +113,9 @@ class IosSelector {
     this.minV = Math.sqrt(1 / this.a); // 最小初速度
     this.selected = this.source[0];
 
-    this.exceedA = 100; // 超出减速 
+    this.exceedA = 10; // 超出减速 
     this.moveT = 0; // 滚动 tick
+    this.moving = false;
 
     this.elems = {
       el: document.querySelector(this.options.el),
@@ -121,12 +130,11 @@ class IosSelector {
       touchstart: null,
       touchmove: null,
       touchend: null
-    }
+    };
 
     this.itemHeight = this.elems.el.offsetHeight * 3 / this.options.count; // 每项高度
     this.itemAngle = 360 / this.options.count; // 每项之间旋转度数
     this.radius = this.itemHeight / Math.tan(this.itemAngle * Math.PI / 180); // 圆环半径 
-
 
     this.scroll = 0; // 单位为一个 item 的高度（度数）
     this._init();
@@ -157,6 +165,7 @@ class IosSelector {
     // document.addEventListener('touchmove', this.events.touchmove);
     document.addEventListener('touchend', this.events.touchend);
     if (this.source.length) {
+      this.value = this.value !== null ? this.value : this.source[0].value;
       this.select(this.value);
     }
   }
@@ -188,9 +197,12 @@ class IosSelector {
       } else if (moveToScroll > this.source.length) {
         moveToScroll = this.source.length + (moveToScroll - this.source.length) * 0.3;
       }
+      console.log(moveToScroll);
+    } else {
+      moveToScroll = this._normalizeScroll(moveToScroll);
     }
 
-    touchData.touchScroll = this._moveTo(this.scroll + scrollAdd);
+    touchData.touchScroll = this._moveTo(moveToScroll);
   }
 
   _touchend(e, touchData) {
@@ -215,7 +227,7 @@ class IosSelector {
     }
 
     this.scroll = touchData.touchScroll;
-    this._move(v);
+    this._animateMoveByInitV(v);
 
     // console.log('end');
   }
@@ -319,13 +331,23 @@ class IosSelector {
     this.elems.highlightList = this.elems.el.querySelector('.highlight-list');
     this.elems.highlightitems = this.elems.el.querySelectorAll('.highlight-item');
 
+    if (this.type === 'infinite') {
+      this.elems.highlightList.style.top = -this.itemHeight + 'px';
+    }
+
     this.elems.highlight.style.height = this.itemHeight + 'px';
     this.elems.highlight.style.lineHeight = this.itemHeight + 'px';
 
   }
 
+  /**
+   * 对 scroll 取模，eg source.length = 5 scroll = 6.1 
+   * 取模之后 normalizedScroll = 1.1
+   * @param {init} scroll 
+   * @return 取模之后的 normalizedScroll
+   */
   _normalizeScroll(scroll) {
-    let normalizedScroll = scroll | 0;
+    let normalizedScroll = scroll;
 
     while(normalizedScroll < 0) {
       normalizedScroll += this.source.length;
@@ -334,10 +356,17 @@ class IosSelector {
     return normalizedScroll;
   }
 
+  /**
+   * 定位到 scroll，无动画
+   * @param {init} scroll 
+   * @return 返回指定 normalize 之后的 scroll
+   */
   _moveTo(scroll) {
-    scroll = this._normalizeScroll(scroll);
+    if (this.type === 'infinite') {
+      scroll = this._normalizeScroll(scroll);
+    }
     this.elems.circleList.style.transform = `translate3d(0, 0, ${-this.radius}px) rotateX(${this.itemAngle * scroll}deg)`;
-    this.elems.highlightList.style.transform = `translate3d(0, ${-(scroll + 1) * this.itemHeight}px, 0)`;
+    this.elems.highlightList.style.transform = `translate3d(0, ${-(scroll) * this.itemHeight}px, 0)`;
 
     [...this.elems.circleItems].forEach(itemElem => {
       if (Math.abs(itemElem.dataset.index - scroll) > this.quarterCount) {
@@ -352,65 +381,100 @@ class IosSelector {
     return scroll;
   }
 
-  _move(initV) {
+  /**
+   * 以初速度 initV 滚动
+   * @param {init} initV， initV 会被重置
+   * 以根据加速度确保滚动到整数 scroll (保证能通过 scroll 定位到一个选中值)
+   */
+  async _animateMoveByInitV(initV) {
 
     // console.log(initV);
 
+    let initScroll;
+    let finalScroll;
+    let finalV;
+
+    let totalScrollLen;
+    let a;
+    let t;
+
+    if (this.type === 'normal') {
+
+      if (this.scroll < 0 || this.scroll > this.source.length - 1) {
+        a = this.exceedA;
+        initScroll = this.scroll;
+        finalScroll = this.scroll < 0 ? 0 : this.source.length - 1;
+        totalScrollLen = initScroll - finalScroll;
+
+        t = Math.sqrt(Math.abs(totalScrollLen / a));
+        initV = a * t;
+        initV = this.scroll > 0 ? -initV : initV;
+        finalV = 0;
+        await this._animateToScroll(initScroll, finalScroll, t);
+      } else {
+        initScroll = this.scroll;
+        a = initV > 0 ? -this.a : this.a; // 减速加速度
+        t = Math.abs(initV / a); // 速度减到 0 花费时间
+        totalScrollLen = initV * t + a * t * t / 2; // 总滚动长度
+        finalScroll = Math.round(this.scroll + totalScrollLen); // 取整，确保准确最终 scroll 为整数
+        finalScroll = finalScroll < 0 ? 0 : (finalScroll > this.source.length - 1 ? this.source.length - 1 : finalScroll);
+
+        totalScrollLen = finalScroll - initScroll;
+        t = Math.sqrt(Math.abs(totalScrollLen / a));
+        await this._animateToScroll(this.scroll, finalScroll, t, 'easeOutQuart');
+      }
+
+    } else {
+      initScroll = this.scroll;
+
+      a = initV > 0 ? -this.a : this.a; // 减速加速度
+      t = Math.abs(initV / a); // 速度减到 0 花费时间
+      totalScrollLen = initV * t + a * t * t / 2; // 总滚动长度
+      finalScroll = Math.round(this.scroll + totalScrollLen); // 取整，确保准确最终 scroll 为整数
+      await this._animateToScroll(this.scroll, finalScroll, t, 'easeOutQuart');
+    }
+
+    // await this._animateToScroll(this.scroll, finalScroll, initV, 0);
+    
+    this._selectByScroll(this.scroll);
+  }
+
+  _animateToScroll(initScroll, finalScroll, t, easingName = 'easeOutQuart') {
+    if (initScroll === finalScroll || t === 0) {
+      this._moveTo(initScroll);
+      return;
+    }
+
     let start = new Date().getTime() / 1000;
     let pass = 0;
-    let initScroll = this.scroll;
+    let totalScrollLen = finalScroll - initScroll;
+    
+    // console.log(initScroll, finalScroll, initV, finalV, a);
+    return new Promise((resolve, reject) => {
+      this.moving = true;
+      let tick = () => {
+        pass = new Date().getTime() / 1000 - start;
 
-    let a = initV > 0 ? -this.a : this.a; // 减速加速度
-    let t = Math.abs(initV / a); // 速度减到 0 花费时间
-    let totalScrollLen = initV * t + a * t * t / 2; // 总滚动长度
-    let finalScroll = Math.round(this.scroll + totalScrollLen); // 取整，确保准确最终 scroll 为整数
-
-    totalScrollLen = finalScroll - this.scroll;
-
-    // 取整后反推加速度，初速度
-    a = totalScrollLen > 0 ? -this.a : this.a; 
-    t = Math.sqrt(totalScrollLen * 2 / -a);
-    initV = -a * t;
-
-    // console.log(initV, t, a, totalScrollLen);
-
-    // scroll 取整后，微调 initV 
-    initV = (totalScrollLen - a * t * t / 2) / t;
-
-    let moveScrollLen; // 已经移动的
-
-    let tick = () => {
-      pass = new Date().getTime() / 1000 - start;
-
-      if (pass < t) {
-        moveScrollLen = initV * pass + a * pass * pass / 2;
-        this.moveT = window.requestAnimationFrame(tick);
-        this.scroll = this._moveTo(initScroll + moveScrollLen);
-      } else {
-        moveScrollLen = totalScrollLen;
-        this.scroll = this._moveTo(initScroll + moveScrollLen);
-        this._selectByScroll(this.scroll);
-      }
-    }
-    tick();
+        if (pass < t) {
+          this.scroll = this._moveTo(initScroll + easing[easingName](pass / t) * totalScrollLen);
+          this.moveT = requestAnimationFrame(tick);
+        } else {
+          resolve();
+          this._stop();
+          this.scroll = this._moveTo(initScroll + totalScrollLen);
+        }
+      };
+      tick();
+    });
   }
 
   _stop() {
-    window.cancelAnimationFrame(this.moveT);
-  }
-
-  // 超出部分，非 infinite 情况
-  _exceedMove(initV) {
-
-  }
-
-  // 回弹
-  _exceedBackMove() {
-
+    this.moving = false;
+    cancelAnimationFrame(this.moveT);
   }
 
   _selectByScroll(scroll) {
-    scroll = this._normalizeScroll(scroll);
+    scroll = this._normalizeScroll(scroll) | 0;
     this.selected = this.source[scroll];
     this.value = this.selected.value;
     this.onChange && this.onChange(this.selected);
@@ -418,17 +482,26 @@ class IosSelector {
 
   updateSource(source) {
     this._create(source);
-    this._selectByScroll(this.scroll);
+
+    if (
+      !this.source.find(item => item.value === this.value) || 
+      !this.moving
+    ) {
+      this.value = this.value !== null ? this.value : this.source[0].value;
+      this.select(this.value);
+    }
   }
 
   select(value) {
     for (let i = 0; i < this.source.length; i++) {
       if (this.source[i].value === value) {
         window.cancelAnimationFrame(this.moveT);
-        this.scroll = this._moveTo(i);
-        this.selected = this.source[this.scroll];
-        this.value = this.selected.value;
-        this.onChange && this.onChange(this.selected);
+        // this.scroll = this._moveTo(i);
+        let initScroll = this._normalizeScroll(this.scroll);
+        let finalScroll = i;
+        let t = Math.sqrt(Math.abs((finalScroll -  initScroll) / this.a));
+        this._animateToScroll(initScroll, finalScroll, t);
+        setTimeout(() => this._selectByScroll(i));
         return;
       }
     }
@@ -493,7 +566,7 @@ exports = module.exports = __webpack_require__(3)(undefined);
 
 
 // module
-exports.push([module.i, "/* RESET*/\nhtml, body, div, ul, ol, li, dl, dt, dd, h1, h2, h3, h4, h5, h6, pre, form, p, blockquote, fieldset, input, abbr, article, aside, command, details, figcaption, figure, footer, header, hgroup, mark, meter, nav, output, progress, section, summary, time {\n  margin: 0;\n  padding: 0; }\n\nh1, h2, h3, h4, h5, h6, pre, code, address, caption, cite, code, em, strong, th, figcaption {\n  font-size: 1em;\n  font-weight: normal;\n  font-style: normal; }\n\nfieldset, iframe {\n  border: none; }\n\ncaption, th {\n  text-align: left; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\narticle, aside, footer, header, hgroup, nav, section, figure, figcaption {\n  display: block; }\n\n/* LAYOUT */\n* {\n  margin: 0;\n  padding: 0; }\n\nhtml, body {\n  width: 100%;\n  height: 100%;\n  position: relative; }\n\nhtml {\n  background-color: #fff; }\n\n.clear {\n  clear: both; }\n\n.clearer {\n  clear: both;\n  display: block;\n  margin: 0;\n  padding: 0;\n  height: 0;\n  line-height: 1px;\n  font-size: 1px; }\n\n.selfclear {\n  zoom: 1; }\n\n.selfclear:after {\n  content: '.';\n  display: block;\n  height: 0;\n  clear: both;\n  visibility: hidden; }\n\nimg {\n  border: 0; }\n\na {\n  text-decoration: none;\n  color: #515151; }\n  a:focus {\n    outline: none; }\n\ni {\n  font-style: normal; }\n\nul, li {\n  list-style: none; }\n\nbody {\n  font: 14px/1.5 'microsoft yahei';\n  color: #515151; }\n\n.clearfix:after, .clearfix:before {\n  content: \"\";\n  display: table;\n  height: 0px;\n  clear: both;\n  visibility: hidden; }\n\n.clearfix {\n  *zoom: 1; }\n\n.fl {\n  float: left; }\n\n.fr {\n  float: right; }\n\n.br0 {\n  border: none; }\n\n.key-color {\n  color: #333; }\n\n.maim-color {\n  color: #666; }\n\n.auxiliary-color {\n  color: #999; }\n\n.select-wrap {\n  position: relative;\n  height: 100%;\n  text-align: center;\n  overflow: hidden; }\n  .select-wrap:before, .select-wrap:after {\n    position: absolute;\n    z-index: 1;\n    display: block;\n    content: '';\n    width: 100%;\n    height: 50%; }\n  .select-wrap:before {\n    top: 0;\n    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0)); }\n  .select-wrap:after {\n    bottom: 0;\n    background-image: linear-gradient(to top, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0)); }\n  .select-wrap .select-options {\n    position: absolute;\n    top: 50%;\n    left: 0;\n    width: 100%;\n    height: 0;\n    transform-style: preserve-3d;\n    margin: 0 auto;\n    display: block;\n    transform: translateZ(-150px) rotateX(0deg);\n    -webkit-font-smoothing: subpixel-antialiased;\n    font-size: 20px;\n    color: #666; }\n    .select-wrap .select-options .select-option {\n      position: absolute;\n      top: 0;\n      left: 0;\n      width: 100%;\n      height: 50px;\n      -webkit-font-smoothing: subpixel-antialiased; }\n      .select-wrap .select-options .select-option:nth-child(1) {\n        transform: rotateX(0deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(2) {\n        transform: rotateX(-18deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(3) {\n        transform: rotateX(-36deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(4) {\n        transform: rotateX(-54deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(5) {\n        transform: rotateX(-72deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(6) {\n        transform: rotateX(-90deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(7) {\n        transform: rotateX(-108deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(8) {\n        transform: rotateX(-126deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(9) {\n        transform: rotateX(-144deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(10) {\n        transform: rotateX(-162deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(11) {\n        transform: rotateX(-180deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(12) {\n        transform: rotateX(-198deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(13) {\n        transform: rotateX(-216deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(14) {\n        transform: rotateX(-234deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(15) {\n        transform: rotateX(-252deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(16) {\n        transform: rotateX(-270deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(17) {\n        transform: rotateX(-288deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(18) {\n        transform: rotateX(-306deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(19) {\n        transform: rotateX(-324deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(20) {\n        transform: rotateX(-342deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(21) {\n        transform: rotateX(-360deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(22) {\n        transform: rotateX(-378deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(23) {\n        transform: rotateX(-396deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(24) {\n        transform: rotateX(-414deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(25) {\n        transform: rotateX(-432deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(26) {\n        transform: rotateX(-450deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(27) {\n        transform: rotateX(-468deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(28) {\n        transform: rotateX(-486deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(29) {\n        transform: rotateX(-504deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(30) {\n        transform: rotateX(-522deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(31) {\n        transform: rotateX(-540deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(32) {\n        transform: rotateX(-558deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(33) {\n        transform: rotateX(-576deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(34) {\n        transform: rotateX(-594deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(35) {\n        transform: rotateX(-612deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(36) {\n        transform: rotateX(-630deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(37) {\n        transform: rotateX(-648deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(38) {\n        transform: rotateX(-666deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(39) {\n        transform: rotateX(-684deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(40) {\n        transform: rotateX(-702deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(41) {\n        transform: rotateX(-720deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(42) {\n        transform: rotateX(-738deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(43) {\n        transform: rotateX(-756deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(44) {\n        transform: rotateX(-774deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(45) {\n        transform: rotateX(-792deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(46) {\n        transform: rotateX(-810deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(47) {\n        transform: rotateX(-828deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(48) {\n        transform: rotateX(-846deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(49) {\n        transform: rotateX(-864deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(50) {\n        transform: rotateX(-882deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(51) {\n        transform: rotateX(-900deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(52) {\n        transform: rotateX(-918deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(53) {\n        transform: rotateX(-936deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(54) {\n        transform: rotateX(-954deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(55) {\n        transform: rotateX(-972deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(56) {\n        transform: rotateX(-990deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(57) {\n        transform: rotateX(-1008deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(58) {\n        transform: rotateX(-1026deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(59) {\n        transform: rotateX(-1044deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(60) {\n        transform: rotateX(-1062deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(61) {\n        transform: rotateX(-1080deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(62) {\n        transform: rotateX(-1098deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(63) {\n        transform: rotateX(-1116deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(64) {\n        transform: rotateX(-1134deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(65) {\n        transform: rotateX(-1152deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(66) {\n        transform: rotateX(-1170deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(67) {\n        transform: rotateX(-1188deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(68) {\n        transform: rotateX(-1206deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(69) {\n        transform: rotateX(-1224deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(70) {\n        transform: rotateX(-1242deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(71) {\n        transform: rotateX(-1260deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(72) {\n        transform: rotateX(-1278deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(73) {\n        transform: rotateX(-1296deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(74) {\n        transform: rotateX(-1314deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(75) {\n        transform: rotateX(-1332deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(76) {\n        transform: rotateX(-1350deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(77) {\n        transform: rotateX(-1368deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(78) {\n        transform: rotateX(-1386deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(79) {\n        transform: rotateX(-1404deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(80) {\n        transform: rotateX(-1422deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(81) {\n        transform: rotateX(-1440deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(82) {\n        transform: rotateX(-1458deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(83) {\n        transform: rotateX(-1476deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(84) {\n        transform: rotateX(-1494deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(85) {\n        transform: rotateX(-1512deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(86) {\n        transform: rotateX(-1530deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(87) {\n        transform: rotateX(-1548deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(88) {\n        transform: rotateX(-1566deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(89) {\n        transform: rotateX(-1584deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(90) {\n        transform: rotateX(-1602deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(91) {\n        transform: rotateX(-1620deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(92) {\n        transform: rotateX(-1638deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(93) {\n        transform: rotateX(-1656deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(94) {\n        transform: rotateX(-1674deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(95) {\n        transform: rotateX(-1692deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(96) {\n        transform: rotateX(-1710deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(97) {\n        transform: rotateX(-1728deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(98) {\n        transform: rotateX(-1746deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(99) {\n        transform: rotateX(-1764deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(100) {\n        transform: rotateX(-1782deg) translateZ(150px); }\n\n.highlight {\n  position: absolute;\n  top: 50%;\n  transform: translate(0, -50%);\n  width: 100%;\n  background-color: #fff;\n  border-top: 1px solid #ddd;\n  border-bottom: 1px solid #ddd;\n  font-size: 28px;\n  overflow: hidden; }\n\n/* date */\n.date-selector {\n  display: flex;\n  align-items: stretch;\n  justify-content: space-between;\n  height: 400px; }\n  .date-selector > div {\n    flex: 1; }\n", ""]);
+exports.push([module.i, "@charset \"UTF-8\";\n/* RESET*/\nhtml,\nbody,\ndiv,\nul,\nol,\nli,\ndl,\ndt,\ndd,\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\npre,\nform,\np,\nblockquote,\nfieldset,\ninput,\nabbr,\narticle,\naside,\ncommand,\ndetails,\nfigcaption,\nfigure,\nfooter,\nheader,\nhgroup,\nmark,\nmeter,\nnav,\noutput,\nprogress,\nsection,\nsummary,\ntime {\n  margin: 0;\n  padding: 0; }\n\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\npre,\ncode,\naddress,\ncaption,\ncite,\ncode,\nem,\nstrong,\nth,\nfigcaption {\n  font-size: 1em;\n  font-weight: normal;\n  font-style: normal; }\n\nfieldset,\niframe {\n  border: none; }\n\ncaption,\nth {\n  text-align: left; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\narticle,\naside,\nfooter,\nheader,\nhgroup,\nnav,\nsection,\nfigure,\nfigcaption {\n  display: block; }\n\n/* LAYOUT */\n* {\n  margin: 0;\n  padding: 0; }\n\nhtml,\nbody {\n  width: 100%;\n  height: 100%;\n  position: relative; }\n\nhtml {\n  background-color: #fff; }\n\n.clear {\n  clear: both; }\n\n.clearer {\n  clear: both;\n  display: block;\n  margin: 0;\n  padding: 0;\n  height: 0;\n  line-height: 1px;\n  font-size: 1px; }\n\n.selfclear {\n  zoom: 1; }\n\n.selfclear:after {\n  content: '.';\n  display: block;\n  height: 0;\n  clear: both;\n  visibility: hidden; }\n\nimg {\n  border: 0; }\n\na {\n  text-decoration: none;\n  color: #515151; }\n  a:focus {\n    outline: none; }\n\ni {\n  font-style: normal; }\n\nul,\nli {\n  list-style: none; }\n\nbody {\n  font: 14px/1.5;\n  font-family: Arial, \"Hiragino Sans GB\", 冬青黑, \"Microsoft YaHei\", 微软雅黑, SimSun, 宋体, Helvetica, Tahoma, \"Arial sans-serif\";\n  color: #515151; }\n\n.clearfix:after,\n.clearfix:before {\n  content: \"\";\n  display: table;\n  height: 0px;\n  clear: both;\n  visibility: hidden; }\n\n.clearfix {\n  *zoom: 1; }\n\n.fl {\n  float: left; }\n\n.fr {\n  float: right; }\n\n.br0 {\n  border: none; }\n\n.key-color {\n  color: #333; }\n\n.maim-color {\n  color: #666; }\n\n.auxiliary-color {\n  color: #999; }\n\n.select-wrap {\n  position: relative;\n  height: 100%;\n  text-align: center;\n  overflow: hidden;\n  font-size: 20px; }\n  .select-wrap:before, .select-wrap:after {\n    position: absolute;\n    z-index: 1;\n    display: block;\n    content: '';\n    width: 100%;\n    height: 50%; }\n  .select-wrap:before {\n    top: 0;\n    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0)); }\n  .select-wrap:after {\n    bottom: 0;\n    background-image: linear-gradient(to top, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0)); }\n  .select-wrap .select-options {\n    position: absolute;\n    top: 50%;\n    left: 0;\n    width: 100%;\n    height: 0;\n    transform-style: preserve-3d;\n    margin: 0 auto;\n    display: block;\n    transform: translateZ(-150px) rotateX(0deg);\n    -webkit-font-smoothing: subpixel-antialiased;\n    color: #666; }\n    .select-wrap .select-options .select-option {\n      position: absolute;\n      top: 0;\n      left: 0;\n      width: 100%;\n      height: 50px;\n      -webkit-font-smoothing: subpixel-antialiased; }\n      .select-wrap .select-options .select-option:nth-child(1) {\n        transform: rotateX(0deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(2) {\n        transform: rotateX(-18deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(3) {\n        transform: rotateX(-36deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(4) {\n        transform: rotateX(-54deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(5) {\n        transform: rotateX(-72deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(6) {\n        transform: rotateX(-90deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(7) {\n        transform: rotateX(-108deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(8) {\n        transform: rotateX(-126deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(9) {\n        transform: rotateX(-144deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(10) {\n        transform: rotateX(-162deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(11) {\n        transform: rotateX(-180deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(12) {\n        transform: rotateX(-198deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(13) {\n        transform: rotateX(-216deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(14) {\n        transform: rotateX(-234deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(15) {\n        transform: rotateX(-252deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(16) {\n        transform: rotateX(-270deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(17) {\n        transform: rotateX(-288deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(18) {\n        transform: rotateX(-306deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(19) {\n        transform: rotateX(-324deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(20) {\n        transform: rotateX(-342deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(21) {\n        transform: rotateX(-360deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(22) {\n        transform: rotateX(-378deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(23) {\n        transform: rotateX(-396deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(24) {\n        transform: rotateX(-414deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(25) {\n        transform: rotateX(-432deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(26) {\n        transform: rotateX(-450deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(27) {\n        transform: rotateX(-468deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(28) {\n        transform: rotateX(-486deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(29) {\n        transform: rotateX(-504deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(30) {\n        transform: rotateX(-522deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(31) {\n        transform: rotateX(-540deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(32) {\n        transform: rotateX(-558deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(33) {\n        transform: rotateX(-576deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(34) {\n        transform: rotateX(-594deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(35) {\n        transform: rotateX(-612deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(36) {\n        transform: rotateX(-630deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(37) {\n        transform: rotateX(-648deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(38) {\n        transform: rotateX(-666deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(39) {\n        transform: rotateX(-684deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(40) {\n        transform: rotateX(-702deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(41) {\n        transform: rotateX(-720deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(42) {\n        transform: rotateX(-738deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(43) {\n        transform: rotateX(-756deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(44) {\n        transform: rotateX(-774deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(45) {\n        transform: rotateX(-792deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(46) {\n        transform: rotateX(-810deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(47) {\n        transform: rotateX(-828deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(48) {\n        transform: rotateX(-846deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(49) {\n        transform: rotateX(-864deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(50) {\n        transform: rotateX(-882deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(51) {\n        transform: rotateX(-900deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(52) {\n        transform: rotateX(-918deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(53) {\n        transform: rotateX(-936deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(54) {\n        transform: rotateX(-954deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(55) {\n        transform: rotateX(-972deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(56) {\n        transform: rotateX(-990deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(57) {\n        transform: rotateX(-1008deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(58) {\n        transform: rotateX(-1026deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(59) {\n        transform: rotateX(-1044deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(60) {\n        transform: rotateX(-1062deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(61) {\n        transform: rotateX(-1080deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(62) {\n        transform: rotateX(-1098deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(63) {\n        transform: rotateX(-1116deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(64) {\n        transform: rotateX(-1134deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(65) {\n        transform: rotateX(-1152deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(66) {\n        transform: rotateX(-1170deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(67) {\n        transform: rotateX(-1188deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(68) {\n        transform: rotateX(-1206deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(69) {\n        transform: rotateX(-1224deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(70) {\n        transform: rotateX(-1242deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(71) {\n        transform: rotateX(-1260deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(72) {\n        transform: rotateX(-1278deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(73) {\n        transform: rotateX(-1296deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(74) {\n        transform: rotateX(-1314deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(75) {\n        transform: rotateX(-1332deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(76) {\n        transform: rotateX(-1350deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(77) {\n        transform: rotateX(-1368deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(78) {\n        transform: rotateX(-1386deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(79) {\n        transform: rotateX(-1404deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(80) {\n        transform: rotateX(-1422deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(81) {\n        transform: rotateX(-1440deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(82) {\n        transform: rotateX(-1458deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(83) {\n        transform: rotateX(-1476deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(84) {\n        transform: rotateX(-1494deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(85) {\n        transform: rotateX(-1512deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(86) {\n        transform: rotateX(-1530deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(87) {\n        transform: rotateX(-1548deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(88) {\n        transform: rotateX(-1566deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(89) {\n        transform: rotateX(-1584deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(90) {\n        transform: rotateX(-1602deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(91) {\n        transform: rotateX(-1620deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(92) {\n        transform: rotateX(-1638deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(93) {\n        transform: rotateX(-1656deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(94) {\n        transform: rotateX(-1674deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(95) {\n        transform: rotateX(-1692deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(96) {\n        transform: rotateX(-1710deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(97) {\n        transform: rotateX(-1728deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(98) {\n        transform: rotateX(-1746deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(99) {\n        transform: rotateX(-1764deg) translateZ(150px); }\n      .select-wrap .select-options .select-option:nth-child(100) {\n        transform: rotateX(-1782deg) translateZ(150px); }\n\n.highlight {\n  position: absolute;\n  top: 50%;\n  transform: translate(0, -50%);\n  width: 100%;\n  background-color: #fff;\n  border-top: 1px solid #ddd;\n  border-bottom: 1px solid #ddd;\n  font-size: 24px;\n  overflow: hidden; }\n\n.highlight-list {\n  position: absolute;\n  width: 100%; }\n\n/* date */\n.date-selector {\n  display: flex;\n  align-items: stretch;\n  justify-content: space-between;\n  height: 300px; }\n  .date-selector > div {\n    flex: 1; }\n  .date-selector .select-wrap {\n    font-size: 18px; }\n  .date-selector .highlight {\n    font-size: 20px; }\n", ""]);
 
 // exports
 

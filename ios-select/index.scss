@@ -1,4 +1,6 @@
 @import './_reset.scss';
+
+
 .select-wrap {
   position: relative;
   // top: 200px;
@@ -6,6 +8,7 @@
   // perspective: 1200px;
   text-align: center;
   overflow: hidden;
+  font-size: 20px;
   &:before, &:after {
     position: absolute;
     z-index: 1;
@@ -34,7 +37,6 @@
     display: block;
     transform: translateZ(-150px) rotateX(0deg);
     -webkit-font-smoothing: subpixel-antialiased;
-    font-size: 20px;
     color: #666;
     .select-option {
       position: absolute;
@@ -62,12 +64,13 @@
   background-color: #fff;
   border-top: 1px solid #ddd;
   border-bottom: 1px solid #ddd;
-  font-size: 28px;
+  font-size: 24px;
   overflow: hidden;
 }
 .highlight-list {
   // display: none;
-
+  position: absolute;
+  width: 100%;
 }
 
 
@@ -77,9 +80,16 @@
   align-items: stretch;
   justify-content: space-between;
 
-  height: 400px;
+  height: 300px;
   >div {
     flex: 1;
+  }
+
+  .select-wrap {
+    font-size: 18px;
+  }
+  .highlight {
+    font-size: 20px;
   }
 }
 

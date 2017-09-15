@@ -7,34 +7,9 @@
 </head>
 <body>
 
-<!--<div class="select-wrap">
-	<ul class="select-options">
-		<li class="select-option">a0</li>
-		<li class="select-option">a1</li>
-		<li class="select-option">a2</li>
-		<li class="select-option">a3</li>
-		<li class="select-option">a4</li>
-		<li class="select-option">a5</li>
-		<li class="select-option">a6</li>
-		<li class="select-option">a7</li>
-		<li class="select-option">a8</li>
-		<li class="select-option">a9</li>
-	</ul>
-	<div class="highlight">
-		<ul class="highlight-list">
-			<li class="highlight-item"></li>
-		</ul>
-	</div>
-</div>-->
 
 <!--<div id="iosSelector" style="position: relative; height: 300px; top: 100px;"></div>-->
-<!--
-<div class="highlight">
-	<ul class="highlight-list">
-		<li class="highlight-item"></li>
-	</ul>
-</div>
--->
+
 
 <div class="date-selector">
 	<div class="year"></div>
@@ -47,6 +22,8 @@
 <script>
 // let iosSelector = new IosSelector({
 //   el: '#iosSelector',
+// 	// type: 'infinite',
+// 	type: 'normal',
 //   count: 20,
 //   source: [
 //     { value: 1, text: '01' },
@@ -104,31 +81,52 @@ let currentYear = new Date().getFullYear();
 let currentMonth = 1;
 let currentDay = 1;
 
+let yearSelector;
+let monthSelector;
+let daySelector;
+
 yearSource = getYears();
 monthSource = getMonths();
 daySource = getDays(currentYear, currentMonth);
 
-let yearSelector = new IosSelector({
+yearSelector = new IosSelector({
+	el: '.year',
+	type: 'infinite',
 	source: yearSource,
+	count: 20,
 	onChange: (selected) => {
+		currentYear = selected.value;
 		daySource = getDays(currentYear, currentMonth);
 		daySelector.updateSource(daySource);
+		console.log(yearSelector.value, monthSelector.value, daySelector.value);
 	}
 });
-let monthSelector = new IosSelector({
-	source: monthSource,
-	onChange: (selected) => {
-		daySource = getDays(currentYear, currentMonth);
-		daySelector.updateSource(daySource);
-	}
-});
-let daySelector = new IosSelector({
-	source: [],
-	onChange: (selected) => {
-		let monthSource = getMonths(selected.value);
 
+monthSelector = new IosSelector({
+	el: '.month',
+	type: 'infinite',
+	source: monthSource,
+	count: 20,
+	onChange: (selected) => {
+		currentMonth = selected.value;
+		
+		daySource = getDays(currentYear, currentMonth);
+		daySelector.updateSource(daySource);
+		console.log(yearSelector.value, monthSelector.value, daySelector.value);
 	}
 });
+
+daySelector = new IosSelector({
+	el: '.day',
+	type: 'infinite',
+	source: [],
+	count: 20,
+	onChange: (selected) => {
+		currentDay = selected.value;
+		console.log(yearSelector.value, monthSelector.value, daySelector.value);
+	}
+});
+
 
 
 
