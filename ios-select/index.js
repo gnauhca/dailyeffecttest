@@ -70,7 +70,7 @@ class IosSelector {
     for (let eventName in this.events) {
       this.events[eventName] = ((eventName) => {
         return (e) => {
-          if (this.elems.el.contains(e.target) || e.target === this.elems.el) {
+          if (this.elems.el.contains(e.target) || e.target === this.elems.el || eventName === 'touchend') {
             e.preventDefault();
             if (this.source.length) {
               this['_' + eventName](e, touchData);
@@ -80,9 +80,10 @@ class IosSelector {
       })(eventName);
     }
 
-    document.addEventListener('touchstart', this.events.touchstart);
-    // document.addEventListener('touchmove', this.events.touchmove);
-    document.addEventListener('touchend', this.events.touchend);
+    this.elems.el.addEventListener('touchstart', this.events.touchstart);
+    document.addEventListener('mousedown', this.events.touchstart);
+    this.elems.el.addEventListener('touchend', this.events.touchend);
+    document.addEventListener('mouseup', this.events.touchend);
     if (this.source.length) {
       this.value = this.value !== null ? this.value : this.source[0].value;
       this.select(this.value);
@@ -90,23 +91,23 @@ class IosSelector {
   }
 
   _touchstart(e, touchData) {
-    console.log(e);
-    document.addEventListener('touchmove', this.events.touchmove);
-    touchData.startY = e.touches[0].clientY;
-    touchData.yArr = [[e.touches[0].clientY, new Date().getTime()]];
+    this.elems.el.addEventListener('touchmove', this.events.touchmove);
+    document.addEventListener('mousemove', this.events.touchmove);
+    let eventY = e.clientY || e.touches[0].clientY;
+    touchData.startY = eventY;
+    touchData.yArr = [[eventY, new Date().getTime()]];
     touchData.touchScroll = this.scroll;
     this._stop();
-
-    console.log('start');
   }
 
   _touchmove(e, touchData) {
-    touchData.yArr.push([e.touches[0].clientY, new Date().getTime()]);
+    let eventY = e.clientY || e.touches[0].clientY;
+    touchData.yArr.push([eventY, new Date().getTime()]);
     if (touchData.length > 5) {
       touchData.unshift();
     }
 
-    let scrollAdd = (touchData.startY - e.touches[0].clientY) / this.itemHeight;
+    let scrollAdd = (touchData.startY - eventY) / this.itemHeight;
     let moveToScroll = scrollAdd + this.scroll;
 
     // 非无限滚动时，超出范围使滚动变得困难
@@ -116,7 +117,7 @@ class IosSelector {
       } else if (moveToScroll > this.source.length) {
         moveToScroll = this.source.length + (moveToScroll - this.source.length) * 0.3;
       }
-      console.log(moveToScroll);
+      // console.log(moveToScroll);
     } else {
       moveToScroll = this._normalizeScroll(moveToScroll);
     }
@@ -126,7 +127,8 @@ class IosSelector {
 
   _touchend(e, touchData) {
     // console.log(e);
-    document.removeEventListener('touchmove', this.events.touchmove);
+    this.elems.el.removeEventListener('touchmove', this.events.touchmove);
+    document.removeEventListener('mousemove', this.events.touchmove);
 
     let v;
 
@@ -394,6 +396,12 @@ class IosSelector {
 
   _selectByScroll(scroll) {
     scroll = this._normalizeScroll(scroll) | 0;
+    if (scroll > this.source.length - 1) {
+      scroll = this.source.length - 1;
+      this._moveTo(scroll);
+    }
+    this._moveTo(scroll);
+    this.scroll = scroll;
     this.selected = this.source[scroll];
     this.value = this.selected.value;
     this.onChange && this.onChange(this.selected);
@@ -402,12 +410,8 @@ class IosSelector {
   updateSource(source) {
     this._create(source);
 
-    if (
-      !this.source.find(item => item.value === this.value) || 
-      !this.moving
-    ) {
-      this.value = this.value !== null ? this.value : this.source[0].value;
-      this.select(this.value);
+    if (!this.moving) {
+      this._selectByScroll(this.scroll);
     }
   }
 
@@ -431,8 +435,11 @@ class IosSelector {
     this._stop();
     // document 事件解绑
     for (let eventName in this.events) {
-      document.removeEventListener('eventName', this.events[eventName]);
+      this.elems.el.removeEventListener('eventName', this.events[eventName]);
     }
+    document.removeEventListener('mousedown', this.events['touchstart']);
+    document.removeEventListener('mousemove', this.events['touchmove']);
+    document.removeEventListener('mouseup', this.events['touchend']);
     // 元素移除
     this.elems.el.innerHTML = '';
     this.elems = null;
