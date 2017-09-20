@@ -1,6 +1,9 @@
 require('./index.scss');
-// import { assign, assignIn } from 'lodash';
 
+/**
+ * author: zzc,
+ * https://github.com/gnauhca/dailyeffecttest/tree/master/ios-select
+ */
 const easing = {
   easeOutCubic: function(pos) {
     return (Math.pow((pos-1), 3) +1);

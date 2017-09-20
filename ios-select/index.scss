@@ -3,9 +3,7 @@
 
 .select-wrap {
   position: relative;
-  // top: 200px;
   height: 100%;
-  // perspective: 1200px;
   text-align: center;
   overflow: hidden;
   font-size: 20px;
@@ -19,11 +17,11 @@
   }
   &:before {
     top: 0;
-    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
   }
   &:after {
     bottom: 0;
-    background-image: linear-gradient(to top, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+    background-image: linear-gradient(to top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
   }
 
   .select-options {
@@ -55,7 +53,6 @@
   }
 }
 
-
 .highlight {
   position: absolute;
   top: 50%;
@@ -67,6 +64,7 @@
   font-size: 24px;
   overflow: hidden;
 }
+
 .highlight-list {
   // display: none;
   position: absolute;
@@ -93,7 +91,7 @@
     font-size: 18px;
   }
   .highlight {
-    font-size: 20px;
+    font-size: 24px;
   }
 }
 
