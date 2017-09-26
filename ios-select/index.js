@@ -406,8 +406,10 @@ class IosSelector {
     this._moveTo(scroll);
     this.scroll = scroll;
     this.selected = this.source[scroll];
-    this.value = this.selected.value;
-    this.onChange && this.onChange(this.selected);
+		if (this.value !== this.selected.value) {
+    	this.value = this.selected.value;
+    	this.onChange && this.onChange(this.selected);
+		}
   }
 
   updateSource(source) {

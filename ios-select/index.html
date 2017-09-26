@@ -122,7 +122,7 @@ monthSelector = new IosSelector({
 daySelector = new IosSelector({
 	el: '.day',
 	type: 'infinite',
-	source: [],
+	source: daySource,
 	count: 20,
 	onChange: (selected) => {
 		currentDay = selected.value;
