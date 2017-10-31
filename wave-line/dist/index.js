@@ -113,9 +113,9 @@ let waveFragmentShader = `
     void main() { 
         
         vec3 gradientColor;
-        gradientColor[0] = (112.0 + xProgress * (25.0 - 112.0)) / 255.0;
-        gradientColor[1] = (242.0 + xProgress * (92.0 - 242.0)) / 255.0;
-        gradientColor[2] = (247.0 + xProgress * (194.0 - 247.0)) / 255.0;
+        gradientColor[0] = (45.0 + xProgress * (0.0 - 45.0)) / 255.0;
+        gradientColor[1] = (129.0 + xProgress * (255.0 - 129.0)) / 255.0;
+        gradientColor[2] = (255.0 + xProgress * (222.0 - 255.0)) / 255.0;
 
         gl_FragColor = vec4(gradientColor, opacity); 
         // gl_FragColor = vec4(color, opacity) * texture2D( texture, gl_PointCoord ); 
