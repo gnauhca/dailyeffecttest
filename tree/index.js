@@ -38,7 +38,7 @@ class Branch {
     this.speed = Branch.maxSpeed * (Branch.maxDeep - this.deep) / Branch.maxDeep / progressSegment;
     // 树枝长度
     let totalLength = Branch.maxLength * (Branch.maxDeep - this.deep) / Branch.maxDeep;
-    this.length = totalLength * progressSegment * (Math.random() * 0.7 + 0.3);
+    this.length = totalLength * progressSegment// * (Math.random() * 0.7 + 0.3);
     this.children = []; // [] leaf or branch
 
     // mesh
@@ -48,7 +48,14 @@ class Branch {
     this.line = new MeshLine();
     this.line.setGeometry(this.geom, p => 1);
 
-    this.material = new MeshLineMaterial({ color: new THREE.Color(this.tree.color), lineWidth: Branch.maxDeep - this.deep + 1 });
+    let texture = new THREE.TextureLoader().load( require('./line-texture.png'));
+    this.material = new MeshLineMaterial({ 
+      color: new THREE.Color(0xffffff), 
+      lineWidth: Branch.maxDeep - this.deep + 1,
+      // useMap: true,
+      // map: texture,
+      blending: THREE.NormalBlending,
+    });
     this.obj = new THREE.Mesh(this.line.geometry, this.material);
 
     this.update();
@@ -108,8 +115,8 @@ class Branch {
       } else if (this.deep < Branch.maxDeep - 1) {
         // 生出两个子级树枝
         let leftAnglesAppend = [
-          (Math.random() * 0.8 + 0.3) * Math.PI / Math.min(this.deep + 1, 3),
-          (Math.random() - 0.5) * Math.PI / Math.min(this.deep + 1, 3)
+          Math.PI / Math.min(this.deep + 1, 3),
+          Math.PI / 4 / Math.min(this.deep * 1.5 + 0.1)
         ];
         let leftStartAtPercent = 0;
         let leftEndAtPercent = Math.random() > 0.5 ? 1 : Math.random() * 0.5 + 0.2;
@@ -119,8 +126,8 @@ class Branch {
           leftEndAtPercent
         });
         let rightAnglesAppend = [
-          -(Math.random() * 0.8 + 0.3) * Math.PI / Math.min(this.deep + 1, 3),
-          (Math.random() - 0.5) * Math.PI / Math.min(this.deep + 1, 3)
+          -Math.PI / Math.min(this.deep + 1, 3),
+          Math.PI / 4 / Math.min(this.deep * 1.5 + 0.1)
         ];
         let rightStartAtPercent = 0;
         let rightEndAtPercent = Math.random() > 0.5 ? 1 : Math.random() * 0.5 + 0.2;
@@ -134,7 +141,7 @@ class Branch {
     }
   }
 }
-Branch.maxDeep = 10;
+Branch.maxDeep = 8;
 Branch.maxLength = 100;
 Branch.maxSpeed = 1; // progress/second
 
