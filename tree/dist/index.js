@@ -45133,17 +45133,24 @@ function CanvasRenderer() {
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__index_scss__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__index_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__index_scss__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_lodash__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_lodash___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_lodash__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__time_js__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__trackball_js__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_three_meshline__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_three_meshline___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_three_meshline__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_stats_js__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_stats_js___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_stats_js__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_lodash__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_lodash___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_lodash__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__time_js__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__trackball_js__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_three_meshline__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_three_meshline___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_three_meshline__);
+
 
 // import * as THREE from 'three';
 
 
 
+
+
+let stats = new __WEBPACK_IMPORTED_MODULE_1_stats_js___default.a
+document.body.appendChild( stats.dom );
 
 class Leaf {
 
@@ -45158,7 +45165,7 @@ class Branch {
       endAtPercent: 1, // 当前树枝属于一只树枝某部分结束点,
     };
 
-    options = Object(__WEBPACK_IMPORTED_MODULE_1_lodash__["defaultsDeep"])(options, defaults);
+    options = Object(__WEBPACK_IMPORTED_MODULE_2_lodash__["defaultsDeep"])(options, defaults);
     Object.assign(this, options);
 
     this.tree = tree;
@@ -45293,7 +45300,7 @@ class Tree {
       color: 0x00000,
       thickness: 8
     };
-    options = Object(__WEBPACK_IMPORTED_MODULE_1_lodash__["defaultsDeep"])(options, defaults);
+    options = Object(__WEBPACK_IMPORTED_MODULE_2_lodash__["defaultsDeep"])(options, defaults);
     Object.assign(this, options);
 
     this.camera = camera;
@@ -45419,7 +45426,7 @@ class Tree {
   }
 }
 
-class Ani extends __WEBPACK_IMPORTED_MODULE_2__time_js__["b" /* Time */] {
+class Ani extends __WEBPACK_IMPORTED_MODULE_3__time_js__["b" /* Time */] {
   constructor() {
     super();
     // init three tree
@@ -45430,7 +45437,7 @@ class Ani extends __WEBPACK_IMPORTED_MODULE_2__time_js__["b" /* Time */] {
     this.scene.add(this.camera);//add到场景中
     this.camera.lookAt(new THREE.Vector3(0, 100, 0));
     // this.scene.fog = new THREE.Fog(0x000000, 100, 500);
-    this.control = new __WEBPACK_IMPORTED_MODULE_3__trackball_js__["a" /* default */](this.camera, document.body);
+    this.control = new __WEBPACK_IMPORTED_MODULE_4__trackball_js__["a" /* default */](this.camera, document.body);
     this.control.travel = true;
     this.travelSpeed = 20000;
 
@@ -45458,6 +45465,7 @@ class Ani extends __WEBPACK_IMPORTED_MODULE_2__time_js__["b" /* Time */] {
     // this.trees.forEach(tree => tree.obj.rotation.y += 0.006);
     this.renderer.render(this.scene, this.camera);
     this.control.update(delta);
+    stats.update();
   }
   
   start() {
@@ -45474,7 +45482,7 @@ class Ani extends __WEBPACK_IMPORTED_MODULE_2__time_js__["b" /* Time */] {
 let ani = new Ani;
 
 ani.start();
-__WEBPACK_IMPORTED_MODULE_2__time_js__["a" /* TIME */].start();
+__WEBPACK_IMPORTED_MODULE_3__time_js__["a" /* TIME */].start();
 
 /***/ }),
 /* 2 */
@@ -46059,6 +46067,17 @@ module.exports = function (css) {
 
 /***/ }),
 /* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// stats.js - http://github.com/mrdoob/stats.js
+(function(f,e){ true?module.exports=e():"function"===typeof define&&define.amd?define(e):f.Stats=e()})(this,function(){var f=function(){function e(a){c.appendChild(a.dom);return a}function u(a){for(var d=0;d<c.children.length;d++)c.children[d].style.display=d===a?"block":"none";l=a}var l=0,c=document.createElement("div");c.style.cssText="position:fixed;top:0;left:0;cursor:pointer;opacity:0.9;z-index:10000";c.addEventListener("click",function(a){a.preventDefault();
+u(++l%c.children.length)},!1);var k=(performance||Date).now(),g=k,a=0,r=e(new f.Panel("FPS","#0ff","#002")),h=e(new f.Panel("MS","#0f0","#020"));if(self.performance&&self.performance.memory)var t=e(new f.Panel("MB","#f08","#201"));u(0);return{REVISION:16,dom:c,addPanel:e,showPanel:u,begin:function(){k=(performance||Date).now()},end:function(){a++;var c=(performance||Date).now();h.update(c-k,200);if(c>g+1E3&&(r.update(1E3*a/(c-g),100),g=c,a=0,t)){var d=performance.memory;t.update(d.usedJSHeapSize/
+1048576,d.jsHeapSizeLimit/1048576)}return c},update:function(){k=this.end()},domElement:c,setMode:u}};f.Panel=function(e,f,l){var c=Infinity,k=0,g=Math.round,a=g(window.devicePixelRatio||1),r=80*a,h=48*a,t=3*a,v=2*a,d=3*a,m=15*a,n=74*a,p=30*a,q=document.createElement("canvas");q.width=r;q.height=h;q.style.cssText="width:80px;height:48px";var b=q.getContext("2d");b.font="bold "+9*a+"px Helvetica,Arial,sans-serif";b.textBaseline="top";b.fillStyle=l;b.fillRect(0,0,r,h);b.fillStyle=f;b.fillText(e,t,v);
+b.fillRect(d,m,n,p);b.fillStyle=l;b.globalAlpha=.9;b.fillRect(d,m,n,p);return{dom:q,update:function(h,w){c=Math.min(c,h);k=Math.max(k,h);b.fillStyle=l;b.globalAlpha=1;b.fillRect(0,0,r,m);b.fillStyle=f;b.fillText(g(h)+" "+e+" ("+g(c)+"-"+g(k)+")",t,v);b.drawImage(q,d+a,m,n-a,p,d,m,n-a,p);b.fillRect(d+n-a,m,a,p);b.fillStyle=l;b.globalAlpha=.9;b.fillRect(d+n-a,m,a,g((1-h/w)*p))}}};return f});
+
+
+/***/ }),
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, module) {var __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -63147,10 +63166,10 @@ module.exports = function (css) {
   }
 }.call(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8), __webpack_require__(9)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9), __webpack_require__(10)(module)))
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports) {
 
 var g;
@@ -63177,7 +63196,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -63205,13 +63224,13 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return TIME; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return Time; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tween_js__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tween_js__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tween_js___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_tween_js__);
 /* unused harmony reexport TWEEN */
 
@@ -63375,7 +63394,7 @@ for (let i = 0; i < 10000; i+=100) {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(process) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/**
@@ -64262,10 +64281,10 @@ TWEEN.Interpolation = {
 
 })(this);
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -64455,7 +64474,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -65141,7 +65160,7 @@ TrackballControls.prototype = Object.create( __WEBPACK_IMPORTED_MODULE_0_three__
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 ;(function() {

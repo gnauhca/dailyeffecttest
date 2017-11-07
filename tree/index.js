@@ -1,9 +1,14 @@
 import './index.scss';
+import Stats from 'stats.js';
 // import * as THREE from 'three';
 import { defaultsDeep } from 'lodash';
 import { Time, TIME, TWEEN } from './time.js';
 import TrackballControls from './trackball.js';
 import {MeshLine, MeshLineMaterial} from 'three.meshline';
+
+let stats = new Stats
+document.body.appendChild( stats.dom );
+
 class Leaf {
 
 }
@@ -317,6 +322,7 @@ class Ani extends Time {
     // this.trees.forEach(tree => tree.obj.rotation.y += 0.006);
     this.renderer.render(this.scene, this.camera);
     this.control.update(delta);
+    stats.update();
   }
   
   start() {
