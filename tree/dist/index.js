@@ -45290,7 +45290,7 @@ class Branch {
     }
   }
 }
-Branch.maxDeep = 11;
+Branch.maxDeep = 12;
 Branch.maxLength = 100;
 Branch.maxSpeed = 0.5; // progress/second
 
