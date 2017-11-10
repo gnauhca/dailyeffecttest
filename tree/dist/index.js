@@ -45149,8 +45149,32 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
+const RADIAN = Math.PI / 180;
+
 let stats = new __WEBPACK_IMPORTED_MODULE_1_stats_js___default.a
 document.body.appendChild( stats.dom );
+
+
+let getSurroundPoint = (function() {
+  let meshCache = {};
+  return function(center, vector, radius, pointNum) {
+    let mesh = meshCache[pointNum]
+    if (!mesh) {
+      let geom = new THREE.CylinderGeometry(1, 1, 1, pointNum, 1, true);
+      geom.rotateX(Math.PI / 2);
+      geom.translate(0, 0, -0.5);
+      mesh = new THREE.Mesh(geom, new THREE.MeshBasicMaterial);
+      meshCache[pointNum] = mesh;
+    }
+    mesh.lookAt(vector); 
+    // mesh.lookAt(new THREE.Vector3(0,1,1)); 
+    mesh.updateMatrixWorld();
+    let vertices = mesh.geometry.vertices.slice(0, pointNum).map(v => {
+      return mesh.localToWorld(v.clone()).setLength(radius);
+    });
+    return vertices;
+  }
+})();
 
 class Leaf {
 
@@ -45160,61 +45184,26 @@ class Leaf {
 class Branch {
   constructor(tree, parent, options) {
     let defaults = {
-      anglesAppend: [0, 0],
+      isIsolate: false,
+      angles: [0, 0],
       startAtPercent: 0, // 当前树枝属于一只树枝某部分开始点
-      endAtPercent: 1, // 当前树枝属于一只树枝某部分结束点,
+      endAtPercent: 1, // 当前树枝属于一只树枝某部分结束点
+      percentSegment: 1, 
+      radiusStart: 1,
+      radiusEnd: 1,
+      branchLength: 1,
+      length: 1,
+      speed: 1 // 生长速度
     };
 
     options = Object(__WEBPACK_IMPORTED_MODULE_2_lodash__["defaultsDeep"])(options, defaults);
     Object.assign(this, options);
 
+    this.id = Branch.id++;
     this.tree = tree;
     this.parent = parent;
-    this.index; // 我是第几个树枝
-
-    this.angles;
-    this.progress = 0; // 生长的百分比
-
-    this.start = new THREE.Vector3;
-    this.end = new THREE.Vector3;
-    this.vector; // start -> end;
-
-    // 当前深度
-    this.deep = parent.deep + 1;
-    let progressSegment = this.endAtPercent - this.startAtPercent;
-
-    // 生长速度 百分比 / 每秒
-    this.speed = Branch.maxSpeed * (Branch.maxDeep - this.deep) / Branch.maxDeep / progressSegment;
-    // 树枝长度
-    let totalLength = Branch.maxLength * (Branch.maxDeep - this.deep) / Branch.maxDeep;
-    this.length = totalLength * progressSegment * (Math.random() * 0.5 + 0.5);
-    this.children = []; // [] leaf or branch
-
-    // mesh
-    // this.geom = new THREE.Geometry();
-    // this.geom.vertices.push(this.start, this.end);
-
-    // this.line = new MeshLine();
-    // this.line.setGeometry(this.geom, p => 1);
-
-    // let texture = new THREE.TextureLoader().load(require('./line-texture.png'));
-    // this.material = new MeshLineMaterial({ 
-    //   color: new THREE.Color(0xffffff), 
-    //   lineWidth: Branch.maxDeep - this.deep + 1,
-    //   // useMap: true,
-    //   // map: texture,
-    //   blending: THREE.NormalBlending,
-    // });
-    // this.obj = new THREE.Mesh(this.line.geometry, this.material);
-
-    this.update();
-    this.tree.addBranch(this);
-  }
-
-  // 父级树枝位置变化时要调用，层层调用直至叶子节点，导致 start & angles 变化
-  update() {
-    this.start.copy(this.parent.end);
-    this.angles = [this.parent.angles[0] + this.anglesAppend[0], this.parent.angles[1] + this.anglesAppend[1]];
+    this.deep = this.parent ? this.parent.deep + 1 : 0;
+    this.start = this.parent ? parent.end : new THREE.Vector3; // 开始点
 
     let tmp = this.length * Math.cos(this.angles[1]);
     this.vector = new THREE.Vector3(
@@ -45222,83 +45211,127 @@ class Branch {
       this.length * Math.sin(this.angles[1]),
       tmp * Math.sin(this.angles[0])
     );
-    // this.geom.verticesNeedUpdate = true;
-    // this.line.setGeometry(this.geom, p => 1);
-    // this.line.geometry.verticesNeedUpdate = true;
+    this.end = this.start.clone();
 
-    this.end.addVectors(this.start, this.vector.clone().multiplyScalar(this.progress));
+    this.connectedChild; // 直系子树枝，公用点
+    this.isolatedChildren = []; // 非直系子树枝
+
+    this.progress = 0; // 生长的百分比
+
+    let progressSegment = this.endAtPercent - this.startAtPercent;
+
+    // 生长速度 百分比 / 每秒
+    this.speed = this.tree.maxSpeed * (this.tree.maxDeep - this.deep) / this.tree.maxDeep / progressSegment;
+
+    // this.update();
+    this.tree.addBranch(this);
   }
 
   // grow
   grow(delta) {
+
     if (this.progress === 1) {
-      // TODO: 树枝摆动
+      // TODO: 树枝摆动, wind
       return;
     }
-    // this.geom.verticesNeedUpdate = true;
-    // this.line.setGeometry(this.geom, p => 1);
-    // this.line.geometry.verticesNeedUpdate = true;
     
     this.progress += delta / this.speed / 1000;
     this.progress = this.progress > 1 ? 1 : this.progress;
     this.end.addVectors(this.start, this.vector.clone().multiplyScalar(this.progress));
 
-    if (this.progress === 1) {
-      if (this.endAtPercent < 1) {
-        // 长出一只同级树枝，此时不是分裂，而是为了实现曲线生长
-        let startAtPercent = this.endAtPercent;
-        let endAtPercent = startAtPercent + 0.3 + Math.random();
-        endAtPercent = endAtPercent > 1 ? 1 : endAtPercent;
-
-        let anglesAppend = [
-          (Math.random() - 0.5) * Math.PI * 0.1,
-          (Math.random() - 0.5) * Math.PI * 0.1,
-        ];
-
-        let sameDeepBranch = new Branch(this.tree, this, {
-          anglesAppend,
-          startAtPercent,
-          endAtPercent
-        });
-
-      } else if (this.deep < Branch.maxDeep - 1) {
-        // 生出两个子级树枝
-        let leftAnglesAppend = [
-          (0.4 + 1.3 * Math.random()) * Math.PI / Math.min(this.deep + 1, 3),
-          (0.4 + 1.3 * Math.random()) * Math.PI / 4 / Math.min(this.deep * 1.5 + 0.1)
-        ];
-        let leftStartAtPercent = 0;
-        let leftEndAtPercent = Math.random() > 0.5 ? 1 : Math.random() * 0.5 + 0.2;
-        let leftBranch = new Branch(this.tree, this, {
-          anglesAppend: leftAnglesAppend,
-          leftStartAtPercent,
-          leftEndAtPercent
-        });
-        let rightAnglesAppend = [
-          (0.4 + 1.3 * Math.random()) * -Math.PI / Math.min(this.deep + 1, 3),
-          (0.4 + 1.3 * Math.random()) * Math.PI / 4 / Math.min(this.deep * 1.5 + 0.1)
-        ];
-        let rightStartAtPercent = 0;
-        let rightEndAtPercent = Math.random() > 0.5 ? 1 : Math.random() * 0.5 + 0.2;
-        let rightBranch = new Branch(this.tree, this, {
-          anglesAppend: rightAnglesAppend,
-          rightStartAtPercent,
-          rightEndAtPercent
-        });
-      }
-
+    if (this.progress < 1) { 
+      return; 
     }
+
+    if (this.endAtPercent < 1) {
+      // 长出一只同级树枝，此时不是分裂，而是为了实现曲线生长
+      let angles = [
+        this.angles[0] + (Math.random() - 0.5) * RADIAN * 20,
+        this.angles[1] + (Math.random() - 0.5) * RADIAN * 20,
+      ];
+      let startAtPercent = this.endAtPercent;
+      let endAtPercent = Math.min(startAtPercent + 0.3 + Math.random(), 1);
+      let percentSegment = endAtPercent - startAtPercent;
+      let branchLength = this.branchLength;
+      let length = branchLength * percentSegment;
+      let radiusStart = this.radiusEnd;
+      let radiusEnd = radiusStart - this.tree.radiusReduceSpeed * length;
+      let speed = this.speed;
+
+      let sameDeepBranch = new Branch(this.tree, this, {
+        angles,
+        startAtPercent,
+        endAtPercent,
+        percentSegment,
+        radiusStart,
+        radiusEnd,
+        branchLength,
+        length,
+        speed,
+      });
+
+    } else if (this.deep < this.tree.maxDeep - 1) {
+
+      // 生出两个子级树枝，有且仅有一个直系子树枝
+      let sign = Math.random() > 0.5 ? 1 : -1;
+
+      // 直系 connected
+      let cOptions = this.generateChildBaseOptions();
+      let cRadiusStart = this.radiusEnd;
+      let cRadiusEnd = cRadiusStart - this.tree.radiusReduceSpeed * cOptions.length;
+      let cAngles = [
+        this.angles[0] + 30 * RADIAN * sign * -1,
+        this.angles[1] + 30 * RADIAN * sign * -1
+      ];
+      let cBranch = new Branch(this.tree, this, Object.assign({
+        angles: cAngles,
+        radiusStart: cRadiusStart,
+        radiusEnd: cRadiusEnd,
+      }, cOptions));
+      this.connectedChild = cBranch;
+
+      // 非直系 isolated
+      let iOptions = this.generateChildBaseOptions();
+      let iRadiusStart = this.radiusEnd * (0.6 + Math.random() * 0.2); 
+      let iRadiusEnd = iRadiusStart - this.tree.radiusReduceSpeed * iOptions.length;
+      let iAngles = [
+        this.angles[0] + 10 * RADIAN * sign,
+        this.angles[1] + -10 * RADIAN * sign * -1
+      ];
+      let iBranch = new Branch(this.tree, this, Object.assign({
+        angles: iAngles,
+        radiusStart: iRadiusStart,
+        radiusEnd: iRadiusEnd,
+        isIsolate: true,
+      }, iOptions));
+      this.isolatedChildren.push(iBranch);
+    }
+
+  }
+
+  generateChildBaseOptions() {
+    let length = this.tree.maxDeep * this.tree.maxLength * (0.8 + 0.2 * Math.random()) / (this.deep + 1 + this.tree.maxDeep)
+
+    return {
+      startAtPercent: 0,
+      // endAtPercent: Math.random() > 0.5 ? Math.random() * 0.3 + 0.3: 1,
+      length: length,
+      branchLength: length,
+      speed: 0.5 + Math.random() * 0.5
+    };
   }
 }
-Branch.maxDeep = 12;
-Branch.maxLength = 100;
-Branch.maxSpeed = 0.5; // progress/second
+Branch.id = 0;
 
 class Tree {
   constructor(options, camera) {
     let defaults = {
       color: 0x00000,
-      thickness: 8
+      maxDeep: 10,
+      maxLength: 10,
+      maxSpeed: 0.5, // progress/second
+      radiusReduceSpeed: 0.05 / 100, // 每 1 长度减少的 radius 百分比
+      rootRadius: 5,
     };
     options = Object(__WEBPACK_IMPORTED_MODULE_2_lodash__["defaultsDeep"])(options, defaults);
     Object.assign(this, options);
@@ -45306,79 +45339,110 @@ class Tree {
     this.camera = camera;
 
     this.branches = []; // 枝
+    this.branchesPointInfo = {}; // 树枝对应几何体顶点开始的 index
+
     this.leaves = []; // 叶
     this.obj = new THREE.Group();
 
     this.material = new THREE.MeshBasicMaterial({ 
-      wireframe: true, 
-      color: 0xff0000,
+      color: 0xcccccc,
       side: THREE.DoubleSide
     });
 
-    this.material = new THREE.MeshBasicMaterial( { color : 0x345678, side: THREE.DoubleSide } );
+    this.material = new THREE.MeshLambertMaterial( { color : 0xdddddd, side: THREE.DoubleSide } );
 
     this.treeGeom = new THREE.Geometry();
     this.treeMesh = new THREE.Mesh(this.treeGeom, this.material);
     this.obj.add(this.treeMesh);
 
-    // this.treeGeom.vertices.push(new THREE.Vector3, new THREE.Vector3, new THREE.Vector3);
-    // this.treeGeom.vertices.length = 3;
-    // this.treeGeom.vertices[0].copy( new THREE.Vector3( -50, -50, 0 ) );
-    // this.treeGeom.vertices[1].copy( new THREE.Vector3(  50, -50, 0 ) );
-    // this.treeGeom.vertices[2].copy( new THREE.Vector3(  50,  50, 0 ) );
-    // this.treeGeom.faces.push(new THREE.Face3( 0, 1, 2)); 
-
-    // this.treeGeom.computeFaceNormals();
-    // this.treeGeom.computeVertexNormals();
-
-    // setTimeout(() => {
-    //   this.treeGeom.vertices.push(new THREE.Vector3( -50, 50, 0 ));
-    //   this.treeGeom.faces.push(new THREE.Face3( 0, 2, 3)); 
-    //   this.treeGeom.verticesNeedUpdate = true;
-    //   this.treeGeom.elementsNeedUpdate = true;
-    // }, 50); 
-
-    // return;
-
-
-    this.treeGeom.vertices.push(new THREE.Vector3, new THREE.Vector3);
-
-    let rootBranch = new Branch(this, {
-      // 根的 parent，用于辅助
-      angles: [0, Math.PI * 0.5],
-      start: new THREE.Vector3(),
-      end: new THREE.Vector3(0, 0, 0),
-      deep: 0,
-      index: -1
-    }, null);
+    let rootBranch = new Branch(this, null, {
+      isIsolate: true,
+      angles: [0, 90 * RADIAN],
+      radiusStart: this.rootRadius,
+      radiusEnd: this.rootRadius - 2,
+      length: this.maxLength,
+      branchLength: this.maxLength,
+      speed: this.maxSpeed
+    });
   }
 
-  addBranch(branch) { //return;
+  getPointNumByBranchRadius(radius) {
+    // return 10;
+    return Math.max(3, Math.min(parseInt(radius / 0.5), 6));
+  }
 
+  addBranch(branch) {
     
     setTimeout(() => {
+      let pointInfo = {
+        startIndex: null,
+        startNum: null,
+        endIndex: null,
+        endNum: null
+      }
 
+      let startPointIndex;
+      let startPointNum;
+
+      if (branch.isIsolate) {
+        // 同时拥有头尾的点，增加头部分的点
+        startPointIndex = this.treeGeom.vertices.length;
+        startPointNum = this.getPointNumByBranchRadius(branch.radiusStart);
+
+        pointInfo.startIndex = startPointIndex;
+        pointInfo.startNum = startPointNum;
+
+        for (let i = 0; i < startPointNum; i++) {
+          this.treeGeom.vertices.push(new THREE.Vector3);
+        }
+      } else {
+        startPointIndex = this.branchesPointInfo[branch.parent.id].endIndex;
+        startPointNum = this.branchesPointInfo[branch.parent.id].endNum;
+      }
+
+      let endPointIndex = this.treeGeom.vertices.length;
+      let endPointNum = this.getPointNumByBranchRadius(branch.radiusEnd);
+
+      for (let i = 0; i < endPointNum; i++) {
+        this.treeGeom.vertices.push(new THREE.Vector3);
+      }
+
+      pointInfo.endIndex = endPointIndex;
+      pointInfo.endNum = endPointNum;
+
+      // console.log(startPointIndex, startPointNum, endPointIndex, endPointNum);
+
+      for (let i = 0; i < startPointNum; i++) {
+        if (i < endPointNum) {
+          this.treeGeom.faces.push(
+            new THREE.Face3(
+              startPointIndex + i,
+              startPointIndex + (i + 1) % (startPointNum),
+              endPointIndex + i
+            ),
+            new THREE.Face3(
+              endPointIndex + (i + 1) % (endPointNum),
+              startPointIndex + (i + 1) % (startPointNum),
+              endPointIndex + i
+            )
+          );
+        } else {
+          this.treeGeom.faces.push(
+            new THREE.Face3(
+              endPointIndex,
+              startPointIndex + i,
+              startPointIndex + (i + 1) % (startPointNum),
+            )
+          );
+        }
+      }
+
+      // console.log(this.treeGeom.faces);
+      this.branchesPointInfo[branch.id] = pointInfo;
       this.branches.push(branch);
-      branch.index = this.branches.length - 1;
-      this.treeGeom.vertices.push(new THREE.Vector3, new THREE.Vector3);
-
-      let parentPointsIndexes = this.getPointsIndexes(branch.parent.index);
-      let branchPointsIndexes = this.getPointsIndexes(branch.index);
-
-      this.treeGeom.faces.push(
-        new THREE.Face3(
-          parentPointsIndexes[0], 
-          parentPointsIndexes[1], 
-          branchPointsIndexes[0]
-        ),
-        new THREE.Face3(
-          parentPointsIndexes[1], 
-          branchPointsIndexes[0],
-          branchPointsIndexes[1]
-        )
-      );
 
     }, 0);
+
   }
 
   getPointsIndexes(branchIndexes) {
@@ -45387,34 +45451,27 @@ class Tree {
     return branchPointsIndexes;
   }
 
-  getSurroundPoint(center, vector, cameraPosition, redius) {
-    let point1 = new THREE.Vector3().crossVectors(
-      new THREE.Vector3().subVectors(cameraPosition, center),
-      vector
-    ).setLength(redius * 0.5).add(center);
-    let point2 = center.clone();
-
-    return [point1, point2]
-  }
-
   grow(delta) {
-    this.branches.forEach(branch => {
+    this.branches.forEach((branch, i) => {
       branch.grow(delta);
 
-      let thickness = Math.pow((this.thickness - branch.deep), 2);
+      let pointInfo = this.branchesPointInfo[branch.id];
       let vector = branch.vector;
-      let center = branch.end;
-      let branchPointsIndexes = this.getPointsIndexes(branch.index); 
-      let surroundPoint = this.getSurroundPoint(center, vector, this.camera.position, thickness);
 
-      this.treeGeom.vertices[branchPointsIndexes[0]].copy(surroundPoint[0]);
-      this.treeGeom.vertices[branchPointsIndexes[1]].copy(surroundPoint[1]);
+      // end point
+      let surroundPoint = getSurroundPoint(branch.end, vector, branch.radiusEnd, pointInfo.endNum);
 
-      if (branch.index === 0) {
-        let center = branch.start;
-        let surroundPoint = this.getSurroundPoint(center, vector, this.camera.position, thickness);
-        this.treeGeom.vertices[0].copy(surroundPoint[0]);
-        this.treeGeom.vertices[1].copy(surroundPoint[1]);
+      for (let i = 0; i < pointInfo.endNum; i++) {
+        this.treeGeom.vertices[pointInfo.endIndex + i].addVectors(branch.end, surroundPoint[i]);
+      }
+
+      if (branch.isIsolate) {
+        vector = i === 0 ? new THREE.Vector3(0, 0.9, 0) : vector;
+        surroundPoint = getSurroundPoint(branch.start, vector, branch.radiusStart, pointInfo.startNum);
+
+        for (let i = 0; i < pointInfo.startNum; i++) {
+          this.treeGeom.vertices[pointInfo.startIndex + i].addVectors(branch.start, surroundPoint[i]);
+        }
       }
 
     });
@@ -45433,12 +45490,12 @@ class Ani extends __WEBPACK_IMPORTED_MODULE_3__time_js__["b" /* Time */] {
     this.scene = new THREE.Scene();//场景
 
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 3000);//透视相机
-    this.camera.position.set(0, 100, 800);//相机位置
+    this.camera.position.set(0, 0, 100);//相机位置
     this.scene.add(this.camera);//add到场景中
     this.camera.lookAt(new THREE.Vector3(0, 100, 0));
     // this.scene.fog = new THREE.Fog(0x000000, 100, 500);
     this.control = new __WEBPACK_IMPORTED_MODULE_4__trackball_js__["a" /* default */](this.camera, document.body);
-    this.control.travel = true;
+    // this.control.travel = true;
     this.travelSpeed = 20000;
 
     this.spotLight = new THREE.SpotLight(0xffffff);
