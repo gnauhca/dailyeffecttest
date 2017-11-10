@@ -149,7 +149,7 @@ class Branch {
 
       // 非直系 isolated
       let iOptions = this.generateChildBaseOptions();
-      let iRadiusStart = this.radiusEnd * (0.6 + Math.random() * 0.2); 
+      let iRadiusStart = this.radiusEnd * (0.8 + Math.random() * 0.2); 
       let iRadiusEnd = iRadiusStart - this.tree.radiusReduceSpeed * iOptions.length;
       let iAngles = [
         this.angles[0] + 10 * RADIAN * sign,
@@ -184,10 +184,10 @@ class Tree {
   constructor(options, camera) {
     let defaults = {
       color: 0x00000,
-      maxDeep: 10,
+      maxDeep: 9,
       maxLength: 10,
       maxSpeed: 0.5, // progress/second
-      radiusReduceSpeed: 0.05 / 100, // 每 1 长度减少的 radius 百分比
+      radiusReduceSpeed: 0.5 / 10, // 每 1 长度减少的 radius 百分比
       rootRadius: 5,
     };
     options = defaultsDeep(options, defaults);
@@ -206,7 +206,7 @@ class Tree {
       side: THREE.DoubleSide
     });
 
-    this.material = new THREE.MeshLambertMaterial( { color : 0xdddddd, side: THREE.DoubleSide } );
+    this.material = new THREE.MeshPhongMaterial( { color : 0xdddddd, side: THREE.DoubleSide } );
 
     this.treeGeom = new THREE.Geometry();
     this.treeMesh = new THREE.Mesh(this.treeGeom, this.material);
@@ -225,7 +225,7 @@ class Tree {
 
   getPointNumByBranchRadius(radius) {
     // return 10;
-    return Math.max(3, Math.min(parseInt(radius / 0.5), 6));
+    return Math.max(4, Math.min(parseInt(radius / 0.5), 4));
   }
 
   addBranch(branch) {
@@ -278,9 +278,9 @@ class Tree {
               endPointIndex + i
             ),
             new THREE.Face3(
-              endPointIndex + (i + 1) % (endPointNum),
+              endPointIndex + i,
               startPointIndex + (i + 1) % (startPointNum),
-              endPointIndex + i
+              endPointIndex + (i + 1) % (endPointNum)
             )
           );
         } else {
@@ -334,8 +334,8 @@ class Tree {
     });
     this.treeGeom.verticesNeedUpdate = true;
     this.treeGeom.elementsNeedUpdate = true;
-    this.treeGeom.computeFaceNormals();
-    this.treeGeom.computeVertexNormals();
+    // this.treeGeom.computeFaceNormals();
+    // this.treeGeom.computeVertexNormals();
     
   }
 }
