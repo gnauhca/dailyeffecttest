@@ -12,9 +12,9 @@ let stats = new Stats
 document.body.appendChild( stats.dom );
 
 
-let getSurroundPoint = (function() {
+let getSurroundPoint = (function() { 
   let meshCache = {};
-  return function(center, vector, radius, pointNum) {
+  return function(center, vector, radius, pointNum) { // console.log(vector.clone().normalize());
     let mesh = meshCache[pointNum]
     if (!mesh) {
       let geom = new THREE.CylinderGeometry(1, 1, 1, pointNum, 1, true);
@@ -23,7 +23,7 @@ let getSurroundPoint = (function() {
       mesh = new THREE.Mesh(geom, new THREE.MeshBasicMaterial);
       meshCache[pointNum] = mesh;
     }
-    mesh.lookAt(vector); 
+    mesh.lookAt(vector.clone().normalize()); 
     // mesh.lookAt(new THREE.Vector3(0,1,1)); 
     mesh.updateMatrixWorld();
     let vertices = mesh.geometry.vertices.slice(0, pointNum).map(v => {
@@ -137,8 +137,8 @@ class Branch {
       let cRadiusStart = this.radiusEnd;
       let cRadiusEnd = cRadiusStart - this.tree.radiusReduceSpeed * cOptions.length;
       let cAngles = [
-        this.angles[0] + 30 * RADIAN * sign * -1,
-        this.angles[1] + 30 * RADIAN * sign * -1
+        this.angles[0] + 5 * RADIAN * sign * -1,
+        this.angles[1] + 5 * RADIAN * sign * -1
       ];
       let cBranch = new Branch(this.tree, this, Object.assign({
         angles: cAngles,
@@ -152,8 +152,8 @@ class Branch {
       let iRadiusStart = this.radiusEnd * (0.8 + Math.random() * 0.2); 
       let iRadiusEnd = iRadiusStart - this.tree.radiusReduceSpeed * iOptions.length;
       let iAngles = [
-        this.angles[0] + 10 * RADIAN * sign,
-        this.angles[1] + -10 * RADIAN * sign * -1
+        this.angles[0] + 30 * RADIAN * sign,
+        this.angles[1] + -30 * RADIAN * sign * -1
       ];
       let iBranch = new Branch(this.tree, this, Object.assign({
         angles: iAngles,
@@ -184,7 +184,7 @@ class Tree {
   constructor(options, camera) {
     let defaults = {
       color: 0x00000,
-      maxDeep: 9,
+      maxDeep: 1,
       maxLength: 10,
       maxSpeed: 0.5, // progress/second
       radiusReduceSpeed: 0.5 / 10, // 每 1 长度减少的 radius 百分比
@@ -206,7 +206,7 @@ class Tree {
       side: THREE.DoubleSide
     });
 
-    this.material = new THREE.MeshPhongMaterial( { color : 0xdddddd, side: THREE.DoubleSide } );
+    this.material = new THREE.MeshLambertMaterial( { color : 0xdddddd, side: THREE.DoubleSide } );
 
     this.treeGeom = new THREE.Geometry();
     this.treeMesh = new THREE.Mesh(this.treeGeom, this.material);
@@ -216,7 +216,7 @@ class Tree {
       isIsolate: true,
       angles: [0, 90 * RADIAN],
       radiusStart: this.rootRadius,
-      radiusEnd: this.rootRadius - 2,
+      radiusEnd: this.rootRadius,
       length: this.maxLength,
       branchLength: this.maxLength,
       speed: this.maxSpeed
@@ -225,7 +225,7 @@ class Tree {
 
   getPointNumByBranchRadius(radius) {
     // return 10;
-    return Math.max(4, Math.min(parseInt(radius / 0.5), 4));
+    return Math.max(6, Math.min(parseInt(radius / 0.5), 6));
   }
 
   addBranch(branch) {
@@ -323,7 +323,7 @@ class Tree {
       }
 
       if (branch.isIsolate) {
-        vector = i === 0 ? new THREE.Vector3(0, 0.9, 0) : vector;
+        vector = i === 0 ? new THREE.Vector3(0, 1, 0) : vector;
         surroundPoint = getSurroundPoint(branch.start, vector, branch.radiusStart, pointInfo.startNum);
 
         for (let i = 0; i < pointInfo.startNum; i++) {
@@ -334,7 +334,7 @@ class Tree {
     });
     this.treeGeom.verticesNeedUpdate = true;
     this.treeGeom.elementsNeedUpdate = true;
-    // this.treeGeom.computeFaceNormals();
+    this.treeGeom.computeFaceNormals();
     // this.treeGeom.computeVertexNormals();
     
   }
