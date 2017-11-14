@@ -13,21 +13,54 @@ document.body.appendChild( stats.dom );
 
 
 let getSurroundPoint = (function() { 
-  let meshCache = {};
+  let cache = {};
+  let up = new THREE.Vector3(0, 1, 0);
+
   return function(center, vector, radius, pointNum) { // console.log(vector.clone().normalize());
-    let mesh = meshCache[pointNum]
+
+    // let geom = new THREE.CylinderGeometry(1, 1, 1, pointNum, 1, true);
+    // geom.rotateX(Math.PI / 2);
+    // geom.translate(0, 0, -0.5);
+    // geom.lookAt(vector.clone().normalize()); 
+
+    // var quaternion = new THREE.Quaternion(); // create one and reuse it
+    // quaternion.setFromUnitVectors( new THREE.Vector3(0, 1, 0), vector );
+    // var matrix = new THREE.Matrix4(); // create one and reuse it
+    // matrix.makeRotationFromQuaternion( quaternion );
+
+
+    // let vertices = geom.vertices.slice(0, pointNum).map(v => {
+    //   return v.applyMatrix4(matrix);
+    // });
+    // return vertices;
+
+
+    let mesh = cache[pointNum];
+    let angle = up.angleTo(vector);
+    let cross = new THREE.Vector3().crossVectors(up, vector).normalize();
+
     if (!mesh) {
       let geom = new THREE.CylinderGeometry(1, 1, 1, pointNum, 1, true);
-      geom.rotateX(Math.PI / 2);
-      geom.translate(0, 0, -0.5);
+      // geom.rotateX(Math.PI / 2);
+      geom.translate(0, -0.5, 0);
       mesh = new THREE.Mesh(geom, new THREE.MeshBasicMaterial);
-      meshCache[pointNum] = mesh;
+      cache[pointNum] = mesh;
     }
-    mesh.lookAt(vector.clone().normalize()); 
+
+    // mesh.rotation.set(0, 0, 0);
+    // mesh.rotateOnAxis(cross, angle);
+
+    // mesh.lookAt(vector.clone().normalize()); 
     // mesh.lookAt(new THREE.Vector3(0,1,1)); 
-    mesh.updateMatrixWorld();
+
+    // mesh.updateMatrixWorld();
+    // let vertices = mesh.geometry.vertices.slice(0, pointNum).map(v => {
+    //   return mesh.localToWorld(v.clone()).setLength(radius);
+    // });
+
+    // mesh.updateMatrixWorld();
     let vertices = mesh.geometry.vertices.slice(0, pointNum).map(v => {
-      return mesh.localToWorld(v.clone()).setLength(radius);
+      return v.clone().applyAxisAngle(cross, angle).setLength(radius);
     });
     return vertices;
   }
@@ -130,15 +163,18 @@ class Branch {
     } else if (this.deep < this.tree.maxDeep - 1) {
 
       // 生出两个子级树枝，有且仅有一个直系子树枝
-      let sign = Math.random() > 0.5 ? 1 : -1;
+      let sign1 = Math.random() > 0.5 ? 1 : -1;
+      let sign2 = Math.random() > 0.5 ? 1 : -1;
+      let sign3 = Math.random() > 0.5 ? 1 : -1;
+      let sign4 = Math.random() > 0.5 ? 1 : -1;
 
       // 直系 connected
       let cOptions = this.generateChildBaseOptions();
       let cRadiusStart = this.radiusEnd;
-      let cRadiusEnd = cRadiusStart - this.tree.radiusReduceSpeed * cOptions.length;
+      let cRadiusEnd = Math.max(cRadiusStart - this.tree.radiusReduceSpeed * cOptions.length, 0.2);
       let cAngles = [
-        this.angles[0] + 5 * RADIAN * sign * -1,
-        this.angles[1] + 5 * RADIAN * sign * -1
+        this.angles[0] + 10 * RADIAN * sign1 * -1,
+        this.angles[1] + 10 * RADIAN * sign2 * -1
       ];
       let cBranch = new Branch(this.tree, this, Object.assign({
         angles: cAngles,
@@ -149,11 +185,11 @@ class Branch {
 
       // 非直系 isolated
       let iOptions = this.generateChildBaseOptions();
-      let iRadiusStart = this.radiusEnd * (0.8 + Math.random() * 0.2); 
-      let iRadiusEnd = iRadiusStart - this.tree.radiusReduceSpeed * iOptions.length;
+      let iRadiusStart = this.radiusEnd * (0.6 + Math.random() * 0.3); 
+      let iRadiusEnd = Math.max(iRadiusStart - this.tree.radiusReduceSpeed * iOptions.length, 0.2);
       let iAngles = [
-        this.angles[0] + 30 * RADIAN * sign,
-        this.angles[1] + -30 * RADIAN * sign * -1
+        this.angles[0] + 30 * RADIAN * sign3,
+        this.angles[1] + -30 * RADIAN * sign4 * -1
       ];
       let iBranch = new Branch(this.tree, this, Object.assign({
         angles: iAngles,
@@ -167,11 +203,11 @@ class Branch {
   }
 
   generateChildBaseOptions() {
-    let length = this.tree.maxDeep * this.tree.maxLength * (0.8 + 0.2 * Math.random()) / (this.deep + 1 + this.tree.maxDeep)
+    let length = this.tree.maxDeep * this.tree.maxLength * (0.5 + 0.5 * Math.random()) / (this.deep + 1 + this.tree.maxDeep)
 
     return {
       startAtPercent: 0,
-      // endAtPercent: Math.random() > 0.5 ? Math.random() * 0.3 + 0.3: 1,
+      // endAtPercent: Math.random() > 0.5 ? Math.random() * 0.3 + 0.3 : 1,
       length: length,
       branchLength: length,
       speed: 0.5 + Math.random() * 0.5
@@ -184,10 +220,10 @@ class Tree {
   constructor(options, camera) {
     let defaults = {
       color: 0x00000,
-      maxDeep: 1,
-      maxLength: 10,
+      maxDeep: 8,
+      maxLength: 20,
       maxSpeed: 0.5, // progress/second
-      radiusReduceSpeed: 0.5 / 10, // 每 1 长度减少的 radius 百分比
+      radiusReduceSpeed: 0.4 / 10, // 每 1 长度减少的 radius 百分比
       rootRadius: 5,
     };
     options = defaultsDeep(options, defaults);
@@ -206,8 +242,10 @@ class Tree {
       side: THREE.DoubleSide
     });
 
-    this.material = new THREE.MeshLambertMaterial( { color : 0xdddddd, side: THREE.DoubleSide } );
 
+    this.material = new THREE.MeshLambertMaterial( { color : 0xdddddd, side: THREE.DoubleSide } );
+    this.material = new THREE.MeshNormalMaterial;
+    
     this.treeGeom = new THREE.Geometry();
     this.treeMesh = new THREE.Mesh(this.treeGeom, this.material);
     this.obj.add(this.treeMesh);
@@ -225,7 +263,7 @@ class Tree {
 
   getPointNumByBranchRadius(radius) {
     // return 10;
-    return Math.max(6, Math.min(parseInt(radius / 0.5), 6));
+    return Math.max(4, Math.min(parseInt(radius / 0.3), 8));
   }
 
   addBranch(branch) {
@@ -347,7 +385,7 @@ class Ani extends Time {
     this.scene = new THREE.Scene();//场景
 
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 3000);//透视相机
-    this.camera.position.set(0, 0, 100);//相机位置
+    this.camera.position.set(0, 0, 200);//相机位置
     this.scene.add(this.camera);//add到场景中
     this.camera.lookAt(new THREE.Vector3(0, 100, 0));
     // this.scene.fog = new THREE.Fog(0x000000, 100, 500);
