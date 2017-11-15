@@ -45149,7 +45149,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
-const RADIAN = Math.PI / 180;
+let RADIAN = Math.PI / 180;
 
 let stats = new __WEBPACK_IMPORTED_MODULE_1_stats_js___default.a
 document.body.appendChild( stats.dom );

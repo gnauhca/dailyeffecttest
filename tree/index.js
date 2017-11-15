@@ -6,7 +6,7 @@ import { Time, TIME, TWEEN } from './time.js';
 import TrackballControls from './trackball.js';
 import {MeshLine, MeshLineMaterial} from 'three.meshline';
 
-const RADIAN = Math.PI / 180;
+let RADIAN = Math.PI / 180;
 
 let stats = new Stats
 document.body.appendChild( stats.dom );
