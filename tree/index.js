@@ -243,8 +243,8 @@ class Tree {
     });
 
 
-    this.material = new THREE.MeshLambertMaterial( { color : 0xdddddd, side: THREE.DoubleSide } );
-    this.material = new THREE.MeshNormalMaterial;
+    this.material = new THREE.MeshLambertMaterial( { color : 0xdddddd } );
+    // this.material = new THREE.MeshNormalMaterial;
     
     this.treeGeom = new THREE.Geometry();
     this.treeMesh = new THREE.Mesh(this.treeGeom, this.material);
