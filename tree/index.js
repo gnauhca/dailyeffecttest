@@ -75,14 +75,14 @@ class Branch {
   constructor(tree, parent, options) {
     let defaults = {
       isIsolate: false,
-      angles: [0, 0],
+      angles: [0, 0], 
       startAtPercent: 0, // 当前树枝属于一只树枝某部分开始点
       endAtPercent: 1, // 当前树枝属于一只树枝某部分结束点
       percentSegment: 1, 
-      radiusStart: 1,
-      radiusEnd: 1,
-      branchLength: 1,
-      length: 1,
+      radiusStart: 1, // 开始半径
+      radiusEnd: 1, // 结束半径
+      branchLength: 1, // 树枝长度
+      length: 1, // 树枝 segment 长度
       speed: 1 // 生长速度
     };
 
@@ -399,9 +399,6 @@ class Ani extends Time {
     // this.control.travel = true;
     this.travelSpeed = 20000;
 
-
-
-
     this.spotLight = new THREE.SpotLight(0xffffff);
     this.scene.add(this.spotLight);
     this.spotLight.position.set(-200, -200, 100);
@@ -410,11 +407,11 @@ class Ani extends Time {
     this.scene.add(this.spotLight2);
     this.spotLight2.position.set(50, 500, -100);
 
-    this.planeGeom = new THREE.PlaneGeometry(200, 200);
-    this.planeGeom.rotateX(1.577)
-    this.planeMaterial = new THREE.MeshBasicMaterial({color: 0xcccccc, wireFrames: 1, side: THREE.DoubleSide});
-    this.plane = new THREE.Mesh(this.planeGeom, this.planeMaterial);
-    this.scene.add(this.plane);
+    // this.planeGeom = new THREE.PlaneGeometry(200, 200);
+    // this.planeGeom.rotateX(1.577)
+    // this.planeMaterial = new THREE.MeshBasicMaterial({color: 0xcccccc, wireFrames: 1, side: THREE.DoubleSide});
+    // this.plane = new THREE.Mesh(this.planeGeom, this.planeMaterial);
+    // this.scene.add(this.plane);
 
     this.renderer = new THREE.WebGLRenderer({antialias: true , alpha: true});//渲染
     this.renderer.setClearColor(0x000000, 0);
