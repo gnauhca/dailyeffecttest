@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { defaultsDeep } from 'lodash';
 import { Time, TIME, TWEEN } from './time.js';
 import TrackballControls from './trackball.js';
-import {MeshLine, MeshLineMaterial} from 'three.meshline';
+// import {MeshLine, MeshLineMaterial} from 'three.meshline';
 
 let RADIAN = Math.PI / 180;
 
@@ -12,28 +12,11 @@ let stats = new Stats
 document.body.appendChild( stats.dom );
 
 
-let getSurroundPoint = (function() { 
+let getSurroundPoints = (function() { 
   let cache = {};
   let up = new THREE.Vector3(0, 1, 0);
 
   return function(center, vector, radius, pointNum) { // console.log(vector.clone().normalize());
-
-    // let geom = new THREE.CylinderGeometry(1, 1, 1, pointNum, 1, true);
-    // geom.rotateX(Math.PI / 2);
-    // geom.translate(0, 0, -0.5);
-    // geom.lookAt(vector.clone().normalize()); 
-
-    // var quaternion = new THREE.Quaternion(); // create one and reuse it
-    // quaternion.setFromUnitVectors( new THREE.Vector3(0, 1, 0), vector );
-    // var matrix = new THREE.Matrix4(); // create one and reuse it
-    // matrix.makeRotationFromQuaternion( quaternion );
-
-
-    // let vertices = geom.vertices.slice(0, pointNum).map(v => {
-    //   return v.applyMatrix4(matrix);
-    // });
-    // return vertices;
-
 
     let mesh = cache[pointNum];
     let angle = up.angleTo(vector);
@@ -47,18 +30,6 @@ let getSurroundPoint = (function() {
       cache[pointNum] = mesh;
     }
 
-    // mesh.rotation.set(0, 0, 0);
-    // mesh.rotateOnAxis(cross, angle);
-
-    // mesh.lookAt(vector.clone().normalize()); 
-    // mesh.lookAt(new THREE.Vector3(0,1,1)); 
-
-    // mesh.updateMatrixWorld();
-    // let vertices = mesh.geometry.vertices.slice(0, pointNum).map(v => {
-    //   return mesh.localToWorld(v.clone()).setLength(radius);
-    // });
-
-    // mesh.updateMatrixWorld();
     let vertices = mesh.geometry.vertices.slice(0, pointNum).map(v => {
       return v.clone().applyAxisAngle(cross, angle).setLength(radius);
     });
@@ -76,12 +47,8 @@ class Branch {
     let defaults = {
       isIsolate: false,
       angles: [0, 0], 
-      startAtPercent: 0, // 当前树枝属于一只树枝某部分开始点
-      endAtPercent: 1, // 当前树枝属于一只树枝某部分结束点
-      percentSegment: 1, 
       radiusStart: 1, // 开始半径
       radiusEnd: 1, // 结束半径
-      branchLength: 1, // 树枝长度
       length: 1, // 树枝 segment 长度
       speed: 1 // 生长速度
     };
@@ -103,127 +70,86 @@ class Branch {
     );
     this.end = this.start.clone();
 
+    this.currentLength = 0;
+
     this.connectedChild; // 直系子树枝，公用点
     this.isolatedChildren = []; // 非直系子树枝
 
-    this.progress = 0; // 生长的百分比
+    this.childrenConfig = {};
 
-    let progressSegment = this.endAtPercent - this.startAtPercent;
-
-    // 生长速度 百分比 / 每秒
-    this.speed = this.tree.maxSpeed * (this.tree.maxDeep - this.deep) / this.tree.maxDeep;
-
-    // this.update();
+    this.controls = {};
+    this.createObjs();
     this.tree.addBranch(this);
   }
 
-  // grow
-  grow(delta) {
+  createObjs() {
+    // branch
+    this.branchGeom = new THREE.Geometry();
+    this.material = new THREE.MeshLambertMaterial( { color : 0xdddddd } );
+    this.branchObj = new THREE.Mesh(this.branchGeom, this.material);
 
-    if (this.progress === this.endAtPercent) {
-      // TODO: 树枝摆动, wind
-      return;
+    for (let i = 0; i < 16; i++) {
+      this.branchGeom.vertices.push(new THREE.Vector3);
     }
+
+    if (this.isIsolate) {
+      // start control point
+      let sphereGeom = new THREE.SphereGeometry(this.radiusStart, 5, 5);
+      let material = new THREE.MeshBasicMaterial({color: 0xff0000});
+      let startPoint = new THREE.Mesh();
+      startPoint.controlTarget = 'start';
+      startPoint.branch = this;
+      startPoint.position = this.start;
+      this.controls.startPoint = startPoint;
+    }
+
+    // end control point
+    let sphereGeom = new THREE.SphereGeometry(this.radiusStart, 5, 5);
+    let material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+    let endPoint = new THREE.Mesh();
+    endPoint.controlTarget = 'end';
+    endPoint.branch = this;
+    endPoint.position = this.end;
+    this.controls.endPoint = endPoint;
+  }
+
+  updateVector() {
+    this.vector.subVectors(this.end, this.start).normalize(); 
+  }
+
+  updateBranch() {
     
-    this.progress += delta / this.speed / 1000;
-    this.progress = Math.min(this.progress, this.endAtPercent);;
-    this.end.addVectors(this.start, this.vector.clone().multiplyScalar(this.progress));
-
-    if (this.progress < this.endAtPercent) { 
-      return; 
-    }
-
-    if (this.endAtPercent < 0.7) {
-      // 长出一只同级树枝，此时不是分裂，而是为了实现曲线生长
-      let angles = [
-        this.angles[0] + (Math.random() - 0.5) * RADIAN * 20,
-        this.angles[1] + (Math.random() - 0.5) * RADIAN * 20,
-      ];
-      let startAtPercent = this.endAtPercent;
-      let endAtPercent = Math.min(startAtPercent + 0.3 + Math.random(), 1);
-      let percentSegment = endAtPercent - startAtPercent;
-      let branchLength = this.branchLength;
-      let length = branchLength * percentSegment;
-      let radiusStart = this.radiusEnd;
-      let radiusEnd = radiusStart - this.tree.radiusReduceSpeed * length;
-      let speed = this.speed;
-
-      let sameDeepBranch = new Branch(this.tree, this, {
-        angles,
-        startAtPercent,
-        endAtPercent,
-        percentSegment,
-        radiusStart,
-        radiusEnd,
-        branchLength,
-        length,
-        speed,
+    if (this.isIsolate) {
+      let startSurroundPoints = getSurroundPoints(this.start, this.vector, this.radiusStart, 8);
+      startSurroundPoints.forEach((point, i) => {
+        this.branchGeom.vertices[i].copy(point);
       });
-
-    } else if (this.deep < this.tree.maxDeep - 1) {
-
-      // 生出两个子级树枝，有且仅有一个直系子树枝
-      let sign1 = Math.random() > 0.5 ? 1 : -1;
-      let sign2 = Math.random() > 0.5 ? 1 : -1;
-      let sign3 = Math.random() > 0.5 ? 1 : -1;
-      let sign4 = Math.random() > 0.5 ? 1 : -1;
-
-      // 直系 connected
-      let cOptions = this.generateChildBaseOptions();
-      let cRadiusStart = this.radiusEnd;
-      let cRadiusEnd = Math.max(cRadiusStart - this.tree.radiusReduceSpeed * cOptions.length, 0.2);
-      let cAngles = [
-        this.angles[0] + 20 * RADIAN * sign1 * -1,
-        this.angles[1] + 10 * RADIAN * sign2 * -1
-      ];
-      let cBranch = new Branch(this.tree, this, Object.assign({
-        angles: cAngles,
-        radiusStart: cRadiusStart,
-        radiusEnd: cRadiusEnd,
-      }, cOptions));
-      this.connectedChild = cBranch;
-
-      // 非直系 isolated
-      let iOptions = this.generateChildBaseOptions();
-      let iRadiusStart = this.radiusEnd * (0.7 + Math.random() * 0.3); 
-      let iRadiusEnd = Math.max(iRadiusStart - this.tree.radiusReduceSpeed * iOptions.length, 0.2);
-      let iAngles = [
-        this.angles[0] + 40 * RADIAN * sign3,
-        this.angles[1] + -30 * RADIAN * sign4 * -1
-      ];
-      let iBranch = new Branch(this.tree, this, Object.assign({
-        angles: iAngles,
-        radiusStart: iRadiusStart,
-        radiusEnd: iRadiusEnd,
-        isIsolate: true,
-      }, iOptions));
-      iBranch.deep = Math.min(this.tree.maxDeep, Math.round(Math.random()) + iBranch.deep);
-
-      this.isolatedChildren.push(iBranch);
     }
 
+    let percent = this.currentLength / this.length
+    let connectedChildVector = this.connectedChild ? this.connectedChild.vector : this.vector;
+    let endSurroundPointVector = new THREE.Vector3().addVectors(
+      this.vector, 
+      connectedChildVector.setLength(percent)
+    ).normalize();
+    let endSurroundPoints = getSurroundPoints(this.end, endSurroundPointVector, this.radiusEnd, 8);
+    endSurroundPoints.forEach((point, i) => {
+      this.branchGeom.vertices[i + 8].copy(point);
+    });
+
+    this.branchObj.computeFaceNormals();
   }
 
-  generateChildBaseOptions() {
-    let length = this.tree.maxDeep * this.tree.maxLength * (0.5 + 0.5 * Math.random()) / (this.deep ** 1.5 + 1 + this.tree.maxDeep)
-    let startAtPercent = 0;
-    let endAtPercent = Math.random() > 0.5 ? Math.random() * 0.3 + 0.3 : 1;
+  // grow
+  grow(delta) { }
 
-    return {
-      startAtPercent,
-      endAtPercent,
-      percentSegment: endAtPercent - startAtPercent,
-      length: length,
-      branchLength: length,
-      speed: 0.5 + Math.random() * 0.5
-    };
-  }
+  generateChildBaseOptions() { }
 }
 
 Branch.id = 0;
 
 class Tree {
-  constructor(options, camera) {
+  constructor(options) {
     let defaults = {
       color: 0x00000,
       maxDeep: 8,
@@ -235,7 +161,6 @@ class Tree {
     options = defaultsDeep(options, defaults);
     Object.assign(this, options);
 
-    this.camera = camera;
 
     this.branches = []; // 枝
     this.branchesPointInfo = {}; // 树枝对应几何体顶点开始的 index
@@ -247,14 +172,6 @@ class Tree {
       color: 0xcccccc,
       side: THREE.DoubleSide
     });
-
-
-    this.material = new THREE.MeshLambertMaterial( { color : 0xdddddd } );
-    // this.material = new THREE.MeshNormalMaterial;
-    
-    this.treeGeom = new THREE.Geometry();
-    this.treeMesh = new THREE.Mesh(this.treeGeom, this.material);
-    this.obj.add(this.treeMesh);
 
     let rootBranch = new Branch(this, null, {
       isIsolate: true,
@@ -360,7 +277,7 @@ class Tree {
       let vector = branch.vector;
 
       // end point
-      let surroundPoint = getSurroundPoint(branch.end, vector, branch.radiusEnd, pointInfo.endNum);
+      let surroundPoint = getSurroundPoints(branch.end, vector, branch.radiusEnd, pointInfo.endNum);
 
       for (let i = 0; i < pointInfo.endNum; i++) {
         this.treeGeom.vertices[pointInfo.endIndex + i].addVectors(branch.end, surroundPoint[i]);
@@ -368,7 +285,7 @@ class Tree {
 
       if (branch.isIsolate) {
         vector = i === 0 ? new THREE.Vector3(0, 1, 0) : vector;
-        surroundPoint = getSurroundPoint(branch.start, vector, branch.radiusStart, pointInfo.startNum);
+        surroundPoint = getSurroundPoints(branch.start, vector, branch.radiusStart, pointInfo.startNum);
 
         for (let i = 0; i < pointInfo.startNum; i++) {
           this.treeGeom.vertices[pointInfo.startIndex + i].addVectors(branch.start, surroundPoint[i]);
@@ -443,6 +360,12 @@ class Ani extends Time {
 
   stop() {
     this.removeTick(this.tick);
+  }
+}
+
+class Controller {
+  constructor() {
+
   }
 }
 
