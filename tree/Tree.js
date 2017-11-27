@@ -1,4 +1,6 @@
-class Tree {
+import { defaultsDeep } from 'lodash';
+
+export default class Tree {
   constructor(options) {
     let defaults = {
       color: 0x00000,
@@ -13,7 +15,6 @@ class Tree {
 
 
     this.branches = []; // 枝
-    this.branchesPointInfo = {}; // 树枝对应几何体顶点开始的 index
 
     this.leaves = []; // 叶
     this.obj = new THREE.Group();

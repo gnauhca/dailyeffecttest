@@ -1,7 +1,7 @@
 import Stats from 'stats.js';
 import { Time, TIME, TWEEN } from './time.js';
 
-class Ani extends Time {
+export default class Ani extends Time {
   constructor() {
     super();
     // init three tree
@@ -12,7 +12,7 @@ class Ani extends Time {
     this.scene.add(this.camera);//add到场景中
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
     // this.scene.fog = new THREE.Fog(0x000000, 100, 500);
-    this.control = new OrbitControls(this.camera, document.body);
+    this.control = new THREE.OrbitControls(this.camera, document.body);
     // this.control.travel = true;
     this.travelSpeed = 20000;
 
@@ -32,7 +32,7 @@ class Ani extends Time {
     this.tick;
 
     this.stats = new Stats();
-    document.body.appendChild( stats.dom );
+    document.body.appendChild( this.stats.dom );
   }
 
   tick(delta) {
@@ -49,7 +49,7 @@ class Ani extends Time {
   
   start() {
     this.tick = this.addTick(this.tick.bind(this));
-    
+    TIME.start();
   }
 
   stop() {
