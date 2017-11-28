@@ -58,7 +58,7 @@ export default class Branch {
       );
     }
 
-    this.end = this.start.clone();
+    this.end = new THREE.Vector3();
     this.currentLength = 0;
 
     this.connectedChild; // 直系子树枝，公用点
@@ -74,7 +74,7 @@ export default class Branch {
   createObjs() {
     // branch
     this.branchGeom = new THREE.Geometry();
-    this.material = new THREE.MeshBasicMaterial( { color : 0xdddddd } );
+    this.material = new THREE.MeshBasicMaterial( { color : 0xdddddd, wireframe: true } );
     this.branchObj = new THREE.Mesh(this.branchGeom, this.material);
     this.branchObj.branch = this;
 
@@ -127,17 +127,18 @@ export default class Branch {
   }
 
   updateVector() {
-    this.vector.subVectors(this.end, this.start).normalize(); 
+    this.vector.subVectors(this.end, this.start); 
+    this.length = this.vector.length();
+    this.currentLength = this.length;
+    this.vector.normalize();
   }
 
   updateBranch() {
     
-    if (this.isIsolate) {
-      let startSurroundPoints = getSurroundPoints(this.start, this.vector, this.radiusStart, 8);
-      startSurroundPoints.forEach((point, i) => {
-        this.branchGeom.vertices[i].copy(point);
-      });
-    }
+    let startSurroundPoints = getSurroundPoints(this.start, this.vector, this.radiusStart, 8);
+    startSurroundPoints.forEach((point, i) => {
+      this.branchGeom.vertices[i].copy(point);
+    });
 
     // 更新 end
     this.end.addVectors(this.start, this.vector.clone().setLength(this.currentLength));
@@ -153,14 +154,17 @@ export default class Branch {
       this.branchGeom.vertices[i + 8].copy(point);
     });
 
-    this.branchGeom.computeFaceNormals();
 
     if (this.connectedChild) {
       this.connectedChild.updateBranch();
     }
     this.isolatedChildren.forEach(branch => branch.updateBranch());
 
-    this.branchGeom.verticesNeedUpdate = true;
+    this.branchGeom.verticesNeedUpdate = true; 
+    this.branchGeom.normalsNeedUpdate = true; 
+    this.branchGeom.computeFaceNormals(); 
+    this.branchGeom.computeVertexNormals(); 
+    this.branchGeom.computeBoundingSphere();
   }
 
   // grow

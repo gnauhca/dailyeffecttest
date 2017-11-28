@@ -36,8 +36,8 @@ branchDragcontrols.enabled = false;
 branchDragcontrols.addEventListener('hoveron', function(event) {
   if (event.object !== editingBranchObj) {
     hoveringBranchObj = event.object;
+    hoveringBranchObj.material.color = new THREE.Color(0xdddd33); // 黄色鼠标悬浮
   }
-  hoveringBranchObj.material.color = new THREE.Color(0xdddd33); // 黄色鼠标悬浮
 });
 
 branchDragcontrols.addEventListener('hoveroff', function(event) {
@@ -57,6 +57,9 @@ branchPointsDragControlls.addEventListener('hoveron', function(event) {
 window.addEventListener('dblclick', function() {
   if (hoveringBranchObj) {
     changeEditingBranchObj(hoveringBranchObj);
+    hoveringBranchObj = null;
+  } else {
+    changeEditingBranchObj(null);
   }
 });
 
@@ -110,11 +113,11 @@ window.addEventListener('keydown', function(event) {
         if (isIsolate) {
           parentBranch.isolatedChildren.push(newBranch);
         } else {
-          parentBranch.connectChild = newBranch;
+          parentBranch.connectedChild = newBranch;
         }
         setBranchToMax(newBranch);
         branchObjs.push(newBranch.branchObj);
-        branchPoints.push(newBranch.controls.startPoint);
+        // branchPoints.push(newBranch.controls.startPoint);
         branchPoints.push(newBranch.controls.endPoint);
 
       } else {
@@ -141,27 +144,27 @@ window.addEventListener('keydown', function(event) {
 });
 
 //////////////////
-let tree = new Tree();
-let geometry = new THREE.BoxGeometry( 10, 10, 10 );
-let material = new THREE.MeshBasicMaterial( {color: new THREE.Color(0x00ff00)} );
-let cube = new THREE.Mesh( geometry, material );
-tree.obj.add( cube );
+// let tree = new Tree();
+// let geometry = new THREE.BoxGeometry( 10, 10, 10 );
+// let material = new THREE.MeshBasicMaterial( {color: new THREE.Color(0x00ff00)} );
+// let cube = new THREE.Mesh( geometry, material );
+// tree.obj.add( cube );
 
 
-let rootBranch = new Branch(tree, null, {
-  isIsolate: true,
-  radiusStart: 5, // 开始半径
-  radiusEnd: 5, // 结束半径
-  length: 20, // 树枝 segment 长度
-  vector: new THREE.Vector3(1, 0, 0)
-});
-setBranchToMax(rootBranch);
+// let rootBranch = new Branch(tree, null, {
+//   isIsolate: true,
+//   radiusStart: 5, // 开始半径
+//   radiusEnd: 5, // 结束半径
+//   length: 20, // 树枝 segment 长度
+//   vector: new THREE.Vector3(1, 0, 0)
+// });
+// setBranchToMax(rootBranch);
 
-ani.scene.add(tree.obj);
-trees.push(tree);
-branchObjs.push(rootBranch.branchObj);
-branchPoints.push(rootBranch.controls.startPoint);
-branchPoints.push(rootBranch.controls.endPoint);
+// ani.scene.add(tree.obj);
+// trees.push(tree);
+// branchObjs.push(rootBranch.branchObj);
+// branchPoints.push(rootBranch.controls.startPoint);
+// branchPoints.push(rootBranch.controls.endPoint);
 //////////////////
 
 
@@ -171,16 +174,19 @@ function changeEditingBranchObj(branchObj) {
     let oldBranch = editingBranchObj.branch;
 
     oldBranch.branchObj.material.color = new THREE.Color(0xdddddd);
-    oldBranch.isIsolate && oldBranch.controls.startPoint.scale.set(0, 0, 0);
-    oldBranch.controls.endPoint.scale.set(0, 0, 0);
+    oldBranch.isIsolate && oldBranch.controls.startPoint.scale.set(0.1, 0.1, 0.1);
+    oldBranch.controls.endPoint.scale.set(0.1, 0.1, 0.1);
     transformControl.object &&　transformControl.detach(transformControl.object);
+    editingBranchObj = null;
   }
-
-  let branch = branchObj.branch;
-  editingBranchObj = branch.branchObj;
-  branch.isIsolate && branch.controls.startPoint.scale.set(1, 1, 1);
-  branch.controls.endPoint.scale.set(1, 1, 1);
-  editingBranchObj.material.color = new THREE.Color(0xdd3333);
+  
+  if (branchObj) {
+    let branch = branchObj.branch;
+    editingBranchObj = branch.branchObj;
+    branch.isIsolate && branch.controls.startPoint.scale.set(1, 1, 1);
+    branch.controls.endPoint.scale.set(1, 1, 1);
+    editingBranchObj.material.color = new THREE.Color(0xdd3333);
+  }
 
 }
 
@@ -192,6 +198,7 @@ function setBranchToMax(branch) {
 function updateBranchByPoints(branch) {
   branch.updateVector();
   branch.updateBranch();
+  // console.log(branch.controls.endPoint.scale);
 }
 
 ani.start();
