@@ -35,6 +35,7 @@ export default class Branch {
       radiusStart: 1, // 开始半径
       radiusEnd: 1, // 结束半径
       length: 1, // 树枝 segment 长度
+      currentLength: 0, // 树枝当前长度
       speed: 1, // 生长速度
       vector: null, 
     };

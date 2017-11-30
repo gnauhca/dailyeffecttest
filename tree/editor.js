@@ -168,6 +168,54 @@ window.addEventListener('keydown', function(event) {
 //////////////////
 
 
+function createTree() {
+  // new tree
+  let tree = new Tree();
+  let rootBranch = new Branch(tree, null, {
+    isIsolate: true,
+    radiusStart: 5, // 开始半径
+    radiusEnd: 5, // 结束半径
+    length: 10, // 树枝 segment 长度
+    vector: new THREE.Vector3(1, 0, 0)
+  });
+  setBranchToMax(rootBranch);
+
+  ani.scene.add(tree.obj);
+  trees.push(tree);
+  branchObjs.push(rootBranch.branchObj);
+}
+
+function createBranch(parentBranch, config) {
+  let tree = parentBranch ? parentBranch.tree : createTree();
+  let branch = new Branch(tree, parentBranch, config);
+
+  if (parentBranch) {
+    let startPoint = parentBranch.endPoint;
+    branch.startPoint = startPoint;
+
+  }
+
+  if () {
+
+  }
+}
+
+function createControlPoint() {
+  let sphereGeom = new THREE.SphereGeometry(this.radiusStart, 8, 8);
+  let material = new THREE.MeshBasicMaterial({color: 0xff0000});
+  let startPoint = new THREE.Mesh(sphereGeom, material);
+}
+
+function loadConfig() {
+
+}
+
+function saveConfig() {
+
+}
+
+
+
 
 function changeEditingBranchObj(branchObj) {
   if (editingBranchObj) {
