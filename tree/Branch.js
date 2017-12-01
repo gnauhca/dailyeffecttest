@@ -60,14 +60,12 @@ export default class Branch {
     }
 
     this.end = new THREE.Vector3();
-    this.currentLength = 0;
 
     this.connectedChild; // 直系子树枝，公用点
     this.isolatedChildren = []; // 非直系子树枝
 
     this.childrenConfig = {};
 
-    this.controls = {};
     this.createObjs();
     this.tree.addBranch(this);
   }
@@ -103,28 +101,6 @@ export default class Branch {
       );
     }    
 
-
-    if (this.isIsolate) {
-      // start control point
-      let sphereGeom = new THREE.SphereGeometry(this.radiusStart, 8, 8);
-      let material = new THREE.MeshBasicMaterial({color: 0xff0000});
-      let startPoint = new THREE.Mesh(sphereGeom, material);
-      startPoint.controlTarget = 'start';
-      startPoint.branch = this;
-      startPoint.position.copy(this.start);
-      this.start = startPoint.position;
-      this.controls.startPoint = startPoint;
-    }
-
-    // end control point
-    let sphereGeom = new THREE.SphereGeometry(this.radiusEnd, 8, 8);
-    let material = new THREE.MeshBasicMaterial({color: 0xff0000});
-    let endPoint = new THREE.Mesh(sphereGeom, material);
-    endPoint.controlTarget = 'end';
-    endPoint.branch = this;
-    endPoint.position.copy(this.end);
-    this.end = endPoint.position;
-    this.controls.endPoint = endPoint;
   }
 
   updateVector() {
@@ -135,8 +111,10 @@ export default class Branch {
   }
 
   updateBranch() {
-    
-    let startSurroundPoints = getSurroundPoints(this.start, this.vector, this.radiusStart, 8);
+    this.radiusStart = this.parent ? this.parent.radiusEnd : this.radiusStart;
+
+    let startSurroundVector = this.parent ? this.parent.vector : new THREE.Vector3(0, 1, 0);
+    let startSurroundPoints = getSurroundPoints(this.start, startSurroundVector, this.radiusStart, 8);
     startSurroundPoints.forEach((point, i) => {
       this.branchGeom.vertices[i].copy(point);
     });
@@ -150,7 +128,7 @@ export default class Branch {
       this.vector, 
       connectedChildVector.setLength(percent)
     ).normalize();
-    let endSurroundPoints = getSurroundPoints(this.end, endSurroundPointVector, this.radiusEnd, 8);
+    let endSurroundPoints = getSurroundPoints(this.end, this.vector/* , endSurroundPointVector */, this.radiusEnd, 8);
     endSurroundPoints.forEach((point, i) => {
       this.branchGeom.vertices[i + 8].copy(point);
     });

@@ -1,6 +1,7 @@
 import Branch from './Branch.js';
 import Tree from './Tree.js';
 import Ani from './Ani.js';
+import { create } from 'domain';
 
 let ani = new Ani();
 
@@ -15,49 +16,60 @@ axes.position.set( 0, 0, 0 );
 ani.scene.add( axes );
 
 ani.onUpdate = function() {
-  transformControl.update();
+  editor.transformControl.update();
 }
 
-let transformControl = new THREE.TransformControls(ani.camera, ani.renderer.domElement);
+
+let editor = {
+  normalColor: new THREE.Color(0xaaaaaa),
+  editingColor: new THREE.Color(0x00ff00),
+  hoverColor: new THREE.Color(0xffff00)
+};
+editor.trees = [];
+editor.editingBranchObj = null;
+editor.hoveringBranchObj = null;
+editor.branchObjs = [];
+
+editor.transformControl = new THREE.TransformControls(ani.camera, ani.renderer.domElement);
 // transformControl.addEventListener('change', render);
-ani.scene.add(transformControl);
+ani.scene.add(editor.transformControl);
 
-transformControl.addEventListener('objectChange', function(e) {
-  updateBranchByPoints(editingBranchObj.branch);
+editor.transformControl.addEventListener('objectChange', function(e) {
+  updateBranchByPoints();
 });
 
-let trees = [];
 
-let editingBranchObj = null;
-let hoveringBranchObj = null;
-let branchObjs = [];
-let branchDragcontrols = new THREE.DragControls(branchObjs, ani.camera, ani.renderer.domElement); 
-branchDragcontrols.enabled = false;
-branchDragcontrols.addEventListener('hoveron', function(event) {
-  if (event.object !== editingBranchObj) {
-    hoveringBranchObj = event.object;
-    hoveringBranchObj.material.color = new THREE.Color(0xdddd33); // 黄色鼠标悬浮
+editor.branchDragcontrols = new THREE.DragControls(editor.branchObjs, ani.camera, ani.renderer.domElement); 
+editor.branchDragcontrols.enabled = false;
+editor.branchDragcontrols.addEventListener('hoveron', function(event) {
+  if (editor.hoveringBranchObj) {
+    editor.hoveringBranchObj.material.color = editor.normalColor;
+    editor.hoveringBranchObj = null;
+  }
+  if (event.object !== editor.editingBranchObj) {
+    editor.hoveringBranchObj = event.object;
+    editor.hoveringBranchObj.material.color = editor.hoverColor; // 黄色鼠标悬浮
   }
 });
 
-branchDragcontrols.addEventListener('hoveroff', function(event) {
-  if (hoveringBranchObj) {
-    hoveringBranchObj.material.color = new THREE.Color(0xdddddd);
-    hoveringBranchObj = null;
+editor.branchDragcontrols.addEventListener('hoveroff', function(event) {
+  if (editor.hoveringBranchObj) {
+    editor.hoveringBranchObj.material.color = editor.normalColor;
+    editor.hoveringBranchObj = null;
   }
 });
 
-let branchPoints = [];
-let branchPointsDragControlls = new THREE.DragControls(branchPoints, ani.camera, ani.renderer.domElement);
-branchPointsDragControlls.enabled = false;
-branchPointsDragControlls.addEventListener('hoveron', function(event) {
-  transformControl.attach(event.object);
+editor.branchPoints = [];
+editor.branchPointsDragControlls = new THREE.DragControls(editor.branchPoints, ani.camera, ani.renderer.domElement);
+editor.branchPointsDragControlls.enabled = false;
+editor.branchPointsDragControlls.addEventListener('hoveron', function(event) {
+  editor.transformControl.attach(event.object);
 });
 
 window.addEventListener('dblclick', function() {
-  if (hoveringBranchObj) {
-    changeEditingBranchObj(hoveringBranchObj);
-    hoveringBranchObj = null;
+  if (editor.hoveringBranchObj) {
+    changeEditingBranchObj(editor.hoveringBranchObj);
+    editor.hoveringBranchObj = null;
   } else {
     changeEditingBranchObj(null);
   }
@@ -68,142 +80,115 @@ window.addEventListener('keydown', function(event) {
   switch (event.keyCode) {
 
     case 81: // Q
-      transformControl.setSpace(transformControl.space === "local" ? "world" : "local");
+      editor.transformControl.setSpace(editor.transformControl.space === "local" ? "world" : "local");
       break;
 
     case 17: // Ctrl
-      transformControl.setTranslationSnap(100);
-      transformControl.setRotationSnap(THREE.Math.degToRad(15));
+      editor.transformControl.setTranslationSnap(100);
+      editor.transformControl.setRotationSnap(THREE.Math.degToRad(15));
       break;
 
     case 87: // W
-      transformControl.setMode("translate");
+      editor.transformControl.setMode("translate");
       break;
 
     case 69: // E
-      transformControl.setMode("rotate");
+      editor.transformControl.setMode("rotate");
       break;
 
     case 82: // R
-      transformControl.setMode("scale");
+      editor.transformControl.setMode("scale");
       break;
 
     case 187:
     case 107: // +, =, num+
-      transformControl.setSize(transformControl.size + 0.1);
+      editor.transformControl.setSize(editor.transformControl.size + 0.1);
       break;
 
     case 189:
     case 109: // -, _, num-
-      transformControl.setSize(Math.max(transformControl.size - 0.1, 0.1));
+      editor.transformControl.setSize(Math.max(editor.transformControl.size - 0.1, 0.1));
       break;
 
     case 32: // space add branch
-      if (editingBranchObj) {
-        let parentBranch = editingBranchObj.branch;
-        let isIsolate = !!parentBranch.connectChild;
-        let newBranch = new Branch(parentBranch.tree, parentBranch, {
-          isIsolate,
-          radiusStart: parentBranch.radiusEnd, // 开始半径
-          radiusEnd: parentBranch.radiusEnd, // 结束半径
-          length: 10, // 树枝 segment 长度
-          vector: isIsolate ? new THREE.Vector3(Math.random(), Math.random(), Math.random()) : parentBranch.vector.clone()
-        });
-
-        if (isIsolate) {
-          parentBranch.isolatedChildren.push(newBranch);
-        } else {
-          parentBranch.connectedChild = newBranch;
-        }
-        setBranchToMax(newBranch);
-        branchObjs.push(newBranch.branchObj);
-        // branchPoints.push(newBranch.controls.startPoint);
-        branchPoints.push(newBranch.controls.endPoint);
-
-      } else {
-        // new tree
-        let tree = new Tree();
-        let rootBranch = new Branch(tree, null, {
-          isIsolate: true,
-          radiusStart: 5, // 开始半径
-          radiusEnd: 5, // 结束半径
-          length: 10, // 树枝 segment 长度
-          vector: new THREE.Vector3(1, 0, 0)
-        });
-        setBranchToMax(rootBranch);
-
-        ani.scene.add(tree.obj);
-        trees.push(tree);
-        branchObjs.push(rootBranch.branchObj);
-        branchPoints.push(rootBranch.controls.startPoint);
-        branchPoints.push(rootBranch.controls.endPoint);
-      }
-
+      let branch = createBranch(editor.editingBranchObj ? editor.editingBranchObj.branch : null);
+      changeEditingBranchObj(branch.branchObj);
+    break;
   }
 
 });
 
-//////////////////
-// let tree = new Tree();
-// let geometry = new THREE.BoxGeometry( 10, 10, 10 );
-// let material = new THREE.MeshBasicMaterial( {color: new THREE.Color(0x00ff00)} );
-// let cube = new THREE.Mesh( geometry, material );
-// tree.obj.add( cube );
-
-
-// let rootBranch = new Branch(tree, null, {
-//   isIsolate: true,
-//   radiusStart: 5, // 开始半径
-//   radiusEnd: 5, // 结束半径
-//   length: 20, // 树枝 segment 长度
-//   vector: new THREE.Vector3(1, 0, 0)
-// });
-// setBranchToMax(rootBranch);
-
-// ani.scene.add(tree.obj);
-// trees.push(tree);
-// branchObjs.push(rootBranch.branchObj);
-// branchPoints.push(rootBranch.controls.startPoint);
-// branchPoints.push(rootBranch.controls.endPoint);
-//////////////////
-
-
 function createTree() {
-  // new tree
   let tree = new Tree();
-  let rootBranch = new Branch(tree, null, {
-    isIsolate: true,
-    radiusStart: 5, // 开始半径
-    radiusEnd: 5, // 结束半径
-    length: 10, // 树枝 segment 长度
-    vector: new THREE.Vector3(1, 0, 0)
-  });
-  setBranchToMax(rootBranch);
+  ani.scene.add(tree.obj)
+  editor.trees.push(tree);
 
-  ani.scene.add(tree.obj);
-  trees.push(tree);
-  branchObjs.push(rootBranch.branchObj);
+  return tree;
 }
 
-function createBranch(parentBranch, config) {
-  let tree = parentBranch ? parentBranch.tree : createTree();
-  let branch = new Branch(tree, parentBranch, config);
+function createBranch(parentBranch) {
+  let config;
+  let tree;
+  let branch;
+  let startPoint;
+  let endPoint;
 
   if (parentBranch) {
-    let startPoint = parentBranch.endPoint;
-    branch.startPoint = startPoint;
-
+    config = {
+      radiusStart: parentBranch.radiusEnd,
+      radiusEnd: parentBranch.radiusEnd,
+      vector: new THREE.Vector3(Math.random() - 0.5, Math.random(), Math.random() - 0.5),
+      length: 10,
+      currentLength: 10
+    };
+    tree = parentBranch.tree;
+    startPoint = parentBranch.endPoint;
+    branch = new Branch(tree, parentBranch, config);
+    if (!parentBranch.connectedChild) {
+      parentBranch.connectedChild = branch;
+    } else {
+      parentBranch.isolatedChildren.push(branch);
+    }
+  } else {
+    config = {
+      radiusStart: 5,
+      radiusEnd: 5,
+      vector: new THREE.Vector3(1, 0, 0),
+      length: 10,
+      currentLength: 10
+    };
+    tree = createTree();
+    startPoint = createControlPoint(config.radiusStart);
+    branch = new Branch(tree, parentBranch, config);
   }
+  branch.updateBranch();
 
-  if () {
+  startPoint.branchChildren.push(branch);
+  
+  endPoint = createControlPoint(branch.endRadius);
+  endPoint.branchParent = branch;
 
-  }
+  branch.startPoint = startPoint;
+  branch.endPoint = endPoint;
+
+  startPoint.position.copy(branch.start);
+  endPoint.position.copy(branch.end);
+
+  editor.branchObjs.push(branch.branchObj);
+
+  return branch;
 }
 
-function createControlPoint() {
-  let sphereGeom = new THREE.SphereGeometry(this.radiusStart, 8, 8);
-  let material = new THREE.MeshBasicMaterial({color: 0xff0000});
-  let startPoint = new THREE.Mesh(sphereGeom, material);
+function createControlPoint(radius) {
+  let sphereGeom = new THREE.SphereGeometry(0.5, 8, 8);
+  let material = new THREE.MeshBasicMaterial({color: 0xff0000, visible: false});
+  let point = new THREE.Mesh(sphereGeom, material);
+
+  point.branchParent = null;
+  point.branchChildren = [];
+  point.scale.set(radius);
+  ani.scene.add(point);
+  return point;
 }
 
 function loadConfig() {
@@ -214,39 +199,59 @@ function saveConfig() {
 
 }
 
-
-
-
 function changeEditingBranchObj(branchObj) {
-  if (editingBranchObj) {
-    let oldBranch = editingBranchObj.branch;
+  if (editor.editingBranchObj) {
+    let oldBranch = editor.editingBranchObj.branch;
 
-    oldBranch.branchObj.material.color = new THREE.Color(0xdddddd);
-    oldBranch.isIsolate && oldBranch.controls.startPoint.scale.set(0.1, 0.1, 0.1);
-    oldBranch.controls.endPoint.scale.set(0.1, 0.1, 0.1);
-    transformControl.object &&　transformControl.detach(transformControl.object);
-    editingBranchObj = null;
+    oldBranch.branchObj.material.color = editor.normalColor;
+    oldBranch.startPoint.material.visible = false;
+    // oldBranch.startPoint.material.needsUpdate = true;
+    oldBranch.endPoint.material.visible = false;
+    // oldBranch.startPoint.material.needsUpdate = true;
+    editor.editingBranchObj = null;
   }
   
   if (branchObj) {
     let branch = branchObj.branch;
-    editingBranchObj = branch.branchObj;
-    branch.isIsolate && branch.controls.startPoint.scale.set(1, 1, 1);
-    branch.controls.endPoint.scale.set(1, 1, 1);
-    editingBranchObj.material.color = new THREE.Color(0xdd3333);
+    editor.editingBranchObj = branch.branchObj;
+
+    branch.startPoint.material.visible = true;
+    branch.endPoint.material.visible = true;
+    branch.material.color = editor.editingColor;
+
+    branch.startPoint.scale.set(branch.radiusStart, branch.radiusStart, branch.radiusStart);
+    branch.endPoint.scale.set(branch.radiusEnd, branch.radiusEnd, branch.radiusEnd);
+
+    // branch.startPoint.position.copy(branch.start);
+    // branch.endPoint.position.copy(branch.end);
+
+    editor.branchPoints.length = 0;
+    editor.branchPoints.push(branch.startPoint, branch.endPoint);
   }
 
+  editor.transformControl.detach();
 }
 
-function setBranchToMax(branch) {
-  branch.currentLength = branch.length;
-  branch.updateBranch();
-}
+function updateBranchByPoints() {
+  let branch = editor.editingBranchObj.branch;
 
-function updateBranchByPoints(branch) {
+  branch.radiusStart = branch.startPoint.scale.x;
+  branch.radiusEnd = branch.endPoint.scale.x;
+  branch.start.copy(branch.startPoint.position);
+  branch.end.copy(branch.endPoint.position);
+
+  if (branch.parent) {
+    branch.parent.radiusEnd = branch.radiusStart;
+    branch.parent.end = branch.start;
+  }
+
   branch.updateVector();
   branch.updateBranch();
-  // console.log(branch.controls.endPoint.scale);
+
+  if (branch.parent) {
+    branch.parent.updateVector();
+    branch.parent.updateBranch();
+  }
 }
 
 ani.start();

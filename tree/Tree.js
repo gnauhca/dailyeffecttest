@@ -34,13 +34,6 @@ export default class Tree {
     this.branches.push(branch);
 
     this.obj.add(branch.branchObj);
-
-    if (window.env === 'edit') {
-      if (branch.isIsolate) {
-        this.obj.add(branch.controls.startPoint);
-      }
-      this.obj.add(branch.controls.endPoint);
-    }
   }
 
 
