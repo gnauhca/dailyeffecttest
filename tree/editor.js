@@ -114,6 +114,16 @@ window.addEventListener('keydown', function(event) {
       let branch = createBranch(editor.editingBranchObj ? editor.editingBranchObj.branch : null);
       changeEditingBranchObj(branch.branchObj);
     break;
+
+    case 8: // delete branch
+      if (editor.editingBranchObj) {
+        let branchToDelete = editor.editingBranchObj.branch;
+        let branchObjToEdit = branchToDelete.parent ? branchToDelete.parent.branchObj : null;
+
+        changeEditingBranchObj(branchObjToEdit);
+        deleteBranch(branchToDelete);
+      }
+
   }
 
 });
@@ -179,6 +189,25 @@ function createBranch(parentBranch) {
   return branch;
 }
 
+function deleteBranch(branch) {
+  if (!branch) {
+    return;
+  }
+
+  deleteBranch(branch.connectedChild);
+  for (let i = branch.isolatedChildren.length; i >=0; i--) {
+    deleteBranch(branch.isolatedChildren[i]);
+  }
+
+  if (!branch.parent) {
+    ani.scene.remove(branch.startPoint);
+    delete branch.startPoint;
+  }
+  ani.scene.remove(branch.endPoint);
+  delete branch.endPoint;
+  branch.destroy();
+}
+
 function createControlPoint(radius) {
   let sphereGeom = new THREE.SphereGeometry(0.5, 8, 8);
   let material = new THREE.MeshBasicMaterial({color: 0xff0000, visible: false});
@@ -219,14 +248,17 @@ function changeEditingBranchObj(branchObj) {
     branch.endPoint.material.visible = true;
     branch.material.color = editor.editingColor;
 
-    branch.startPoint.scale.set(branch.radiusStart, branch.radiusStart, branch.radiusStart);
-    branch.endPoint.scale.set(branch.radiusEnd, branch.radiusEnd, branch.radiusEnd);
 
     // branch.startPoint.position.copy(branch.start);
     // branch.endPoint.position.copy(branch.end);
 
     editor.branchPoints.length = 0;
     editor.branchPoints.push(branch.startPoint, branch.endPoint);
+
+    branch.startPoint.position.copy(branch.start);
+    branch.endPoint.position.copy(branch.end);
+    branch.startPoint.scale.set(branch.radiusStart, branch.radiusStart, branch.radiusStart);
+    branch.endPoint.scale.set(branch.radiusEnd, branch.radiusEnd, branch.radiusEnd);
   }
 
   editor.transformControl.detach();

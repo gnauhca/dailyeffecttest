@@ -150,6 +150,24 @@ export default class Branch {
   grow(delta) { }
 
   generateChildBaseOptions() { }
+
+  removeChild(child) {
+    if (child === this.connectedChild) {
+      this.connectedChild = null;
+    } else {
+      this.isolatedChildren = this.isolatedChildren.filter(isolatedChild => isolatedChild !== child);
+    }
+  }
+
+  destroy() {
+    this.connectedChild && this.connectedChild.destroy();
+    this.isolatedChildren.forEach(child => child.destroy());
+    this.tree.obj.remove(this.branchObj);
+    this.parent && this.parent.removeChild(this);
+    this.branchObj = null;
+    this.tree = null;
+    this.parent = null;
+  }
 }
 
 Branch.id = 0;
