@@ -411,6 +411,7 @@ function changeEditingBranchObj(branchObj) {
     guiOptions.treeName = branch.tree.name;
     guiOptions.treeDelay = branch.tree.delay;
     guiOptions.branchZScale = branch.surroundPointZScale;
+    guiOptions.branchXZAngle = branch.surroundPointXZAngle;
   }
 
   editor.transformControl.detach();
