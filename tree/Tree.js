@@ -9,6 +9,8 @@ export default class Tree {
       maxSpeed: 0.5, // progress/second
       radiusReduceSpeed: 0.4 / 10, // 每 1 长度减少的 radius 百分比
       rootRadius: 5,
+      name: 'tree',
+      delay: 0
     };
     options = defaultsDeep(options, defaults);
     Object.assign(this, options);

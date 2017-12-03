@@ -4,6 +4,8 @@ import { Time, TIME, TWEEN } from './time.js';
 export default class Ani extends Time {
   constructor() {
     super();
+    this.domWrap = document.body.querySelector('.render-area');
+
     // init three tree
     this.scene = new THREE.Scene();//场景
 
@@ -12,7 +14,8 @@ export default class Ani extends Time {
     this.scene.add(this.camera);//add到场景中
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
     // this.scene.fog = new THREE.Fog(0x000000, 100, 500);
-    this.control = new THREE.OrbitControls(this.camera, document.body);
+    this.control = new THREE.OrbitControls(this.camera, this.domWrap);
+    // this.control.enabled = false;
     // this.control.travel = true;
     this.travelSpeed = 20000;
 
@@ -27,7 +30,7 @@ export default class Ani extends Time {
     this.renderer = new THREE.WebGLRenderer({antialias: true , alpha: true});//渲染
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    document.querySelector('body').appendChild(this.renderer.domElement);//将渲染Element添加到Dom中
+    this.domWrap.appendChild(this.renderer.domElement);//将渲染Element添加到Dom中
 
     this.tick;
 
