@@ -79,8 +79,8 @@ class Branch {
       startAtPercent: 0, // 当前树枝属于一只树枝某部分开始点
       endAtPercent: 1, // 当前树枝属于一只树枝某部分结束点
       percentSegment: 1, 
-      radiusStart: 1, // 开始半径
-      radiusEnd: 1, // 结束半径
+      startRadius: 1, // 开始半径
+      endRadius: 1, // 结束半径
       branchLength: 1, // 树枝长度
       length: 1, // 树枝 segment 长度
       speed: 1 // 生长速度
@@ -144,8 +144,8 @@ class Branch {
       let percentSegment = endAtPercent - startAtPercent;
       let branchLength = this.branchLength;
       let length = branchLength * percentSegment;
-      let radiusStart = this.radiusEnd;
-      let radiusEnd = radiusStart - this.tree.radiusReduceSpeed * length;
+      let startRadius = this.endRadius;
+      let endRadius = startRadius - this.tree.radiusReduceSpeed * length;
       let speed = this.speed;
 
       let sameDeepBranch = new Branch(this.tree, this, {
@@ -153,8 +153,8 @@ class Branch {
         startAtPercent,
         endAtPercent,
         percentSegment,
-        radiusStart,
-        radiusEnd,
+        startRadius,
+        endRadius,
         branchLength,
         length,
         speed,
@@ -170,31 +170,31 @@ class Branch {
 
       // 直系 connected
       let cOptions = this.generateChildBaseOptions();
-      let cRadiusStart = this.radiusEnd;
-      let cRadiusEnd = Math.max(cRadiusStart - this.tree.radiusReduceSpeed * cOptions.length, 0.2);
+      let cstartRadius = this.endRadius;
+      let cendRadius = Math.max(cstartRadius - this.tree.radiusReduceSpeed * cOptions.length, 0.2);
       let cAngles = [
         this.angles[0] + 20 * RADIAN * sign1 * -1,
         this.angles[1] + 10 * RADIAN * sign2 * -1
       ];
       let cBranch = new Branch(this.tree, this, Object.assign({
         angles: cAngles,
-        radiusStart: cRadiusStart,
-        radiusEnd: cRadiusEnd,
+        startRadius: cstartRadius,
+        endRadius: cendRadius,
       }, cOptions));
       this.connectedChild = cBranch;
 
       // 非直系 isolated
       let iOptions = this.generateChildBaseOptions();
-      let iRadiusStart = this.radiusEnd * (0.7 + Math.random() * 0.3); 
-      let iRadiusEnd = Math.max(iRadiusStart - this.tree.radiusReduceSpeed * iOptions.length, 0.2);
+      let istartRadius = this.endRadius * (0.7 + Math.random() * 0.3); 
+      let iendRadius = Math.max(istartRadius - this.tree.radiusReduceSpeed * iOptions.length, 0.2);
       let iAngles = [
         this.angles[0] + 40 * RADIAN * sign3,
         this.angles[1] + -30 * RADIAN * sign4 * -1
       ];
       let iBranch = new Branch(this.tree, this, Object.assign({
         angles: iAngles,
-        radiusStart: iRadiusStart,
-        radiusEnd: iRadiusEnd,
+        startRadius: istartRadius,
+        endRadius: iendRadius,
         isIsolate: true,
       }, iOptions));
       iBranch.deep = Math.min(this.tree.maxDeep, Math.round(Math.random()) + iBranch.deep);
@@ -259,8 +259,8 @@ class Tree {
     let rootBranch = new Branch(this, null, {
       isIsolate: true,
       angles: [0, 90 * RADIAN],
-      radiusStart: this.rootRadius,
-      radiusEnd: this.rootRadius * 0.8,
+      startRadius: this.rootRadius,
+      endRadius: this.rootRadius * 0.8,
       length: this.maxLength,
       branchLength: this.maxLength,
       speed: this.maxSpeed
@@ -288,7 +288,7 @@ class Tree {
       if (branch.isIsolate) {
         // 同时拥有头尾的点，增加头部分的点
         startPointIndex = this.treeGeom.vertices.length;
-        startPointNum = this.getPointNumByBranchRadius(branch.radiusStart);
+        startPointNum = this.getPointNumByBranchRadius(branch.startRadius);
 
         pointInfo.startIndex = startPointIndex;
         pointInfo.startNum = startPointNum;
@@ -302,7 +302,7 @@ class Tree {
       }
 
       let endPointIndex = this.treeGeom.vertices.length;
-      let endPointNum = this.getPointNumByBranchRadius(branch.radiusEnd);
+      let endPointNum = this.getPointNumByBranchRadius(branch.endRadius);
 
       for (let i = 0; i < endPointNum; i++) {
         this.treeGeom.vertices.push(new THREE.Vector3);
@@ -360,7 +360,7 @@ class Tree {
       let vector = branch.vector;
 
       // end point
-      let surroundPoint = getSurroundPoint(branch.end, vector, branch.radiusEnd, pointInfo.endNum);
+      let surroundPoint = getSurroundPoint(branch.end, vector, branch.endRadius, pointInfo.endNum);
 
       for (let i = 0; i < pointInfo.endNum; i++) {
         this.treeGeom.vertices[pointInfo.endIndex + i].addVectors(branch.end, surroundPoint[i]);
@@ -368,7 +368,7 @@ class Tree {
 
       if (branch.isIsolate) {
         vector = i === 0 ? new THREE.Vector3(0, 1, 0) : vector;
-        surroundPoint = getSurroundPoint(branch.start, vector, branch.radiusStart, pointInfo.startNum);
+        surroundPoint = getSurroundPoint(branch.start, vector, branch.startRadius, pointInfo.startNum);
 
         for (let i = 0; i < pointInfo.startNum; i++) {
           this.treeGeom.vertices[pointInfo.startIndex + i].addVectors(branch.start, surroundPoint[i]);

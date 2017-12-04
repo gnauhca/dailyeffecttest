@@ -10,7 +10,7 @@ let getSurroundPoints = (function() {
     let mesh = cache[pointNum];
     let angle = up.angleTo(vector);
     // let xzAngle = Math.atan(-vector.z / vector.x);
-    let cross = new THREE.Vector3().crossVectors(up, vector).normalize();
+    let cross = new THREE.Vector3().crossVectors(up, vector.clone().normalize());
     // let sign = 1;
 
     // if (xzAngle > Math.PI / 2) {
@@ -40,11 +40,16 @@ let getSurroundPoints = (function() {
 
     let vertices = mesh.geometry.vertices.slice(0, pointNum).map(v => {
 
-      return v.clone()
-              .setZ(v.z * zScale)
-              .applyAxisAngle(up, xzAngle)
-              .applyAxisAngle(cross, angle)
-              .multiplyScalar(radius).add(center);
+      let vector = v.clone().setZ(v.z * zScale);
+
+      if (xzAngle) {
+        vector.applyAxisAngle(up, xzAngle);
+      }
+      vector.applyAxisAngle(cross, angle).multiplyScalar(radius).add(center);
+
+      vector.multiplyScalar(100).floor().multiplyScalar(0.01);
+
+      return vector;
     });
     return vertices;
   }
@@ -53,42 +58,59 @@ let getSurroundPoints = (function() {
 
 // 树枝，或者是一只不分裂的树枝的某一部分
 export default class Branch {
-  constructor(tree, parent, options) {
+  constructor(tree, parent, options, treeConfig) {
     let defaults = {
+      delay: 0,
       start: undefined,
       // end: undefined,
       isIsolate: false,
       angles: [0, 0], 
-      radiusStart: 1, // 开始半径
-      radiusEnd: 1, // 结束半径
+      startRadius: 1, // 开始半径
+      endRadius: 1, // 结束半径
       length: 1, // 树枝 segment 长度
       currentLength: 0, // 树枝当前长度
-      speed: 1, // 生长速度
+      speed: 20, // 生长速度
       vector: null, 
       crossSection: [], // 横截面，由 xz 平面环绕 0, 0 的点组成,
-      surroundPointZScale: undefined,
-      surroundPointXZAngle: undefined
+      pointsZScale: undefined,
+      pointsXZAngle: undefined,
+
+      startPointNum: 10,
+      endPointNum: 10
     };
 
     options = defaultsDeep(options, defaults);
     Object.assign(this, options);
 
+    this.treeConfig = treeConfig;
     this.id = Branch.id++;
     this.tree = tree;
     this.parent = parent;
     this.deep = this.parent ? this.parent.deep + (this.endAtPercent < 1 ? 0 : 1) : 0;
 
+    if (Array.isArray(this.start)) {
+      this.start = new THREE.Vector3(...this.start);
+    }
+    if (Array.isArray(this.end)) {
+      this.end = new THREE.Vector3(...this.end);
+    }
+    if (Array.isArray(this.vector)) {
+      this.vector = new THREE.Vector3(...this.vector);
+    }
+
     // if (typeof this.start === 'undefined') 
-    this.start = this.parent ? parent.end : new THREE.Vector3; // 开始点
+    this.start = this.parent ? parent.end : (this.start || new THREE.Vector3); // 开始点
 
-    if (typeof this.surroundPointZScale === 'undefined') 
-    this.surroundPointZScale = this.parent ? parent.surroundPointZScale : 1;
-    if (typeof this.surroundPointXZAngle === 'undefined') 
-    this.surroundPointXZAngle = this.parent ? parent.surroundPointXZAngle : 1;
+    if (typeof this.pointsZScale === 'undefined') 
+    this.pointsZScale = this.parent ? parent.pointsZScale : 1;
+    if (typeof this.pointsXZAngle === 'undefined') 
+    this.pointsXZAngle = this.parent ? parent.pointsXZAngle : 0;
 
-    let tmp = this.length * Math.cos(this.angles[1]);
+    this.startPointNum = 10;//Math.max((this.startRadius / 0.5) | 0, 3);
+    this.endPointNum = 10;//Math.max((this.endRadius / 0.5) | 0, 3);
 
     if (!this.vector) {
+      let tmp = this.length * Math.cos(this.angles[1]);
       this.vector = new THREE.Vector3(
         tmp * Math.cos(this.angles[0]),
         this.length * Math.sin(this.angles[1]),
@@ -98,8 +120,11 @@ export default class Branch {
 
     this.end = new THREE.Vector3();
 
+    this.childGenerated = false; // 是否已经生成了孩子
     this.connectedChild; // 直系子树枝，公用点
     this.isolatedChildren = []; // 非直系子树枝
+
+    this.timePass = 0;
 
     this.childrenConfig = {};
 
@@ -116,31 +141,30 @@ export default class Branch {
     this.branchObj = new THREE.Mesh(this.branchGeom, this.material);
     this.branchObj.branch = this;
 
-    for (let i = 0; i < 26; i++) {
+
+    let vecticeNum = this.startPointNum + this.endPointNum
+    for (let i = 0; i < vecticeNum; i++) {
       this.branchGeom.vertices.push(new THREE.Vector3);
     }
 
-    let startPointIndex = 0;
-    let endPointIndex = 13;
-    let startPointNum = 13;
-    let endPointNum = 13;
-
-    for (let i = 0; i < endPointNum; i++) {
+    for (let i = 0; i < this.startPointNum; i++) {
       this.branchGeom.faces.push(
         new THREE.Face3(
-          startPointIndex + i,
-          startPointIndex + (i + 1) % (startPointNum),
-          endPointIndex + i
+          i,
+          (i + 1) % (this.startPointNum),
+          this.startPointNum + i
         ),
         new THREE.Face3(
-          endPointIndex + i,
-          startPointIndex + (i + 1) % (startPointNum),
-          endPointIndex + (i + 1) % (endPointNum)
+          this.startPointNum + i,
+          (i + 1) % (this.startPointNum),
+          this.startPointNum + (i + 1) % (this.endPointNum)
         )
       );
-    }    
+    }
 
   }
+
+
 
   updateVector() {
     this.vector.subVectors(this.end, this.start); 
@@ -149,29 +173,59 @@ export default class Branch {
     this.vector.normalize();
   }
 
-  updateBranch() {
-    this.radiusStart = this.parent && !this.isIsolate ? this.parent.radiusEnd : this.radiusStart;
+  getEndVertices() {
+    return this.branchGeom.vertices.slice(this.endPointNum);
+  }
 
-    let startSurroundVector = this.parent && !this.isIsolate ? this.parent.vector : this.vector;
-    let surroundPointZScale = this.parent && !this.isIsolate ? this.parent.surroundPointZScale : this.surroundPointZScale;
-    let surroundPointXZAngle = this.parent && !this.isIsolate ? this.parent.surroundPointXZAngle : this.surroundPointXZAngle;
-    let startSurroundPoints = getSurroundPoints(this.start, startSurroundVector, this.radiusStart, 13, surroundPointZScale, surroundPointXZAngle);
-    startSurroundPoints.forEach((point, i) => {
+  updateBranch() {
+    this.startRadius = this.parent && !this.isIsolate ? this.parent.endRadius : this.startRadius;
+
+    // 开始点
+    let startPoints;
+    if (this.isIsolate) {
+      let startRadius = this.startRadius * this.tree.radiusPercent;
+      startPoints = getSurroundPoints(
+        this.start, 
+        this.vector, 
+        startRadius, 
+        this.startPointNum, 
+        this.pointsZScale, 
+        this.pointsXZAngle
+      );
+    } else {
+      startPoints = this.parent.getEndVertices();
+    }
+
+    startPoints.forEach((point, i) => {
       this.branchGeom.vertices[i].copy(point);
     });
 
     // 更新 end
-    this.end.addVectors(this.start, this.vector.clone().setLength(this.currentLength));
+    let currentLength = this.currentLength * this.tree.lengthPercent;
+    this.end.addVectors(this.start, this.vector.clone().setLength(currentLength));
 
-    let percent = this.currentLength / this.length
-    let connectedChildVector = (this.connectedChild instanceof Branch) ? this.connectedChild.vector.clone() : this.vector.clone();
-    let endSurroundPointVector = new THREE.Vector3().addVectors(
+    // let percent = this.currentLength / this.length
+    // let connectedChildVector = (this.connectedChild instanceof Branch) ? this.connectedChild.vector.clone() : this.vector.clone();
+    // let endSurroundPointVector = new THREE.Vector3().addVectors(
+    //   this.vector, 
+    //   connectedChildVector.setLength(percent)
+    // ).normalize();
+    let endRadius = this.endRadius * this.tree.radiusPercent;
+
+    // if (!this.childGenerated) {
+    //   endRadius = 0;
+    // }
+
+    let endSurroundPoints = getSurroundPoints(
+      this.end, 
       this.vector, 
-      connectedChildVector.setLength(percent)
-    ).normalize();
-    let endSurroundPoints = getSurroundPoints(this.end, this.vector/* , endSurroundPointVector */, this.radiusEnd, 13, this.surroundPointZScale, this.surroundPointXZAngle);
+      endRadius, 
+      this.endPointNum, 
+      this.pointsZScale, 
+      this.pointsXZAngle
+    );
     endSurroundPoints.forEach((point, i) => {
-      this.branchGeom.vertices[i + 13].copy(point);
+      this.branchGeom.vertices[i + this.startPointNum].copy(point);
     });
 
 
@@ -183,12 +237,45 @@ export default class Branch {
     this.branchGeom.verticesNeedUpdate = true; 
     this.branchGeom.normalsNeedUpdate = true; 
     this.branchGeom.computeFaceNormals(); 
-    this.branchGeom.computeVertexNormals(); 
+    // this.branchGeom.computeVertexNormals(); 
     this.branchGeom.computeBoundingSphere();
   }
 
   // grow
-  grow(delta) { }
+  grow(delta) {
+    let second = delta / 1000;
+    this.timePass += delta;
+    if (this.timePass < this.delay * 1000) {
+      return;
+    }
+
+    if (this.currentLength >= this.length) {
+      this.currentLength = this.length;
+      !this.childGenerated && this.generateChildren();
+    } else {
+      this.currentLength += this.speed * second;
+    }
+
+    this.updateBranch();
+    
+  }
+
+  generateChildren() {
+    let configured = this.connectedChildId || this.isolatedChildrenIds;
+    if (configured) {
+      if (this.connectedChildId) {
+        let connectedChildConfig = this.treeConfig.branches[this.connectedChildId];
+        this.connectedChild = new Branch(this.tree, this, connectedChildConfig, this.treeConfig);
+      }
+      this.isolatedChildrenIds.forEach(isolatedChildId => {
+        let isolatedChildConfig = this.treeConfig.branches[isolatedChildId];
+        this.isolatedChildren.push(
+          new Branch(this.tree, this, isolatedChildConfig, this.treeConfig)
+        );
+      });
+    }
+    this.childGenerated = true;
+  }
 
   generateChildBaseOptions() { }
 
