@@ -204,21 +204,24 @@ export default class Branch {
     let currentLength = this.currentLength * this.tree.lengthPercent;
     this.end.addVectors(this.start, this.vector.clone().setLength(currentLength));
 
-    // let percent = this.currentLength / this.length
+    let percent = this.currentLength / this.length
     // let connectedChildVector = (this.connectedChild instanceof Branch) ? this.connectedChild.vector.clone() : this.vector.clone();
     // let endSurroundPointVector = new THREE.Vector3().addVectors(
     //   this.vector, 
     //   connectedChildVector.setLength(percent)
     // ).normalize();
     let endRadius = this.endRadius * this.tree.radiusPercent;
-
+    let endVector = new THREE.Vector3().addVectors(
+      this.vector.clone().multiplyScalar(percent), 
+      (this.parent ? this.parent.vector : this.vector).clone().multiplyScalar(1 - percent)
+    );
     // if (!this.childGenerated) {
     //   endRadius = 0;
     // }
 
     let endSurroundPoints = getSurroundPoints(
       this.end, 
-      this.vector, 
+      endVector, 
       endRadius, 
       this.endPointNum, 
       this.pointsZScale, 

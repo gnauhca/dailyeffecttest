@@ -14,7 +14,7 @@ async function loadConfig() {
     config = JSON.parse(configStr);
   } 
   
-  config = require('./config12051936.json');
+  // config = require('./config12051936.json');
 
   return config;
 }

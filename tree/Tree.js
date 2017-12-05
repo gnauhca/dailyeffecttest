@@ -17,9 +17,9 @@ export default class Tree {
 
 
     this.radiusPercent = 0;
-    this.radiusPercentSpeed = 0.3;
+    this.radiusPercentSpeed = 0.1;
 
-    this.lengthPercent = 1;
+    this.lengthPercent = 0;
     this.lengthPercentSpeed = 0.2;
 
 
