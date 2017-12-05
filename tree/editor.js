@@ -233,8 +233,8 @@ function createBranch(parentBranch, tree, config) {
       startRadius: parentBranch.endRadius,
       endRadius: parentBranch.endRadius,
       vector: parentBranch.vector.clone(),
-      length: 10,
-      currentLength: 10,
+      length: parentBranch.length,
+      currentLength: parentBranch.length,
       pointsZScale: parentBranch.pointsZScale,
       pointsXZAngle: parentBranch.pointsXZAngle,
     };
@@ -324,11 +324,11 @@ function loadConfig(config) {
 
   function createBranchByConfig(parentBranch, tree, branchConfig, branchConfigs) {
 
-    for (let key in branchConfig) {
-      if (['start', 'end', 'vector'].indexOf(key) > -1) {
-        branchConfig[key] = new THREE.Vector3(...branchConfig[key]);
-      }
-    }
+    // for (let key in branchConfig) {
+    //   if (['start', 'end', 'vector'].indexOf(key) > -1) {
+    //     branchConfig[key] = new THREE.Vector3(...branchConfig[key]);
+    //   }
+    // }
 
     let branch = createBranch(parentBranch, tree, branchConfig);
 
@@ -341,9 +341,34 @@ function loadConfig(config) {
     }
   }
 
+  
   config.forEach(treeConfig => {
+    treeConfig.name = treeConfig.treeName;
+
     let tree = createTree(treeConfig);
     createBranchByConfig(null, tree, treeConfig.branches[treeConfig.rootBranchId], treeConfig.branches);
+
+    /* if (treeConfig.treeName.indexOf('root') > -1) {
+      // let branches = {};
+      for (let id in treeConfig.branches) {
+        // 
+        
+        let branch = treeConfig.branches[id]
+        for(let key in branch) {
+          if (['start', 'end', 'vector'].indexOf(key) > -1) {
+            branch[key][0] *= -1;
+            branch[key][2] *= -1;
+          }
+        }
+      }
+
+      // treeConfig.branches = branches;
+
+
+      let tree = createTree(treeConfig);
+      createBranchByConfig(null, tree, treeConfig.branches[treeConfig.rootBranchId], treeConfig.branches);
+    } */
+
   });
 }
 
@@ -462,10 +487,15 @@ ani.start();
 
 function init() {
   let configStr = localStorage.getItem('treeConfigs');
+  let config = [];
   if (configStr) {
-    let config = JSON.parse(configStr);
-    loadConfig(config);
+    config = JSON.parse(configStr);
   }
+  // config.push(require('./treeConfig.json')[0]);
+  // config.push(require('./root.json')[0]);
+  // config.push(require('./config.json')[0]);
+  // config = (require('./config.json'));
+  loadConfig(config);
 }
 
 init();

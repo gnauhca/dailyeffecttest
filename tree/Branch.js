@@ -69,7 +69,7 @@ export default class Branch {
       endRadius: 1, // 结束半径
       length: 1, // 树枝 segment 长度
       currentLength: 0, // 树枝当前长度
-      speed: 20, // 生长速度
+      speed: 10, // 生长速度
       vector: null, 
       crossSection: [], // 横截面，由 xz 平面环绕 0, 0 的点组成,
       pointsZScale: undefined,
@@ -79,7 +79,7 @@ export default class Branch {
       endPointNum: 10
     };
 
-    options = defaultsDeep(options, defaults);
+    options = defaultsDeep({}, options, defaults);
     Object.assign(this, options);
 
     this.treeConfig = treeConfig;
@@ -136,7 +136,7 @@ export default class Branch {
     // branch
     this.branchGeom = new THREE.Geometry();
     // this.material = new THREE.MeshBasicMaterial( { color : 0xdddddd, wireframe: true } );
-    this.material = new THREE.MeshPhongMaterial( { color : 0xdddddd } );
+    this.material = new THREE.MeshPhongMaterial( { color : 0xffffff } );
     // this.material = new THREE.MeshNormalMaterial( { color : 0xdddddd, wireframe: 0 } );
     this.branchObj = new THREE.Mesh(this.branchGeom, this.material);
     this.branchObj.branch = this;

@@ -29,7 +29,7 @@ export default class Ani extends Time {
     this.travelSpeed = 20000;
 
     this.spotLight = new THREE.SpotLight(0xffffff);
-    this.spotLight = new THREE.DirectionalLight( 0xffffff, 0.5 )
+    this.spotLight = new THREE.DirectionalLight( 0xffffff, 1 )
     this.scene.add(this.spotLight);
     this.spotLight.position.set(-200, -200, 100);
 

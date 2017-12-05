@@ -13,8 +13,8 @@ async function loadConfig() {
   if (configStr) {
     config = JSON.parse(configStr);
   } 
-  config.push(require('./treeConfig.json')[0]);
-  config.push(require('./root.json')[0]);
+  // config.push(require('./treeConfig.json')[0]);
+  // config.push(require('./root.json')[0]);
   return config;
 }
 
