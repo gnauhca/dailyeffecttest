@@ -24,6 +24,7 @@ export default class Ani extends Time {
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
     // this.scene.fog = new THREE.Fog(0x000000, 100, 500);
     this.control = new THREE.OrbitControls(this.camera, this.domWrap);
+    // this.control.autoRotate = true;
     // this.control.enabled = false;
     // this.control.travel = true;
     this.travelSpeed = 20000;
@@ -45,7 +46,7 @@ export default class Ani extends Time {
     this.tick;
 
     this.stats = new Stats();
-    document.body.appendChild( this.stats.dom );
+    // document.body.appendChild( this.stats.dom );
   }
 
   tick(delta) {

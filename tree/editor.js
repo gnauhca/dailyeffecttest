@@ -494,7 +494,7 @@ function init() {
   // config.push(require('./treeConfig.json')[0]);
   // config.push(require('./root.json')[0]);
   // config.push(require('./config.json')[0]);
-  // config = (require('./config.json'));
+  config = require('./config1222.json');
   loadConfig(config);
 }
 

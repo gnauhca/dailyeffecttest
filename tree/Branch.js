@@ -138,6 +138,8 @@ export default class Branch {
     // this.material = new THREE.MeshBasicMaterial( { color : 0xdddddd, wireframe: true } );
     // this.material = new THREE.MeshPhongMaterial( { color : 0xffffff } );
     this.material = new THREE.MeshLambertMaterial( { color : 0xffffff } );
+    this.material.opacity = 0.6;
+    this.material.transparent = true;
     // this.material = new THREE.MeshNormalMaterial( { color : 0xdddddd, wireframe: 0 } );
     this.branchObj = new THREE.Mesh(this.branchGeom, this.material);
     this.branchObj.branch = this;
