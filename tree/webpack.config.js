@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = {
     entry: {
-        // 'index': './index.js',
+        'index': './index.js',
         'editor': './editor.js',
     },
     output: {
@@ -22,7 +22,11 @@ module.exports = {
 			{
 				test: /\.(png|jpg|gif|svg|eot|ttf|woff|woff2)$/,
 				use: ['url-loader?limit=1&name=[name].[ext]']
-			}
+            },
+            {
+                test: /\.json$/,
+                loader: 'json-loader'
+            }
         ]
     },
 

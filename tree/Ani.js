@@ -9,17 +9,28 @@ export default class Ani extends Time {
     // init three tree
     this.scene = new THREE.Scene();//场景
 
-    this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 3000);//透视相机
+    this.camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 3000);//透视相机
+
+    this.camera.setViewOffset(
+      window.innerWidth,
+      window.innerHeight,
+      0,
+      window.innerHeight * -0.28,
+      window.innerWidth,
+      window.innerHeight
+    );
     this.camera.position.set(0, 50, 150);//相机位置
     this.scene.add(this.camera);//add到场景中
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
     // this.scene.fog = new THREE.Fog(0x000000, 100, 500);
     this.control = new THREE.OrbitControls(this.camera, this.domWrap);
+    // this.control.autoRotate = true;
     // this.control.enabled = false;
     // this.control.travel = true;
     this.travelSpeed = 20000;
 
     this.spotLight = new THREE.SpotLight(0xffffff);
+    this.spotLight = new THREE.DirectionalLight( 0xffffff, 1 )
     this.scene.add(this.spotLight);
     this.spotLight.position.set(-200, -200, 100);
 
@@ -35,7 +46,7 @@ export default class Ani extends Time {
     this.tick;
 
     this.stats = new Stats();
-    document.body.appendChild( this.stats.dom );
+    // document.body.appendChild( this.stats.dom );
   }
 
   tick(delta) {
