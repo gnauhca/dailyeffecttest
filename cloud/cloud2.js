@@ -1,6 +1,12 @@
 const cvs = document.querySelector('canvas');
 const ctx = cvs.getContext('2d');
 
+const gradient = ctx.createRadialGradient(240, 280, 0, 240, 280, 400); 
+gradient.addColorStop(0, '#dc8f21');
+gradient.addColorStop(0.2, '#dc8f21');
+gradient.addColorStop(0.5, '#1000c3');
+gradient.addColorStop(1, '#1000c3');
+
 const path = document.querySelector('path');
 const pathLength = path.getTotalLength();
 const pathCount = 80;
@@ -14,6 +20,9 @@ let pointOffset = 0;
 const startPoint = path.getPointAtLength(0);
 
 function draw() {
+  ctx.save();
+  ctx.clearRect(0, 0, cvs.width, cvs.height);
+  ctx.fillStyle = '#1000c3';
 
   ctx.clearRect(0, 0, cvs.width, cvs.height);
   ctx.fillStyle = '#00f';
@@ -28,9 +37,15 @@ function draw() {
       // console.log(startPoint, endPoint);
     }
   }
+
+  ctx.globalCompositeOperation = 'source-atop';
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, cvs.width, cvs.height);
+  ctx.restore();
 }
 
 function drawLine(startPoint, endPoint) {
+
   let xSub = endPoint.x - startPoint.x;
   let ySub = endPoint.y - startPoint.y;
   let distance = Math.sqrt(Math.pow(xSub, 2) + Math.pow(ySub, 2));
@@ -46,6 +61,7 @@ function drawLine(startPoint, endPoint) {
     offset *= (1 - Math.abs(percent - 0.2))
     ctx.fillRect(x + offset, y + offset, size, size);
   }
+
 }
 
 // draw();

@@ -1,8 +1,9 @@
 const cvs = document.querySelector('canvas');
 const ctx = cvs.getContext('2d');
 
-const gradient = ctx.createRadialGradient(200, 280, 0, 200, 280, 400); 
-gradient.addColorStop(0, '#df9145');
+const gradient = ctx.createRadialGradient(240, 280, 0, 240, 280, 400); 
+gradient.addColorStop(0, '#dc8f21');
+gradient.addColorStop(0.2, '#dc8f21');
 gradient.addColorStop(0.5, '#1000c3');
 gradient.addColorStop(1, '#1000c3');
 
@@ -40,7 +41,7 @@ let arcs = [
         // ctx.fillRect(endPoint.x, endPoint.y, 2, 2);
         for (let i = 0; i < count; i++) {
           percent = easing.linear(i / count);
-          size = 10 * (count / 300) * (0.6 - Math.abs(percent - 0.6)) + 2;
+          size = 10 * (count / 300) * (0.6 - Math.abs(percent - 0.6)) + 1;
           x = startPoint.x + xSub * percent;
           y = startPoint.y + ySub * percent;
           offset = (Math.sin((x - pointOffset) / 50) + Math.cos((y + pointOffset) / 50)) * 6;
@@ -85,7 +86,7 @@ let arcs = [
         );
 
         let count = 100;
-        let pointSize = 2.5;
+        let pointSize = 2;
         let p;
         // console.log(drawPoint)
         for (let i = 0; i < count; i++) {
@@ -132,7 +133,7 @@ let arcs = [
         );
 
         let count = 100;
-        let pointSize = 2.5;
+        let pointSize = 2;
         let p;
         // console.log(drawPoint)
         for (let i = 0; i < count; i++) {
