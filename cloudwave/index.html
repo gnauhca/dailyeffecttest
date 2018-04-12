@@ -9,7 +9,7 @@
 </head>
 
 <body style="background: #000">
-  <canvas id="cloudWave" width="1000" height="600"></canvas>
+  <canvas style="width: 100vw; height: 60vw; max-width: 500px; max-height: 300px;" id="cloudWave" width="500" height="300"></canvas>
   <script src="easing.js"></script>
   <script src="three.min.js"></script>
   <script>
@@ -112,16 +112,24 @@
     varying float v_opacity;
     
     void main() {
+
+
       v_normal = normal;
       v_opacity = opacity;
       
-      float maxLength = 0.7;
-      float addLength = maxLength * cn(normalize(position) * 1.8 + time);
-      v_color = maxLength * cn(normalize(position) * 1.0 + (3.0) * 0.1);
+      float maxLength = 7.7;
+      float addLength = maxLength * cn(normalize(position) * 2.5 + time * 0.7);
+      v_color = maxLength * cn(normalize(position) * 0.6 + (time) * 0.6) * 0.92;
       // v_addLength = addLength;
       vec3 newPosition = position + normal * addLength;
-      gl_PointSize = 0.8;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+
+      vec4 mPosition = modelViewMatrix * vec4(newPosition, 1.0);
+      if (mPosition.z < 0.0) {
+        // mPosition.x = 1000.0;
+        gl_PointSize = 0.0;
+      }
+      // gl_PointSize = opacity;
+      gl_Position = projectionMatrix * mPosition;
     }
 `;
     const FRAGMENT_SHADER = `
@@ -130,13 +138,14 @@
     varying float v_color;
     
     void main() {
-      vec3 color = v_color * 0.5 + 0.5 * v_normal;
-        gl_FragColor = vec4(normalize(color) * v_color / 0.05 , v_opacity);
+      // vec3 color = normalize(v_color * 0.5 + 0.5 * v_normal + 0.1) * (v_color + 0.1) * 2.0;
+      vec3 color = (v_color * 0.15) + v_normal + 0.7;
+      gl_FragColor = vec4(normalize(color) , v_opacity);
         // gl_FragColor = vec4(v_opacity,v_opacity,v_opacity,v_opacity);
     }
 `;
 
-    const radius = 10;
+    const radius = 100;
     const smallRadius = radius * 0.9;
     const smallHeight = radius * 0.3;
 
@@ -149,7 +158,7 @@
       10000
     );
     // camera.position.y = -4;
-    camera.position.z = 40;
+    camera.position.z = 350;
     camera.lookAt(new THREE.Vector3)
     renderer = new THREE.WebGLRenderer({
       canvas,
@@ -158,127 +167,133 @@
 
     renderer.setSize(canvas.width, canvas.height);
     renderer.setClearColor(0x000000, 1);
+    renderer.setPixelRatio(1);
     let material = new THREE.ShaderMaterial({
       vertexShader: VERTEX_SHADER,
       fragmentShader: FRAGMENT_SHADER,
       uniforms: {
         time: { type: '1f', value: 0 }
       },
-      transparent: true
+      transparent: true,
+      blending: THREE.AdditiveBlending
     });
 
-    let geometry = new THREE.IcosahedronGeometry(radius, 3);
-    let geometry2 = new THREE.IcosahedronGeometry(radius, 5);
-    let geometry3 = new THREE.IcosahedronGeometry(radius, 5);
+    function createPoints(radius, position, opacityStart = 0.2, opacityEnd = -0.2, opacityMax = 1) {
+      let initGeom = new THREE.IcosahedronGeometry(radius, 4);
+      let geom = new THREE.Geometry();
+      let bufferGeom = new THREE.BufferGeometry();
+      let opacities = [];
+      let normals = [];
+      let vertices = [];
 
-
-    geometry.scale(1, 0.5, 1);
-    geometry.vertices.forEach(v => {
-      if (v.y > 0) {
-        let length = Math.sqrt(v.x * v.x + v.z * v.z);
-        if (length < smallRadius) {
-          let ratio = (smallRadius - length) / smallRadius;
-          let percent;
-
-          percent = ratio < 0.5 ? easing.easeInOutExpo(ratio) : easing.easeInOutCubic(ratio);
-          v.y += smallHeight * percent;
+      let opacityStartVal = -1 * opacityStart * radius;
+      let opacityEndVal = -1 * opacityEnd * radius;
+      geom.vertices = initGeom.vertices;
+      console.log(initGeom)
+      
+      geom.vertices = geom.vertices.filter(v => {
+        let opacity = 1;
+        if (v.z > opacityStartVal && v.z < opacityEndVal) {
+          opacity = easing.easeOutCubic((v.z - opacityEndVal) / (opacityStartVal - opacityEndVal));
         }
-      }
-    });
-    geometry.center();
-    geometry.computeFaceNormals();
-    geometry.computeVertexNormals();
 
-    // let min = 0;
-    geometry2.scale(0.65, 0.69, 0.65);
-    geometry2.opacity = new Float32Array(geometry2.vertices.length)
-    geometry2.bufferPosition = new Float32Array(geometry2.vertices.length * 3)
-    geometry2.bufferNormal = new Float32Array(geometry2.vertices.length * 3)
-    geometry2.vertices.forEach((v, i) => {
-      let normal = v.clone().normalize();
-      let newRadius = radius * 0.6
-      geometry2.opacity[i] = 1.0;
+        opacities.push(opacity);
+        v.opacity = opacity * opacityMax;
+        return v.z < opacityEndVal;
+      });
+      geom.lookAt(position.clone().negate());
+      geom.translate(position.x, position.y, position.z);
+      vertices = geom.vertices;
 
-      geometry2.bufferPosition[i * 3] = v.x;
-      geometry2.bufferPosition[i * 3 + 1] = v.y;
-      geometry2.bufferPosition[i * 3 + 2] = v.z;
-      if (v.y <= -newRadius * 0.2) {
-        geometry2.opacity[i] = 0;
-        geometry2.bufferPosition[i * 3] = 1000;
-        geometry2.bufferPosition[i * 3 + 1] = 1000;
-        geometry2.bufferPosition[i * 3 + 2] = 1000;
-      } else if (v.y < newRadius * 0.5 && v.y > -newRadius * 0.2) {
-        let opacity = 1 - easing.easeInCubic((newRadius * 0.5 - v.y) / (newRadius * 0.3));
-        geometry2.opacity[i] = opacity;
-        // min = Math.max(newRadius * 0.5 - v.y, min)
-        // console.log(min, v.y, opacity);
-      }
+      let length = vertices.length;
+      let bufferVertices = new Float32Array(length * 3);
+      let bufferNormals = new Float32Array(length * 3);
+      let bufferOpacity = new Float32Array(length);
 
+      vertices.forEach((v, i) => {
+        bufferVertices[i * 3] = v.x;
+        bufferVertices[i * 3 + 1] = v.y;
+        bufferVertices[i * 3 + 2] = v.z;
+        v.normalize();
+        bufferNormals[i * 3] = v.x;
+        bufferNormals[i * 3 + 1] = v.y;
+        bufferNormals[i * 3 + 2] = v.z;
+        bufferOpacity[i] = v.opacity;
+      });
+      // console.log(vertices)
+      bufferGeom.addAttribute('position', new THREE.BufferAttribute(bufferVertices, 3));
+      bufferGeom.addAttribute('normal', new THREE.BufferAttribute(bufferNormals, 3));
+      bufferGeom.addAttribute('opacity', new THREE.BufferAttribute(bufferOpacity, 1));
 
-      geometry2.bufferNormal[i * 3] = normal.x;
-      geometry2.bufferNormal[i * 3 + 1] = normal.y;
-      geometry2.bufferNormal[i * 3 + 2] = normal.z;
-    });
+      let points = new THREE.Points(bufferGeom, material);
+      return points;
+    }
 
-    // console.log(geometry2.vertices, geometry2.opacity)
-    // geometry2.vertices = geometry2.vertices.filter(v => v.x * v.y * v.z !== 0);
-    // geometry2.center();
+    scene.add(createPoints(
+      radius,
+      new THREE.Vector3(0, radius * 0.3, 1)
+    ));
+    scene.add(createPoints(
+      radius * 0.98,
+      new THREE.Vector3(radius * 0.1, radius * 0.4, -radius * 0.0),
+      0.2, 0.2, 0.6
+    ));
+    scene.add(createPoints(
+      radius * 0.98,
+      new THREE.Vector3(radius * -0.1, radius * 0.3, -radius * 0.0),
+      0.2, 0.2, 0.3
+    ));
+    scene.add(createPoints(
+      radius * 0.96,
+      new THREE.Vector3(radius * -0.1, radius * 0.2, -radius * 0.1),
+      0.2, 0.2, 0.6
+    ));
+    
+    scene.add(createPoints(
+      radius * 0.8,
+      new THREE.Vector3(radius * 0.1, radius * 0.0, radius * 0.1),
+      0.4, -0.2, 0.5
+    ));
 
+    scene.add(createPoints(
+      radius * 0.8,
+      new THREE.Vector3(radius * -0.1, radius * -0.1, radius * 0.2),
+      0.4, -0.2, 0.8
+    ));
 
-    geometry3.scale(1, 0.55, 0.9);
-    geometry3.translate(0, -1.6, 0)
-    geometry3.computeFaceNormals();
-    geometry3.computeVertexNormals();
+    scene.add(createPoints(
+      radius * 1,
+      new THREE.Vector3(radius * 0.1, radius * -0.0, -radius * 0.2),
+      0.4, -0.2, 0.8
+    ));
 
-    geometry3.opacity = new Float32Array(geometry3.vertices.length)
-    geometry3.bufferPosition = new Float32Array(geometry3.vertices.length * 3)
-    geometry3.bufferNormal = new Float32Array(geometry3.vertices.length * 3)
-    geometry3.vertices.forEach((v, i) => {
-      let normal = v.clone().normalize();
-      geometry3.opacity[i] = 1.0;
-      if (v.y > -2) {
-        let pointRadius = Math.sqrt(v.x * v.x + v.z * v.z);
-        if (pointRadius < radius * 0.3) {
-          geometry3.opacity[i] = 0;
-        } else if (pointRadius < radius * 0.7 && pointRadius > radius * 0.3) {
-          let opacity = easing.easeInQuint((pointRadius - radius * 0.3) / (radius * 0.4));
-          geometry3.opacity[i] = opacity;
-        }
-      }
-      geometry3.bufferPosition[i * 3] = v.x;
-      geometry3.bufferPosition[i * 3 + 1] = v.y;
-      geometry3.bufferPosition[i * 3 + 2] = v.z;
+    scene.add(createPoints(
+      radius * 1,
+      new THREE.Vector3(radius * 0.1, radius * -0.0, -radius * 0.0),
+      0.4, -0.2, 0.8
+    ));
 
-      geometry3.bufferNormal[i * 3] = normal.x;
-      geometry3.bufferNormal[i * 3 + 1] = normal.y;
-      geometry3.bufferNormal[i * 3 + 2] = normal.z;
-    });
+    scene.add(createPoints(
+      radius * 0.75,
+      new THREE.Vector3(radius * 0.4, radius * -0.0, radius * 0.3),
+      0.4, -0.2, 0.6
+    ));
 
-
-    let bufferGeometry = new THREE.BufferGeometry();
-    let bufferGeometry2 = new THREE.BufferGeometry();
-    let bufferGeometry3 = new THREE.BufferGeometry();
-    bufferGeometry.fromGeometry(geometry);
-    // bufferGeometry2.fromGeometry(geometry2);
-    // bufferGeometry3.fromGeometry(geometry3);
-
-    bufferGeometry2.addAttribute('position', new THREE.BufferAttribute(geometry2.bufferPosition, 3));
-    bufferGeometry2.addAttribute('normal', new THREE.BufferAttribute(geometry2.bufferNormal, 3));
-    bufferGeometry2.addAttribute('opacity', new THREE.BufferAttribute(geometry2.opacity, 1));
-    bufferGeometry3.addAttribute('position', new THREE.BufferAttribute(geometry3.bufferPosition, 3));
-    bufferGeometry3.addAttribute('normal', new THREE.BufferAttribute(geometry3.bufferNormal, 3));
-    bufferGeometry3.addAttribute('opacity', new THREE.BufferAttribute(geometry3.opacity, 1));
-    console.log(bufferGeometry2.attributes);
-
-    let points = new THREE.Points(bufferGeometry, material);
-    let points2 = new THREE.Points(bufferGeometry2, material);
-    let points3 = new THREE.Points(bufferGeometry3, material);
-    points3.rotation.y = 5;
-
-    // scene.add(points);
-    scene.add(points2);
-    scene.add(points3);
-    // points3.rotation.x = 0.6;
+    scene.add(createPoints(
+      radius * 0.75,
+      new THREE.Vector3(radius * 0.7, radius * -0.1, radius * 0.0),
+      0.6, 0.2
+    ));
+    scene.add(createPoints(
+      radius * 0.75,
+      new THREE.Vector3(radius * -0.7, radius * -0.1, radius * 0.0),
+      0.3, -0.3
+    ));
+    scene.add(createPoints(
+      radius * 0.7,
+      new THREE.Vector3(radius * -0.45, radius * -0.05, radius * 0.2),
+      0.2, 0.2, 0.6
+    ));
 
     let now = new Date();
     let pre = now;
@@ -286,9 +301,7 @@
       now = new Date();
       material.uniforms.time.value += (now - pre) * 0.0008;
       pre = now;
-      points.rotation.y += 0.005;
-      points2.rotation.y -= 0.003;
-      points3.rotation.y -= 0.003;
+
       renderer.render(scene, camera);
       window.requestAnimationFrame(tick);
     })();
