@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>dream</title>
+  <style>
+    * {
+      margin: 0;
+    }
+    
+    body,
+    html {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    
+    body {
+      background-color: #000;
+      background-size: auto 100%;
+    }
+
+    canvas {
+      position: relative;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+    <canvas id="main"></canvas>
+    <script src="../common.js"></script>
+    <script>
+    (function() {
+
+      var canvas, context, width, height;
+      var particles = [];
+
+      function render(callback) {
+
+      }
+
+      function init() {
+        canvas = document.getElementById('main');
+        context = canvas.getContext('2d');
+
+        canvas.width = 1200;
+        canvas.height = 900;
+
+        context.globalCompositeOperation = 'lighten';
+
+        drawCanvas();
+
+        for (var i = 0; i < 2; i++) {
+          generateParticle();
+        }
+
+        draw();
+      }
+
+      function drawCanvas() {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = '#000';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      function draw() {
+
+        drawCanvas();
+
+        for (var i = 0; i < particles.length; i++) {
+
+          if (particles[i].dead)
+            particles.splice(i, 1);
+
+          context.globalCompositeOperation = "lighter"
+          context.beginPath();
+
+          var gradient = context.createRadialGradient(particles[i].x, particles[i].y, 0, particles[i].x, particles[i].y, particles[i].size);
+          gradient.addColorStop(1, 'transparent');
+          gradient.addColorStop(0, particles[i].color);
+
+          context.fillStyle = gradient;
+          context.arc(particles[i].x, particles[i].y, particles[i].size, 0, Math.PI * 2, true);
+          context.closePath();
+          context.fill();
+
+          //Do gravity stuff.
+          particles[i].x += particles[i].Hvelocity;
+          particles[i].y += particles[i].Vvelocity;
+
+          if (particles[i].x - particles[i].size > canvas.width || particles[i].y - particles[i].size > canvas.height)
+            particles[i].dead = true;
+        }
+
+        if (particles.length < 300)
+          // for (var i = 0; i < 10; i++)
+            generateParticle();
+
+        requestAnimationFrame(draw);
+      }
+
+      function generateParticle() {
+
+        var colors = [
+          'rgba(142, 68, 173,0.3)',
+          'rgba(41, 128, 185, 0.3)',
+        ]
+
+        var color = Math.floor(Math.random() * colors.length) + 0;
+
+        var particle = {
+          x: Math.floor(Math.random() * -100) + 0 + canvas.width,
+          y: Math.floor(Math.random() * -100) + 0,
+          size: Math.floor(Math.random() * 150) + 30,
+          color: colors[color],
+          Hvelocity: Math.floor(Math.random() * -10) + 1,
+          Vvelocity: Math.floor(Math.random() * 10) + 1,
+          dead: false
+        }
+
+        particles.push(particle);
+      }
+
+      setTimeout(function() {
+        init();
+      }, 500);
+
+    })();
+  </script>
+</body>
+
+</html>
