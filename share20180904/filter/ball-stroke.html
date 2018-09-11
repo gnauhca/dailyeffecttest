@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>ball</title>
+  <title>ball-stroke</title>
   <style>
     * {
       margin: 0;
@@ -31,15 +31,13 @@
 </head>
 
 <body>
-
+  <button onclick="stroke = !stroke;" style="margin: 30px 0">stroke</button>
   <script src="../lib/tween.js"></script>
   <script src="../lib/time.js"></script>
   <script src="../lib/vec2.js"></script>
   <!-- <script src="../common.js"></script> -->
   <script>
-    let obstruction = 0.01; // 空气阻力
-    let bigRaduis = 15;
-    let smallRaduis = 10;
+    let stroke = 0;
 
     class Ball {
       constructor(options) {
@@ -63,27 +61,24 @@
 
         let second = delta * 0.001;
         let options = this.options;
-
-        // this.v.add(this.a.clone().multiplyScalar(second));
-
-        // this.v.sub(this.v.clone().setLength(obstruction * second)); // 阻力减速
         this.position.add(this.v.clone().multiplyScalar(second));
-        // console.log(this.position);
       }
 
-      draw(ctx, opacity, blur) {
+      draw(ctx, stroke) {
 
         let options = this.options;
 
-        opacity = Math.min(opacity, 1);
 
         ctx.save();
 
         ctx.fillStyle = 'red';
+        ctx.strokeStyle = 'red';
 
         ctx.beginPath();
         ctx.arc(this.position.x, this.position.y, options.radius, 0, Math.PI * 2);
-        ctx.fill();
+        // ctx.stroke();
+        // ctx.fill();
+        stroke ? ctx.stroke() : ctx.fill();
 
         ctx.restore();
       }
@@ -150,7 +145,7 @@
       return [p1a, p2a, p2b, p1b, handle1, handle2, handle3, handle4];
     }
 
-    function drawConnection(ctx, ball1, ball2, maxDistance) {
+    function drawConnection(ctx, ball1, ball2, maxDistance, stoke) {
       let keyPoints = calPoints(
         ball1.position.clone(),
         ball1.options.radius,
@@ -176,7 +171,9 @@
         ctx.bezierCurveTo(keyPoints[6].x, keyPoints[6].y, keyPoints[7].x, keyPoints[7].y, keyPoints[3].x, keyPoints[3].y);
         ctx.lineTo(keyPoints[0].x, keyPoints[0].y);
 
-        ctx.fill();
+        stoke ? ctx.stroke() : ctx.fill();
+        // ctx.fill();
+        ctx.stroke();
       }
       ctx.restore();
     }
@@ -235,6 +232,7 @@
         this.ctx.save();
         this.ctx.clearRect(0, 0, this.width, this.height);
 
+        this.ctx.lineWidth = 2;
 
 
         for (let i = this.balls.length - 1; i >= 0; i--) {
@@ -247,7 +245,7 @@
             this.balls.splice(i, 1);
           } else {
             this.balls[i].update(delta);
-            this.balls[i].draw(this.ctx);
+            this.balls[i].draw(this.ctx, stroke);
             this.balls[i].connected = [];
           }
         }
@@ -265,7 +263,8 @@
                 this.ctx, 
                 this.balls[i], 
                 this.balls[j], 
-                maxDistance
+                maxDistance,
+                stroke
               );
               this.balls[i].connected.push(this.balls[j]);
               this.balls[j].connected.push(this.balls[i]);

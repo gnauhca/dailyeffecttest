@@ -1,4 +1,4 @@
-import TWEEN from 'tween.js';
+// import TWEEN from 'tween.js';
 
 /* 时间 */
 var TIME = {
@@ -153,6 +153,6 @@ for (let i = 0; i < 10000; i+=100) {
 	window['TIME_' + i] = window.env === 'develop' ? 0 : i;
 }
 
+window.TWEEN = TWEEN;
 
-export {TIME, Time, TWEEN};
 

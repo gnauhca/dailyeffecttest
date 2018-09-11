@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>ball</title>
+  <style>
+    * {
+      margin: 0;
+    }
+
+    body,
+    html {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    body {
+      background-color: #000;
+      background-size: auto 100%;
+    }
+
+    canvas {
+      position: relative;
+      width: 100%;
+    }
+
+    button {}
+
+    .ball {
+      position: absolute;
+      top: 50%;
+      filter: url(#blur);
+      transform: translateY(calc(80px + -50%));
+      background: blue;
+      border-radius: 100%;
+    }
+
+    .ball1 {
+      left: 0;
+      width: 200px;
+      height: 200px;
+    }
+
+    .ball2 {
+      right: 0;
+      width: 140px;
+      height: 140px;
+    }
+
+    .balls-wrap {
+      padding: 150px;
+      margin: 100px;
+      background: black;
+      position: relative;
+      width: 350px;
+      height: 200px;
+      filter: url(#contrast);
+    }
+    .balls-wrap > div {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <svg>
+    <defs>
+      <filter id="contrast">
+        <feComponentTransfer>
+            <!-- <feFuncR type="linear" slope="[amount]" intercept="-(0.5 * [amount]) + 0.5"/> -->
+            <feFuncR type="linear" slope="60" intercept="-4"/>
+            <feFuncG type="linear" slope="60" intercept="-4"/>
+            <feFuncB type="linear" slope="60" intercept="-4"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="blur">
+          <feGaussianBlur stdDeviation="15" edgeMode="none" >
+      </filter>
+    </defs>
+  </svg>
+  <div class="balls-wrap">
+    <div>
+        <div class="ball ball1"></div>
+        <div class="ball ball2"></div>
+    </div>
+
+  </div>
+
+</body>
+
+</html>
