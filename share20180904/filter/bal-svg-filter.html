@@ -32,10 +32,9 @@
 
     .ball {
       position: absolute;
-      top: 50%;
-      filter: url(#blur);
+      /* filter: url(#blur); */
       transform: translateY(calc(80px + -50%));
-      background: blue;
+      background: #007aff;
       border-radius: 100%;
     }
 
@@ -52,44 +51,30 @@
     }
 
     .balls-wrap {
-      padding: 150px;
-      margin: 100px;
-      background: black;
       position: relative;
+      margin: 100px;
       width: 350px;
       height: 200px;
-      filter: url(#contrast);
+      filter: url("#drip");
     }
-    .balls-wrap > div {
-      position: relative;
-      width: 100%;
-      height: 100%;
-    }
+
   </style>
 </head>
 
 <body>
-  <svg>
-    <defs>
-      <filter id="contrast">
-        <feComponentTransfer>
-            <!-- <feFuncR type="linear" slope="[amount]" intercept="-(0.5 * [amount]) + 0.5"/> -->
-            <feFuncR type="linear" slope="60" intercept="-4"/>
-            <feFuncG type="linear" slope="60" intercept="-4"/>
-            <feFuncB type="linear" slope="60" intercept="-4"/>
-        </feComponentTransfer>
-      </filter>
-      <filter id="blur">
-          <feGaussianBlur stdDeviation="15" edgeMode="none" >
-      </filter>
-    </defs>
-  </svg>
+<svg>
+  <defs>
+    <filter id="drip">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 30 -15" result="contrast" />
+      <feComposite in="SourceGraphic" in2="contrast" operator="atop"/>
+      <!-- <feComposite in="SourceGraphic" in2="blur" operator="atop"/> -->
+    </filter>
+  </defs>
+</svg>
   <div class="balls-wrap">
-    <div>
-        <div class="ball ball1"></div>
-        <div class="ball ball2"></div>
-    </div>
-
+      <div class="ball ball1"></div>
+      <div class="ball ball2"></div>
   </div>
 
 </body>
