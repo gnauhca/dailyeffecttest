@@ -122,26 +122,94 @@ const vertexShader = `
     return 2.2 * n_xyz;
   }
 
-  uniform vec3 pos;
-  uniform float uPx;
-  uniform float uPy;
+  uniform vec3 objPos;
   uniform float opacity;
 
+  uniform float tagRowCount;
+  uniform float tagHeight;
+  uniform float tagRowGap;
+  uniform float tagRowHeight;
+  uniform float tagsTotalRowHeight;
+  uniform float tagsHalfRowHeight;
+  uniform float tagsHalfRowWidth;
+  uniform float tagsTotalRowWidth;
+  uniform float cameraFov;
+  uniform float cameraZ;
+
   varying vec2 vUv;
+
+  float PI = 3.14159;
+  float PI2 = 3.14159 * 2.0;
+  float PIM2 = 3.14159 / 2.0;
+
+  float cubicOut(float t) {
+    float f = t - 1.0;
+    return f * f * f + 1.0;
+  }
+
+  float quarticOut(float t) {
+    return pow(t - 1.0, 3.0) * (1.0 - t) + 1.0;
+  }
+
+  float qinticIn(float t) {
+    return pow(t, 5.0);
+  }
+
+  float qinticOut(float t) {
+    return 1.0 - (pow(t - 1.0, 5.0));
+  }
+
   void main() { 
     vUv = uv;
-    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-    float noise = cn(vec3(worldPosition * 0.004) + 140.0) - 0.5;
 
-    float y = sin(worldPosition.x / 160.0) * worldPosition.y;
+    vec3 objWorldPos = vec3(modelMatrix * vec4(objPos, 1.0));
 
+    float objOffset = tagRowHeight;
+    float objWorldNoise = cn(objWorldPos / tagsHalfRowWidth / 2.0);
+    float objWorldPosAddX = cos(objWorldNoise * PI2) * objOffset;
+    float objWorldPosAddY = sin(objWorldNoise * PI2) * objOffset;
 
+    vec3 newPosition = vec3(position);
+    newPosition.x = newPosition.x + objWorldPosAddX;
+    newPosition.y = newPosition.y + objWorldPosAddY;
+    // newPosition.z = objWorldPosAddX;
 
-    worldPosition.y = y ;
-    worldPosition.z = abs(worldPosition.x * worldPosition.x) / 220.0 - 100.0;
+    vec4 worldPosition = modelMatrix * vec4(newPosition, 1.0);
+    vec3 initWorldPos = vec3(worldPosition);
+    float absWorldX = abs(initWorldPos.x);
+    float absWorldPer = absWorldX / tagsHalfRowWidth;
 
-    float xadd = (cos(noise * 3.14) - 0.5) * 50.0 * (1.0 - opacity * 0.6);
-    float yadd = (sin(noise * 3.14) - 0.5) * 50.0 * (1.0 - opacity * 0.6);
+    // float scale = quarticOut(absWorldPer);
+
+    // vec3 newPosition = position * scale;
+    // worldPosition = modelMatrix * vec4(newPosition, 1.0);
+    // initWorldPos = vec3(worldPosition);
+    // absWorldX = abs(initWorldPos.x);
+
+    float noise = cn(vec3(initWorldPos / tagsTotalRowHeight / 2.6) + 200.0) - 0.5;
+
+    float xPer = (initWorldPos.x / tagsHalfRowWidth);
+    float yPer = (initWorldPos.y / tagsHalfRowHeight);
+    // float z = xPer * yPer * tagRowHeight ;
+
+    // worldPosition.z = z;
+
+    // 螺旋
+    float widthPer = min(absWorldX / tagsHalfRowWidth / 2.0, 1.0);
+    float anglePer = cubicOut(widthPer);
+    float angle = anglePer * PI / 2.0 - PI / 2.0;
+    angle = angle + initWorldPos.y / tagsTotalRowHeight * PI / 6.0;
+
+    float lenPer = qinticOut(widthPer);
+    // float angleX = initWorldPos.x + lenPer * tagsHalfRowWidth;
+    float angleX = initWorldPos.x;
+    
+    worldPosition.x = angleX * cos(angle);
+    worldPosition.y = angleX * sin(angle);
+
+    // noise
+    float xadd = cos(noise * PI2) * tagRowHeight;
+    float yadd = sin(noise * PI2) * tagRowHeight;
 
     worldPosition.x = worldPosition.x + xadd;
     worldPosition.y = worldPosition.y + yadd;
@@ -159,27 +227,36 @@ const fragmentShader = `
   uniform float opacity;
 
   void main(void){
-  //texture2D()获取纹素
       vec4 color = texture2D(texture1, vUv);
       
-      // color.a = color.a * opacity;
+      color.a = color.a * opacity;
       gl_FragColor = color;
       // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
   }
 `;
 
 const height = 5;
+const tagRowCount = 6;
+const tagHeight = 10;
+const tagRowGap = 6;
+const tagRowHeight = tagHeight + tagRowGap;
+const tagsTotalRowHeight = tagRowHeight * tagRowCount;
+const tagsHalfRowHeight = tagsTotalRowHeight / 2;
+const tagsTotalRowWidth = tagsTotalRowHeight * 8;
+const tagsHalfRowWidth = tagsTotalRowHeight / 2;
+const cameraFov = 60;
+const cameraZ = tagsTotalRowHeight * 2;
 
-
-function getSpiralPos(_initAngle, x, y) {
-  const initAngle = _initAngle + y / 5;
-  const angle = x * x / 1000000 + initAngle;
-
-  console.log(x, angle / Math.PI * 180);
-  return {
-    x: x * Math.cos(angle),
-    y: x * Math.sin(angle)
-  }
+const uniform = {
+  tagRowCount: { type: 'float', value: tagRowCount },
+  tagHeight: { type: 'float', value: tagHeight },
+  tagRowGap: { type: 'float', value: tagRowGap },
+  tagRowHeight: { type: 'float', value: tagRowHeight },
+  tagsTotalRowHeight: { type: 'float', value: tagsTotalRowHeight },
+  tagsHalfRowHeight: { type: 'float', value: tagsHalfRowHeight },
+  tagsHalfRowWidth: { type: 'float', value: tagsHalfRowWidth },
+  tagsTotalRowWidth: { type: 'float', value: tagsTotalRowWidth },
+  cameraZ: { type: 'float', value: cameraZ },
 }
 
 
@@ -192,8 +269,8 @@ class Path {
     };
     this.scene = scene;
     this.options = Object.assign({}, defaults, options);
-    this.width = 500;
-    this.endX = -1 * this.width + Math.random() * 70;
+    this.endX = tagsTotalRowWidth / 2;
+    this.currX = -1 * tagsTotalRowWidth - Math.random() * 100;
     this.tags = [];
     this.createTags();
 
@@ -203,16 +280,16 @@ class Path {
 
   createTags() {
 
-    while (this.endX < this.width) {
-      console.log(this.endX);
-      this.endX = this.addTypeTags(parseInt(Math.random() * 6), this.endX);
+    while (this.currX < this.endX) {
+      console.log(this.currX);
+      this.currX = this.addTypeTags(parseInt(Math.random() * 6), this.currX);
     }
   }
 
   addTypeTags(num, x) {
-    let endX = x;
+    let currX = x;
     const iconTag = new Tag({
-      x: endX,
+      x: currX,
       y: this.options.y,
       type: 'icon',
       num, num,
@@ -220,11 +297,12 @@ class Path {
       height: this.options.height,
       color: colors[num]
     }, this, this.scene);
-    endX += iconTag.width + 2;
+    currX += iconTag.width + 2;
     this.tags.push(iconTag);
 
+    if (currX > this.endX) return currX;
     const textTag = new Tag({
-      x: endX,
+      x: currX,
       y: this.options.y,
       type: 'text',
       num, num,
@@ -232,11 +310,12 @@ class Path {
       height: this.options.height,
       color: colors[num]
     }, this, this.scene);
-    endX += textTag.width + 2;
+    currX += textTag.width + 2;
     this.tags.push(textTag);
 
+    if (currX > this.endX) return currX;
     const textEnTag = new Tag({
-      x: endX,
+      x: currX,
       y: this.options.y,
       type: 'text',
       num, num,
@@ -246,8 +325,8 @@ class Path {
     }, this, this.scene);
 
     this.tags.push(textEnTag);
-    endX += textEnTag.width + 2;
-    return endX;
+    currX += textEnTag.width + 2;
+    return currX;
   }
 
   getPos(x, y) {
@@ -285,7 +364,7 @@ class Tag {
     this.x = x;
     this.options = options;
     this.path = path;
-    this.img = getTexture(options.type, options.num);
+    this.img = this.getTexture(options.type, options.num);
     // this.texture = new THREE.TextureLoader().load(`./images/${options.type}${options.num+1}@3x.png`);
     this.width = this.img.realWidth;
     this.height = this.img.realHeight;
@@ -296,81 +375,59 @@ class Tag {
     // this.updatePos(x);
   }
 
-  createImg(options) {
-    const { type, text, height: optionHeight, color } = options;
-    const scale = 3;
-    const height = optionHeight * scale;
-    const cvs = document.createElement('canvas');
-    const ctx = cvs.getContext('2d');
-    const padding = type === 'text' ? [height / 2, height / 2] : [height / 4, 0];
-    const fontSize = Math.abs(height - padding[1]);
-    const globalCompositeOperation = type === 'text' ? 'source-atop' : 'destination-in';
+  getTexture(type, num) {
+    // if (cache[type + num]) {
+    //   return cache[type + num];
+    // }
 
 
-    let heightD2 = parseInt(height / 2);
+    const imgs = document.querySelectorAll(`.${type}-img`);
+    const img = imgs[num];
 
-    cvs.width = 1000;
-    cvs.height = 100;
-    // ctx.font = fontSize | 0 + 'px ' + 'microsoft yahei';
-    ctx.font = fontSize + 'px PingFang SC';
-    let width = ctx.measureText(text).width;
-    width += padding[0] * 2;
-    let widthD2 = parseInt(width / 2);
+    // const ctx = cvs.getContext('2d');
+    // cvs.width = 1024;
+    // cvs.height = 1024;
+    // cvs.realWidth = 5 * img.width / img.height;
+    // cvs.realHeight = 5;
 
-    cvs.realWidth = width;
-    cvs.realHeight = height;
-    // cvs.width = width;
+    // cache[type + num] = cvs;
+    // ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, 1024, 1024);
+    // document.body.appendChild(cvs);
 
-    ctx.fillStyle = color;
 
-    ctx.fillRect(heightD2, 0, width - height, height);
-    ctx.arc(heightD2, heightD2, heightD2, 0, Math.PI * 2);
-    ctx.arc(width - heightD2, heightD2, heightD2, 0, Math.PI * 2);
-    ctx.fill();
+    // img.realWidth = 5 * img.width / img.height;
+    // img.realHeight = 5;
 
-    ctx.globalCompositeOperation = globalCompositeOperation;
-    ctx.fillStyle = '#fff';
+    // img.width = 1024;
+    // img.height = 1024;
 
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, widthD2, heightD2);
-
-    const cvs2 = document.createElement('canvas');
-    const ctx2 = cvs2.getContext('2d');
-
-    cvs2.width = 1024;
-    cvs2.height = 1024;
-    cvs2.realWidth = width / scale;
-    cvs2.realHeight = height / scale;
-    ctx2.drawImage(cvs, 0, 0, width, height, 0, 0, 1024, 1024);
-    // document.body.appendChild(cvs2);
-    return cvs2;
+    const texture = new THREE.TextureLoader().load(img.src);
+    texture.realWidth = tagHeight * img.width / img.height;
+    texture.realHeight = tagHeight * 1.0;
+    cache[type + texture];
+    return texture;
   }
 
   createPlane() {
-    const scale = Math.min(Math.abs(this.options.x * this.options.x / 4000) + 0.1, 1);
+    const scale = easing.easeOutQuint(Math.abs(this.options.x) / tagsTotalRowWidth) + 0.01;
 
     const position = new THREE.Vector3(this.options.x, this.options.y);
-    console.log(position);
-    const geometry = new THREE.PlaneGeometry(this.width, this.height, 5, 5);
+    const geometry = new THREE.PlaneGeometry(this.width, this.height, 10, 5);
     const material = new THREE.MeshBasicMaterial({ color: this.options.color, side: THREE.DoubleSide, wireframe: false, map: this.img });
     const shaderMaterial = new THREE.ShaderMaterial({
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
       uniforms: {
+        ...uniform,
         texture1: { value: this.img },
         pos: new THREE.Uniform(position),
-        uPx: {
-          type: 'float',
-          value: this.options.x
-        },
-        uPy: {
-          type: 'float',
-          value: this.options.y
+        objPos: {
+          type: 'vec3',
+          value: new THREE.Vector3(this.options.x, this.options.y, 0)
         },
         opacity: {
           type: 'float',
-          value: Math.max(scale, 0)
+          value: Math.max(scale, 0.02)
         },
       },
       depthTest: false,
@@ -391,7 +448,7 @@ class Tag {
       plane.rotation.x += Math.PI;
     }
     this.scene.add(plane);
-    
+
     return plane;
   }
 
@@ -422,8 +479,8 @@ class TagRender {
   constructor() {
     this.scene = new THREE.Scene();
 
-    this.camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 2000);
-    this.camera.position.set(0, 0, 800);
+    this.camera = new THREE.PerspectiveCamera(cameraFov, window.innerWidth / window.innerHeight, 0.1, cameraZ * 3);
+    this.camera.position.set(0, 0, cameraZ * 2);
     this.scene.add(this.camera);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -435,18 +492,18 @@ class TagRender {
 
     const gridHelper = new THREE.GridHelper(500, 10, 0xddddd, 0xff0000);
     gridHelper.rotation.x = Math.PI / 2;
-    this.scene.add(gridHelper);
+    // this.scene.add(gridHelper);
 
     this.paths = this.createPaths();
   }
 
   createPaths() {
     const paths = [];
-    const step = 18;
+    const step = tagRowHeight;
     const start = Math.PI / 2;
     const start2 = Math.PI / -2;
 
-    for (let i = -4; i < 5; i++) {
+    for (let i = -tagRowCount / 2; i < tagRowCount / 2 + 1; i++) {
       const path = new Path({
         angle: start + step * i,
         y: step * i,
