@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,19 +19,50 @@
     }
 
     body {
-      background-color: #000;
       background-size: auto 100%;
+      background:#ff5c5c;
     }
 
     canvas {
       position: relative;
-      width: 100%;
+      /* width: 100%; */
+    }
+    img {
+      display: none;
+      position: absolute;
+      z-index: -1;
+      visibility: hidden;
     }
   </style>
 </head>
+
 <body>
-  <canvas></canvas>
+  <img class="icon-img" src="./images/icon1@3x.png" alt="">
+  <img class="icon-img" src="./images/icon2@3x.png" alt="">
+  <img class="icon-img" src="./images/icon3@3x.png" alt="">
+  <img class="icon-img" src="./images/icon4@3x.png" alt="">
+  <img class="icon-img" src="./images/icon5@3x.png" alt="">
+  <img class="icon-img" src="./images/icon6@3x.png" alt="">
+
+  <img class="text-img" src="./images/text1@3x.png" alt="">
+  <img class="text-img" src="./images/text2@3x.png" alt="">
+  <img class="text-img" src="./images/text3@3x.png" alt="">
+  <img class="text-img" src="./images/text4@3x.png" alt="">
+  <img class="text-img" src="./images/text5@3x.png" alt="">
+  <img class="text-img" src="./images/text6@3x.png" alt="">
+
+  <img class="texten-img" src="./images/texten1@3x.png" alt="">
+  <img class="texten-img" src="./images/texten2@3x.png" alt="">
+  <img class="texten-img" src="./images/texten3@3x.png" alt="">
+  <img class="texten-img" src="./images/texten4@3x.png" alt="">
+  <img class="texten-img" src="./images/texten5@3x.png" alt="">
+  <img class="texten-img" src="./images/texten6@3x.png" alt="">
+
+
   <script src="./three.min.js"></script>
+  <script src="./getTexture.js"></script>
   <script src="./index.js"></script>
+
 </body>
+
 </html>
