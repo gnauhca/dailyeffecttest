@@ -31,7 +31,7 @@
 </head>
 
 <body>
-  <button onclick="stroke = !stroke;" style="margin: 30px 0">stroke</button>
+  <button onclick="stroke = !stroke;" style="margin: 0px 0">stroke</button>
   <script src="../lib/tween.js"></script>
   <script src="../lib/time.js"></script>
   <script src="../lib/vec2.js"></script>
@@ -190,8 +190,8 @@
 
         this.tick;
         this.balls = [];
-        this.maxBallRadius = 80;
-        this.maxBallCount = 30;
+        this.maxBallRadius = 60;
+        this.maxBallCount = 40;
         this.maxDistance = this.maxBallRadius * 2;
 
         this.offCvs = document.createElement('canvas');
@@ -283,7 +283,7 @@
     let cvs = document.createElement('canvas');
 
     cvs.width = 1600;
-    cvs.height = 1200;
+    cvs.height = 900;
 
     document.body.appendChild(cvs);
 

@@ -67,7 +67,7 @@
     <filter id="drip">
       <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="blur" />
       <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 30 -15" result="contrast" />
-      <feComposite in="SourceGraphic" in2="contrast" operator="atop"/>
+      <!-- <feComposite in="SourceGraphic" in2="contrast" operator="atop"/> -->
       <!-- <feComposite in="SourceGraphic" in2="blur" operator="atop"/> -->
     </filter>
   </defs>
