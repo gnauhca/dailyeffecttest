@@ -27,11 +27,14 @@
       position: relative;
       /* width: 100%; */
     }
-    img {
+    body>img {
       display: none;
       position: absolute;
       z-index: -1;
       visibility: hidden;
+    }
+    .dg.ac {
+      z-index: 10!important;
     }
   </style>
 </head>
@@ -58,10 +61,12 @@
   <img class="texten-img" src="./images/texten5@3x.png" alt="">
   <img class="texten-img" src="./images/texten6@3x.png" alt="">
 
-
+  <a id="downloader" href="">xia</a>
+  <script src="./node_modules/dat.gui/build/dat.gui.js"></script>
   <script src="./three.min.js"></script>
   <script src="./getTexture.js"></script>
   <script src="./easing.js"></script>
+  <script src="./shaders.js"></script>
   <script src="./index.js"></script>
 
 </body>
