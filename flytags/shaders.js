@@ -101,7 +101,19 @@ const vertexShader = `
   uniform float cameraFov;
   uniform float cameraZ;
 
+  uniform float objPosNoiseWide;
+  uniform float objPosNoiseOffset;
+  uniform float objPosNoiseUnit;
+  uniform float noiseWide;
+  uniform float noiseOffset;
+  uniform float noiseUnit;
+  uniform float spinAngle;
+  uniform float spinOffset;
+
+
+
   varying vec2 vUv;
+  varying float opacity2;
 
   float PI = 3.14159;
   float PI2 = 3.14159 * 2.0;
@@ -130,37 +142,50 @@ const vertexShader = `
     vec3 objWorldPos = vec3(modelMatrix * vec4(objPos, 1.0));
     float dir = sign(objWorldPos.x);
 
-    float objWorldNoise = cn(objWorldPos / tagsHalfRowWidth / 3.0);
-    float objWorldPosAddX = cos(objWorldNoise * PI2) * tagRowHeight / 5.0;
-    float objWorldPosAddY = sin(objWorldNoise * PI2) * tagRowHeight;
+    // opacity2
+    float objWorldPosXPer = abs(objWorldPos.x / tagsHalfRowWidth);
+    if (objWorldPosXPer < 0.1) {
+      opacity2 = 0.0;
+    } else if (objWorldPosXPer < 0.6) {
+      opacity2 = cubicOut((objWorldPosXPer - 0.1) / 0.5);
+    } else {
+      opacity2 = 1.0;
+    }
+
+    float objWorldNoise = cn(objWorldPos / tagsHalfRowWidth / objPosNoiseWide + objPosNoiseOffset) - 0.5;
+    float objWorldPosAddX = cos(objWorldNoise * PI2) * tagRowHeight * objPosNoiseUnit / 3.0;
+    float objWorldPosAddY = sin(objWorldNoise * PI2) * tagRowHeight * objPosNoiseUnit;
 
     vec3 newPosition = vec3(position);
-    // newPosition.x = newPosition.x + objWorldPosAddX;
+    newPosition.x = newPosition.x + objWorldPosAddX;
     newPosition.y = newPosition.y + objWorldPosAddY;
     // newPosition.z = objWorldPosAddX;
 
-    vec4 worldPosition = modelMatrix * vec4(newPosition, 1.0);
+    // vec4 worldPosition = modelMatrix * vec4(newPosition, 1.0);
+    vec4 worldPosition = modelMatrix * vec4(position + objWorldPos, 1.0);
     vec3 initWorldPos = vec3(worldPosition);
     float absWorldX = abs(initWorldPos.x);
     float absWorldXPer = absWorldX / tagsHalfRowWidth;
 
     // 螺旋
-    float widthPer = min((absWorldX) / tagsHalfRowWidth, 1.0);
-    float anglePer = quarticOut(widthPer);
-    float angle = anglePer * PI / 3.0 - PI / 3.0;
-    angle = angle + (initWorldPos.y) / tagsTotalRowHeight * PI / 6.0;
+    float spinPerX = absWorldX / tagsHalfRowWidth;
+    float spinPerY = initWorldPos.y / tagsTotalRowHeight;
 
-    float lenPer = qinticOut(widthPer);
+    float anglePer = quarticOut(spinPerX) + spinPerY / 2.0;
+    float angle = anglePer * PI * spinAngle;
+    angle -= PI * spinAngle;
+
+    // float lenPer = qinticOut(spinPer);
     // float angleX = initWorldPos.x + lenPer * tagsHalfRowWidth;
     float angleX = initWorldPos.x;
     
-    worldPosition.x = angleX * cos(angle) - dir * 50.0;
-    worldPosition.y = angleX * sin(angle);
+    worldPosition.x = angleX * cos(angle) - dir * spinOffset;
+    worldPosition.y = angleX * sin(angle) - dir * spinOffset * 0.3;
 
     // noise
-    float noise = cn(vec3(initWorldPos / tagsTotalRowHeight / 6.2) + 100.0) - 0.5;
-    float xadd = cos(noise * PI2) * tagRowHeight * 2.0;
-    float yadd = sin(noise * PI2) * tagRowHeight * 0.6;
+    float noise = cn(vec3(initWorldPos / tagsTotalRowHeight / noiseWide) + noiseOffset) - 0.5;
+    float xadd = cos(noise * PI) * tagRowHeight * noiseUnit;
+    float yadd = sin(noise * PI) * tagRowHeight * noiseUnit;
 
     worldPosition.x = worldPosition.x + xadd;
     worldPosition.y = worldPosition.y + yadd;
@@ -168,7 +193,7 @@ const vertexShader = `
     worldPosition.x *= 1.1;
 
     gl_Position = projectionMatrix * viewMatrix * worldPosition; 
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    // gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 
 `;
@@ -177,12 +202,13 @@ const fragmentShader = `
   uniform sampler2D texture1;
   //纹理坐标
   varying vec2 vUv;
+  varying float opacity2;
   uniform float opacity;
 
   void main(void){
       vec4 color = texture2D(texture1, vUv);
       
-      color.a = color.a * opacity;
+      color.a = color.a * opacity2;
       gl_FragColor = color;
       // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
   }

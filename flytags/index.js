@@ -35,18 +35,29 @@ const icons = [
 ];
 
 const tagRowCount = 7;
-const tagMargin = 1;
+const tagMargin = 4;
 const tagHeight = 10;
-const tagRowGap = 6;
-const tagsTotalWidthHeightRatio = 10;
+const tagRowGap = 4;
+const tagsTotalWidthHeightRatio = 14;
 const tagRowHeight = tagHeight + tagRowGap;
 const tagsTotalRowHeight = tagRowHeight * tagRowCount;
 const tagsHalfRowHeight = tagsTotalRowHeight / 2;
 const tagsTotalRowWidth = tagsTotalRowHeight * tagsTotalWidthHeightRatio;
 const tagsHalfRowWidth = tagsTotalRowWidth / 2;
 const cameraFov = 60;
-const cameraZTotalRowHeightRatio = 4;
+const cameraZTotalRowHeightRatio = 2.7;
 const cameraZ = tagsTotalRowHeight * cameraZTotalRowHeightRatio;
+
+const objPosNoiseWide = 1.6;
+const objPosNoiseOffset = 1.04;
+const objPosNoiseUnit = 1;
+
+const noiseWide = 2.4;
+const noiseOffset = 0.56;
+const noiseUnit = 1;
+
+const spinAngle = 0.43;
+const spinOffset = 50;
 
 const config = {
   tagRowCount: {
@@ -97,12 +108,53 @@ const config = {
   cameraZTotalRowHeightRatio: {
     type: 'float',
     value: cameraZTotalRowHeightRatio,
+    range: [1, 10]
   },
   cameraZ: {
     type: 'float',
     value: cameraZ,
-    range: [0, 1000]
+  },
 
+  objPosNoiseWide: {
+    type: 'float',
+    value: objPosNoiseWide,
+    range: [0.1, 5]
+  },
+
+  objPosNoiseOffset: {
+    type: 'float',
+    value: objPosNoiseOffset,
+    range: [0, 2]
+  },
+  objPosNoiseUnit: {
+    type: 'float',
+    value: objPosNoiseUnit,
+    range: [0, 3]
+  },
+  noiseWide: {
+    type: 'float',
+    value: noiseWide,
+    range: [0.1, 5]
+  },
+  noiseOffset: {
+    type: 'float',
+    value: noiseOffset,
+    range: [0, 2]
+  },
+  noiseUnit: {
+    type: 'float',
+    value: noiseUnit,
+    range: [0, 3]
+  },
+  spinAngle: {
+    type: 'float',
+    value: spinAngle,
+    range: [0, 1]
+  },
+  spinOffset: {
+    type: 'float',
+    value: spinOffset,
+    range: [0, 100]
   },
 };
 configListeners = [];
@@ -113,7 +165,7 @@ function updateConfig() {
   config.tagsHalfRowHeight.value = config.tagsTotalRowHeight.value / 2;
   config.tagsTotalRowWidth.value = config.tagsTotalRowHeight.value * config.tagsTotalWidthHeightRatio.value;
   config.tagsHalfRowWidth.value = config.tagsTotalRowWidth.value / 2;
-  // config.cameraZ.value = config.tagsTotalRowHeight.value * config.cameraZTotalRowHeightRatio.value;
+  config.cameraZ.value = config.tagsTotalRowHeight.value * config.cameraZTotalRowHeightRatio.value;
   // console.log(config);
   configListeners.forEach(listener => listener());
 }
@@ -133,8 +185,11 @@ const uniform = {
   ...config
 }
 
+const textureCache = {};
 function getTexture(typeIndex, type) {
-
+  if (textureCache[typeIndex + '-' + type]) {
+    return textureCache[typeIndex + '-' + type];
+  }
   const types = ['icon', 'text', 'texten'];
   const typeName = types[typeIndex];
   const imgs = document.querySelectorAll(`.${typeName}-img`);
@@ -142,8 +197,11 @@ function getTexture(typeIndex, type) {
 
   const texture = new THREE.TextureLoader().load(img.src);
   texture.img = img;
+
+  textureCache[typeIndex + '-' + type] = texture;
   return texture;
 }
+const testTexture = getTexture(1, 1);
 
 function step(min, max, value) {
   return Math.max(Math.min(value, max), min);
@@ -164,7 +222,8 @@ class Path extends Base {
     const defaults = {
       initialTagType: 0,
       angle: 0,
-      v: 0
+      v: 0,
+      offset: 0
     };
     this.scene = scene;
     this.options = Object.assign({}, defaults, options);
@@ -172,6 +231,7 @@ class Path extends Base {
     this.v = this.options.v * config.tagHeight.value / 1000;
     this.width = config.tagsTotalRowWidth.value;
     this.y = this.options.yIndex * tagRowHeight;
+    this.startX = this.width / -2;
     this.startX = this.width / -2;
     this.endX = this.width / 2;
     this.tags = [];
@@ -183,20 +243,26 @@ class Path extends Base {
 
   addTags() {
     let lastTag = this.tags[this.tags.length - 1];
-    let lastX = lastTag ? lastTag.x + lastTag.width / 2 : this.startX;
+    let lastX = lastTag ? lastTag.x + lastTag.width / 2 : this.startX + this.options.offset * config.tagRowHeight.value;
     
     while (lastX < this.endX) {
-      
-      this.tagTypeIndex += 1;
-      if (this.tagTypeIndex === 3) {
-        this.tagTypeIndex = 0;
-        this.tagType += 1;
-        this.tagType = this.tagType % 6;
+      let tagType = this.tagType;
+      let tagTypeIndex = this.tagTypeIndex;
+
+      tagTypeIndex += 1;
+      if (tagTypeIndex === 3) {
+        tagTypeIndex = 0;
+        tagType += 1;
+        tagType = tagType % 6;
       }
       
       const texture = getTexture(this.tagTypeIndex, this.tagType);
       const tagWidth = config.tagHeight.value * texture.img.width / texture.img.height;
+      // console.log(texture.img.src);
       lastX += tagWidth / 2;
+      if (lastX > this.endX) {
+        return;
+      }
       const tag = new Tag({ 
         x: lastX, 
         y: this.y,
@@ -207,6 +273,8 @@ class Path extends Base {
       this.tags.push(tag);
 
       lastX += tagWidth / 2 + config.tagMargin.value;
+      this.tagType = tagType;
+      this.tagTypeIndex = tagTypeIndex;
     }
   }
 
@@ -219,16 +287,17 @@ class Path extends Base {
   }
 
   update() {
+    this.addTags();
     for (let i = this.tags.length - 1; i >= 0; i--) {
       const tag = this.tags[i];
-      const newX = tag.x + this.v;
+      const newX = tag.x - this.v;
+      // const newX = tag.x;
 
       if (newX < this.startX || newX > this.endX) {
         this.removeTag(tag);
       } else {
         tag.updatePos(newX, this.y);
       }
-      this.addTags();
     }
   }
 
@@ -300,12 +369,15 @@ class Tag {
   createPlane() {
     const geometry = new THREE.PlaneGeometry(this.width, this.height, 10, 5);
     const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide, wireframe: false, map: this.texture });
+
+    // console.log(this.texture.img.src);
     const shaderMaterial = new THREE.ShaderMaterial({
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
       uniforms: {
         ...uniform,
         texture1: { value: this.texture },
+        // texture1: { value: testTexture },
         objPos: {
           type: 'vec3',
           value: new THREE.Vector3(this.x, this.options.y, 0)
@@ -339,14 +411,14 @@ class Tag {
   updatePos(x, y) {
     this.x = x;
     this.y = y;
-    console.log(x, y);
+    // console.log(x, y);
     const position = new THREE.Vector3(this.x, this.options.y);
     let scale = step(0, 1, Math.abs(this.x / config.tagsHalfRowWidth.value / 0.8));
     scale = easing.easeOutQuad(scale);
     scale = step(0, 1, scale);
 
-    let opacity = step(0, 1, Math.abs(this.x / config.tagsHalfRowWidth.value / 0.4));
-    opacity = easing.easeOutQuad(opacity);
+    let opacity = step(0, 1, Math.abs(this.x / config.tagsHalfRowWidth.value / 0.5));
+    opacity = easing.easeOutCubic(opacity) - 0.1;
     opacity = step(0, 1, opacity);
 
 
@@ -362,9 +434,9 @@ class Tag {
     this.plane.position.x = x;
     this.plane.position.y = y;
 
-    // this.plane.scale.copy(new THREE.Vector3(scale, scale, scale));
+    this.plane.scale.copy(new THREE.Vector3(scale, scale, scale));
     if (this.x < 0) {
-      this.plane.rotation.x += Math.PI;
+      this.plane.rotation.x = Math.PI;
     }
 
 
@@ -383,7 +455,10 @@ class Tag {
 
   destroy() {
     this.scene.remove(this.plane);
-    this.patch = null;
+    this.plane.geometry.dispose();
+    this.plane.material.dispose();
+    // this.plane.dispose();
+    this.plane = null;
     this.gemo = null;
     this.initGemo = null;
   }
@@ -403,7 +478,7 @@ class TagRender extends Base {
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
     // this.renderer.setClearColor(0x000000, 0);
-    this.renderer.setPixelRatio(3);
+    this.renderer.setPixelRatio(2);
     this.renderer.setSize(width, height);
     // this.renderer.setPixelRatio(4);
     // this.renderer.setSize(width, height, false);
@@ -423,7 +498,9 @@ class TagRender extends Base {
     for (let i = -tagRowCount / 2; i < tagRowCount / 2 + 1; i++) {
       const path = new Path({
         yIndex: i,
-        initialTagType: (Math.random() * 6) | 0
+        initialTagType: (Math.random() * 6) | 0,
+        offset: (Math.random() - 0.5) * 10,
+        v: 60
       }, this.scene);
       paths.push(path);
     }
@@ -446,10 +523,10 @@ class TagRender extends Base {
     this.update();
     setTimeout(() => {
       this.render();
-    }, 300);
+    }, 30);
     setTimeout(() => {
       this.render();
-    }, 600);
+    }, 60);
   }
 }
 
@@ -468,10 +545,15 @@ class Ani {
 
   update() {
     this.renderer.update();
+    // setTimeout(() => {
+    //   this.update();
+    // }, 100);
+    this.tick = window.requestAnimationFrame(() => this.update());
+  }
+  update() {
     setTimeout(() => {
-      this.renderer.render();
-    }, 300);
-    // this.tick = window.requestAnimationFrame(() => this.update());
+      this.renderer.update();
+    }, 100);
   }
 }
 
