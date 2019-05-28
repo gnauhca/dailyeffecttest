@@ -89,6 +89,7 @@ const vertexShader = `
 
   uniform vec3 objPos;
   uniform float opacity;
+  uniform float time;
 
   uniform float tagRowCount;
   uniform float tagHeight;
@@ -152,7 +153,7 @@ const vertexShader = `
       opacity2 = 1.0;
     }
 
-    float objWorldNoise = cn(objWorldPos / tagsHalfRowWidth / objPosNoiseWide + objPosNoiseOffset) - 0.5;
+    float objWorldNoise = cn(objWorldPos / tagsHalfRowWidth / objPosNoiseWide + objPosNoiseOffset + fract(time) * objPosNoiseWide) - 0.5;
     float objWorldPosAddX = cos(objWorldNoise * PI2) * tagRowHeight * objPosNoiseUnit / 3.0;
     float objWorldPosAddY = sin(objWorldNoise * PI2) * tagRowHeight * objPosNoiseUnit;
 
@@ -161,8 +162,9 @@ const vertexShader = `
     newPosition.y = newPosition.y + objWorldPosAddY;
     // newPosition.z = objWorldPosAddX;
 
-    // vec4 worldPosition = modelMatrix * vec4(newPosition, 1.0);
-    vec4 worldPosition = modelMatrix * vec4(position + objWorldPos, 1.0);
+    vec4 worldPosition = modelMatrix * vec4(newPosition, 1.0);
+    // vec4 worldPosition = vec4(position + objWorldPos, 1.0);
+    // vec4 worldPosition = vec4(position + objPos, 1.0);
     vec3 initWorldPos = vec3(worldPosition);
     float absWorldX = abs(initWorldPos.x);
     float absWorldXPer = absWorldX / tagsHalfRowWidth;
@@ -171,26 +173,26 @@ const vertexShader = `
     float spinPerX = absWorldX / tagsHalfRowWidth;
     float spinPerY = initWorldPos.y / tagsTotalRowHeight;
 
-    float anglePer = quarticOut(spinPerX) + spinPerY / 2.0;
-    float angle = anglePer * PI * spinAngle;
+    float anglePer = cubicOut(spinPerX);
+    float angle = anglePer * PI * spinAngle + spinPerY / 1.6;
     angle -= PI * spinAngle;
 
     // float lenPer = qinticOut(spinPer);
     // float angleX = initWorldPos.x + lenPer * tagsHalfRowWidth;
     float angleX = initWorldPos.x;
     
-    worldPosition.x = angleX * cos(angle) - dir * spinOffset;
-    worldPosition.y = angleX * sin(angle) - dir * spinOffset * 0.3;
+    // worldPosition.x = angleX * cos(angle) - dir * spinOffset;
+    worldPosition.y = angleX * sin(angle);
+    // worldPosition.x -=  dir * spinOffset;
+
 
     // noise
-    float noise = cn(vec3(initWorldPos / tagsTotalRowHeight / noiseWide) + noiseOffset) - 0.5;
+    float noise = cn(vec3(initWorldPos / tagsTotalRowHeight / noiseWide) + noiseOffset + fract(time) * noiseWide) - 0.5;
     float xadd = cos(noise * PI) * tagRowHeight * noiseUnit;
     float yadd = sin(noise * PI) * tagRowHeight * noiseUnit;
 
     worldPosition.x = worldPosition.x + xadd;
     worldPosition.y = worldPosition.y + yadd;
-
-    worldPosition.x *= 1.1;
 
     gl_Position = projectionMatrix * viewMatrix * worldPosition; 
     // gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);

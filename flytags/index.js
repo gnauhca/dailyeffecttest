@@ -45,19 +45,19 @@ const tagsHalfRowHeight = tagsTotalRowHeight / 2;
 const tagsTotalRowWidth = tagsTotalRowHeight * tagsTotalWidthHeightRatio;
 const tagsHalfRowWidth = tagsTotalRowWidth / 2;
 const cameraFov = 60;
-const cameraZTotalRowHeightRatio = 2.7;
+const cameraZTotalRowHeightRatio = 2.5;
 const cameraZ = tagsTotalRowHeight * cameraZTotalRowHeightRatio;
 
-const objPosNoiseWide = 1.6;
-const objPosNoiseOffset = 1.04;
+const objPosNoiseWide = 0.63;
+const objPosNoiseOffset = 0.5;
 const objPosNoiseUnit = 1;
 
-const noiseWide = 2.4;
-const noiseOffset = 0.56;
+const noiseWide = 1.8;
+const noiseOffset = 1.6;
 const noiseUnit = 1;
 
 const spinAngle = 0.43;
-const spinOffset = 50;
+const spinOffset = 40;
 
 const config = {
   tagRowCount: {
@@ -386,6 +386,10 @@ class Tag {
           type: 'float',
           value: 1
         },
+        time: {
+          type: 'float',
+          value: new Date().getTime() / 1000
+        },
       },
       depthTest: false,
       transparent: true,
@@ -424,7 +428,7 @@ class Tag {
 
     this.plane.material.uniforms.objPos.value = position;
     this.plane.material.uniforms.opacity.value = opacity;
-
+    this.plane.material.uniforms.time.value = new Date().getTime();
     for(let uniformKey in this.plane.material.uniforms) {
       if (config[uniformKey]) {
         this.plane.material.uniforms[uniformKey].value = config[uniformKey].value;
@@ -468,24 +472,25 @@ class TagRender extends Base {
   constructor() {
     super();
 
-    const width = window.innerWidth * 1;
+    const width = Math.min(window.innerWidth * 1, 1600);
+    // const width = window.innerWidth;
     const height = width * 9 / 16;
     this.scene = new THREE.Scene();
 
-    this.camera = new THREE.PerspectiveCamera(cameraFov, window.innerWidth / window.innerHeight, 0.1, 5000);
+    this.camera = new THREE.PerspectiveCamera(cameraFov, width / height, 0.1, 1000);
     this.camera.position.set(0, 0, config.cameraZ.value * 2);
     this.scene.add(this.camera);
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     // this.renderer.setClearColor(0x000000, 0);
     this.renderer.setPixelRatio(2);
     this.renderer.setSize(width, height);
     // this.renderer.setPixelRatio(4);
     // this.renderer.setSize(width, height, false);
-    // this.renderer.setViewport(0, 0, width, height);
+    this.renderer.setViewport(0, 0, width, height);
     document.querySelector('body').appendChild(this.renderer.domElement);
 
-    const gridHelper = new THREE.GridHelper(500, 10, 0xddddd, 0xff0000);
+    const gridHelper = new THREE.GridHelper(500, 10, 0xff0000, 0xdddddd);
     gridHelper.rotation.x = Math.PI / 2;
     this.scene.add(gridHelper);
 
@@ -500,7 +505,7 @@ class TagRender extends Base {
         yIndex: i,
         initialTagType: (Math.random() * 6) | 0,
         offset: (Math.random() - 0.5) * 10,
-        v: 60
+        v: 80
       }, this.scene);
       paths.push(path);
     }
@@ -553,7 +558,7 @@ class Ani {
   update() {
     setTimeout(() => {
       this.renderer.update();
-    }, 100);
+    }, 300);
   }
 }
 

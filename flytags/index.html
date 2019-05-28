@@ -8,7 +8,7 @@
   <title>flytags</title>
   <style>
     * {
-      margin: 0;
+      margin: 0; padding: 0;
     }
 
     body,
@@ -20,12 +20,15 @@
 
     body {
       background-size: auto 100%;
-      background:#ff5c5c;
+      /* background:#ff5c5c; */
     }
 
     canvas {
+      display: inline;
       position: relative;
-      /* width: 100%; */
+      margin: 0 auto;
+      width: 100%!important;
+      height: auto!important;
     }
     body>img {
       display: none;
@@ -35,6 +38,7 @@
     }
     .dg.ac {
       z-index: 10!important;
+      display: none;
     }
   </style>
 </head>
@@ -61,8 +65,8 @@
   <img class="texten-img" src="./images/texten5@3x.png" alt="">
   <img class="texten-img" src="./images/texten6@3x.png" alt="">
 
-  <a id="downloader" href="">xia</a>
-  <script src="./node_modules/dat.gui/build/dat.gui.js"></script>
+  <a id="downloader" href="" style="display: block;">xia</a>
+  <script src="./dat.gui.js"></script>
   <script src="./three.min.js"></script>
   <script src="./getTexture.js"></script>
   <script src="./easing.js"></script>
