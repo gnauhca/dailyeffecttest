@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>geometries</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .container {
+      position: relative;
+      max-width: 600px;
+      width: 100%;
+      /* height: 500px; */
+      overflow: hidden;
+      border: 1px solid red;
+    }
+
+    .item {
+      position: relative;
+      width: 280px;
+      height: 370px;
+      transform-style: preserve-3d;
+      overflow: visible!important;
+    }
+
+    .item-front,
+    .item-front-inner,
+    .item-back,
+    .item-back-inner {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      
+    }
+    .item-front-inner,
+    .item-back-inner {
+      background-size: 100%;
+      /* backface-visibility: hidden; */
+    }
+
+    .item-front,
+    .item-back {
+      background: #000;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
+    }
+
+    .item-front {
+      z-index: 1;
+    }
+
+    .item-back {
+      transform: rotateY(180deg);
+      z-index: 0;
+    }
+
+    .item-front-inner {
+      background-image: url(./image/test.jpg);
+    }
+
+    .item-back-inner {
+      background-image: url(./image/test2.jpg);
+    }
+
+    .item-front {
+      backface-visibility: hidden;
+    }
+
+
+    .btn {
+      padding: 15px 20px;
+      font-size: 20px;
+      -webkit-appearance: none;
+    }
+  </style>
+  <script src="./lib/stats.min.js"></script>
+  <!-- <script src="./lib/TrackballControls.js"></script> -->
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="item item0">
+      <div class="item-front">
+        <div class="item-front-inner"></div>
+      </div>
+      <div class="item-back">
+        <div class="item-back-inner"></div>
+      </div>
+    </div>
+    <div class="item item1">
+      <div class="item-front">
+        <div class="item-front-inner"></div>
+      </div>
+      <div class="item-back">
+        <div class="item-back-inner"></div>
+      </div>
+    </div>
+    <div class="item item2">
+      <div class="item-front">
+        <div class="item-front-inner"></div>
+      </div>
+      <div class="item-back">
+        <div class="item-back-inner"></div>
+      </div>
+    </div>
+    <div class="item item3">
+      <div class="item-front">
+        <div class="item-front-inner"></div>
+      </div>
+      <div class="item-back">
+        <div class="item-back-inner"></div>
+      </div>
+    </div>
+    <div class="item item4">
+      <div class="item-front">
+        <div class="item-front-inner"></div>
+      </div>
+      <div class="item-back">
+        <div class="item-back-inner"></div>
+      </div>
+    </div>
+    <div class="item item5">
+      <div class="item-front">
+        <div class="item-front-inner"></div>
+      </div>
+      <div class="item-back">
+        <div class="item-back-inner"></div>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="rotate-btn btn">1</button>
+    <button class="rotate-btn btn">2</button>
+    <button class="rotate-btn btn">3</button>
+    <button class="rotate-btn btn">4</button>
+    <button class="rotate-btn btn">5</button>
+    <button class="spin-btn btn">spin</button>
+  </div>
+
+  <script>
+    window.onload = function () {
+      ani.spin();
+
+      const rotateBtns = document.querySelectorAll('.rotate-btn');
+      const spinBtn = document.querySelector('.spin-btn');
+
+      for (let i = 0; i < rotateBtns.length; i++) {
+        const rotateBtn = rotateBtns[i];
+        rotateBtn.addEventListener('click', () => {
+          ani.setIndex(i);
+        });
+      }
+      spinBtn.addEventListener('click', () => {
+        ani.spin();
+      });
+    }
+  </script>
+</body>
+
+</html>
