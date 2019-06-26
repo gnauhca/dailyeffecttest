@@ -239,6 +239,8 @@ class Path extends Base {
     this.tagType = this.options.initialTagType || (Math.random() * 6) | 0;
     this.tagTypeIndex = 0;
     this.addTags();
+
+    this.onConfigUpdate = this.onConfigUpdate.bind(this);
   }
 
   addTags() {
@@ -301,7 +303,7 @@ class Path extends Base {
     }
   }
 
-  onConfigUpdate = () => {
+  onConfigUpdate() {
     const prevWidth = this.width;
     const currWidth = config.tagsTotalRowWidth.value;
     const ratio = currWidth / prevWidth;
@@ -495,6 +497,7 @@ class TagRender extends Base {
     this.scene.add(gridHelper);
 
     this.paths = this.createPaths();
+    this.onConfigUpdate = this.onConfigUpdate.bind(this);
   }
 
   createPaths() {
@@ -523,7 +526,7 @@ class TagRender extends Base {
     this.renderer.render(this.scene, this.camera);
   }
     
-  onConfigUpdate = () => {
+  onConfigUpdate() {
     this.camera.position.z = config.cameraZ.value * 2;
     this.update();
     setTimeout(() => {
