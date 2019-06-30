@@ -1,0 +1,10 @@
+class CvsObj {
+  
+  update() {
+
+  }
+
+  draw() {
+
+  }
+}

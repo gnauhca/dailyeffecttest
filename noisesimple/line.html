@@ -18,10 +18,142 @@
       height: 100%;
     }
   </style>
+  <script src="./common/cvs-scene.js"></script>
+  <script src="./common/cvs-obj.js"></script>
 </head>
 
 <body>
+  <script>
 
+    const WIDTH = 1200;
+    const HEIGHT = 300;
+    const POINTCOUNT = 15;
+    const STEP = WIDTH / (POINTCOUNT - 1);
+    const POINTS = [];
+    const MAXOFFSET = HEIGHT / 2.1;
+    const POINTCOLOR = 'rgba(255, 0, 0, 0.5)';
+    const LINECOLOR = '#abcdef';
+    const LINEWIDTH = 2;
+    const CONTROLLINECOLOR = 'rgba(255, 0, 0, 0.2)'
+    const CONTROLLINEWIDTH = 1;
+
+    for (let i = 0; i < POINTCOUNT; i++) {
+      const y = HEIGHT / 2 + (Math.random() - 0.5) * 2 * MAXOFFSET;
+      const point = {
+        x: i * STEP,
+        y
+      };
+      POINTS.push(point);
+    }
+
+    // polygonal line
+    const scene = new CvsScene(WIDTH, HEIGHT);
+    class Line extends CvsObj {
+      draw(renderer) {
+
+        const ctx = renderer.ctx;
+        ctx.strokeStyle = LINECOLOR;
+        ctx.fillStyle = POINTCOLOR
+        ctx.lineWidth = LINEWIDTH;
+
+        for (let i = 0; i < POINTS.length; i++) {
+          const point = POINTS[i];
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.moveTo(POINTS[0].x, POINTS[0].y);
+
+        for (let i = 1; i < POINTS.length; i++) {
+          const point = POINTS[i];
+          ctx.lineTo(point.x, point.y);
+        }
+        ctx.stroke();
+      }
+    }
+
+    const line = new Line();
+
+    scene.add(line);
+    scene.update();
+
+    // bezier 
+    const bezierScene = new CvsScene(WIDTH, HEIGHT);
+    class BezierCurve extends CvsObj {
+      draw(renderer) {
+
+        const ctx = renderer.ctx;
+        const controlPoints = [];
+
+        ctx.strokeStyle = CONTROLLINECOLOR;
+        ctx.fillStyle = POINTCOLOR
+        ctx.lineWidth = CONTROLLINEWIDTH;
+
+        for (let i = 0; i < POINTS.length; i++) {
+          const point = POINTS[i];
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+          ctx.fill();
+
+          const prevPoint = POINTS[i - 1] ? POINTS[i - 1] : point;
+          const nextPoint = POINTS[i + 1] ? POINTS[i + 1] : point;
+
+          const controlPointPrev = { x: (prevPoint.x + point.x) / 2, y: point.y };
+          const controlPointNext = { x: (nextPoint.x + point.x) / 2, y: point.y };
+
+          ctx.beginPath();
+          ctx.arc(controlPointPrev.x, controlPointPrev.y, 5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(controlPointNext.x, controlPointNext.y, 5, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.beginPath();
+          ctx.moveTo(point.x, point.y);
+          ctx.lineTo(controlPointPrev.x, controlPointPrev.y);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(point.x, point.y);
+          ctx.lineTo(controlPointNext.x, controlPointNext.y);
+          ctx.stroke();
+
+          controlPoints.push([
+            controlPointPrev, controlPointNext
+          ]);
+        }
+
+        ctx.moveTo(POINTS[0].x, POINTS[0].y);
+
+        ctx.strokeStyle = LINECOLOR;
+        ctx.lineWidth = LINEWIDTH;
+        for (let i = 0; i < POINTS.length - 1; i++) {
+          const point = POINTS[i];
+          const nextPoint = POINTS[i + 1];
+
+          ctx.bezierCurveTo(
+            controlPoints[i][1].x, 
+            controlPoints[i][1].y, 
+            controlPoints[i + 1][0].x, 
+            controlPoints[i + 1][0].y,
+            nextPoint.x,
+            nextPoint.y
+          );
+        }
+        ctx.stroke();
+      }
+    }
+
+    const beziercurve = new BezierCurve();
+
+    bezierScene.add(beziercurve);
+    bezierScene.update();
+
+
+
+  </script>
 </body>
 
 </html>

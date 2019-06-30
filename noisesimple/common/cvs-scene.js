@@ -1,23 +1,38 @@
-import Stats from 'stats.js';
+// import Stats from 'stats.js';
 
-const TWEEN = require('@tweenjs/tween.js');
-const stats = new Stats();
+// const TWEEN = require('@tweenjs/tween.js');
+// const stats = new Stats();
 
-document.body.appendChild(stats.dom);
+// document.body.appendChild(stats.dom);
 
-class Scene {
-  constructor() {
+class CvsScene {
+  constructor(width, height) {
     this.tickT = 0;
+    this.objs = [];
+    this.setup(width, height);
   }
 
-  setup() {
+  setup(width = 1000, height = 500) {
     this.cvs = document.createElement('canvas');
-    this.cvs.width = 1000;
-    this.cvs.height = 500;
+    this.cvs.width = width;
+    this.cvs.height = height;
     this.width = this.cvs.width;
     this.height = this.cvs.height;
     this.ctx = this.cvs.getContext('2d');
+
+    this.renderer = {
+      cvs: this.cvs, ctx: this.ctx
+    }
     document.body.appendChild(this.cvs);
+  }
+
+  update() {
+    this.objs.forEach(obj => {
+      obj.update(this);
+      this.renderer.ctx.save();
+      obj.draw(this.renderer);
+      this.renderer.ctx.restore();
+    });
   }
 
   tick() {
@@ -39,6 +54,12 @@ class Scene {
     this.tickT = window.requestAnimationFrame(_tick);
   }
 
+  add(obj) {
+    if (this.objs.indexOf(obj) === -1) {
+      this.objs.push(obj);
+    }
+  }
+
   start() {
     this.tick();
   }
@@ -47,5 +68,3 @@ class Scene {
     cancelAnimationFrame(this.tickT);
   }
 }
-
-export default Scene;
