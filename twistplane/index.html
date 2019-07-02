@@ -8,7 +8,8 @@
   <title>twist pic</title>
   <style>
     * {
-      margin: 0; padding: 0;
+      margin: 0;
+      padding: 0;
     }
 
     body,
@@ -16,29 +17,30 @@
       position: relative;
       width: 100%;
       height: 100%;
-      background: #000;
+      font-family: "SF Pro SC","SF Pro Text","SF Pro Icons","PingFang SC","Helvetica Neue","Helvetica","Arial",sans-serif;
+      overflow: hidden;
     }
 
     body {
       background-size: auto 100%;
       /* background:#ff5c5c; */
     }
-
-    canvas {
-      display: inline;
-      position: relative;
-      margin: 0 auto;
-      width: 100%!important;
-      height: auto!important;
+    a {
+      display: block;
+      font-size: 24px;
+      margin: 20px;
     }
   </style>
 </head>
 
 <body>
-
-  <script src="./lib/three.min.js"></script>
-  <script src="./lib/easing.js"></script>
-  <script src="./index.js"></script>
+  <a href="plane.html">普通材质平面</a>
+  <a href="plane-texture.html">普通材质贴图</a>
+  <a href="twist.html">着色器材质-顶点扭曲</a>
+  <a href="twist-texture.html">着色器材质-帖图</a>
+  <a href="twist-texture-noise.html">着色器材质-噪声-帖图</a>
+  <a href="twist-texture-noise-nolight.html">着色器材质-噪声-帖图2</a>
+  <a href="twist-texture-noise-light.html">着色器材质-噪声-帖图2-光照</a>
 </body>
 
 </html>
