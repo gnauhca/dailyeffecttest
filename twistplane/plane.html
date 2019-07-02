@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>plane</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    body,
+    html {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+
+    body {
+      background-size: auto 100%;
+      background: url(./images/flag.png);
+      background-size: 1600px 900px;
+    }
+
+    canvas {
+      display: inline;
+      position: relative;
+      margin: 0 auto;
+      width: 100% !important;
+      height: auto !important;
+    }
+  </style>
+</head>
+
+<body>
+
+<script src="./lib/three.min.js"></script>
+<script src="./lib/easing.js"></script>
+<script>
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const geometry = new THREE.PlaneGeometry(1, 1, 1);
+const material = new THREE.MeshBasicMaterial({ color: 0x9cbefb });
+const plane = new THREE.Mesh(geometry, material);
+scene.add(plane);
+
+camera.position.z = 3;
+
+const animate = function () {
+  requestAnimationFrame(animate);
+
+  plane.rotation.x += 0.01;
+  plane.rotation.y += 0.01;
+
+  renderer.render(scene, camera);
+};
+
+animate();
+
+</script>
+</body>
+
+</html>
