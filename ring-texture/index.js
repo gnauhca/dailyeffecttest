@@ -4,6 +4,7 @@ import * as THREE from 'three';
 var camera, scene, renderer;
 var mesh;
 var mesh2;
+var group = new THREE.Group;
 
 var clock = new THREE.Clock();
 
@@ -14,7 +15,7 @@ function init() {
 
   renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
   // renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setPixelRatio( 2 );
+  renderer.setPixelRatio( 3 );
   renderer.setSize( 1000, 600 );
   renderer.gammaOutput = true;
   renderer.gammaFactor = 2.2;
@@ -25,20 +26,25 @@ function init() {
   camera.lookAt(new THREE.Vector3);
 
   scene = new THREE.Scene();
+  scene.add(group);
 
   var spotLight = new THREE.SpotLight( 0xffffff );
   spotLight.position.set( 100, 1000, 500 );
-  scene.add( spotLight );
+  // scene.add( spotLight );
 
   var light = new THREE.AmbientLight( 0x808080 ); // soft white light
-  scene.add( light );
+  // scene.add( light );
 
   // var geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
-  var geometry = new THREE.TorusBufferGeometry( 100, 25, 32, 100 )
-  var material = new THREE.MeshLambertMaterial(/* {depthWrite: false, depthTest: false} */);
-  var texture = new THREE.TextureLoader().load(require("./map.png"));
+  var geometry = new THREE.TorusBufferGeometry( 100, 25, 28, 70 )
+  var material = new THREE.MeshBasicMaterial({ color: 0xFF202E});
+  var texture = new THREE.TextureLoader().load(require("./map-r.png"));
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.x = 2;
+  texture.repeat.y = 2;
+  texture.offset.y = 0.95;
+  texture.format = THREE.RGBAFormat;
   material.transparent = true;
   material.map = texture;
   material.blending = THREE.AdditiveBlending;
@@ -50,16 +56,20 @@ function init() {
   mesh = new THREE.Mesh( geometry, material );
   mesh.position.x = -30
   mesh.position.y = -28
-  mesh.rotation.x = -2.35
-  mesh.rotation.y = -0.3
+  mesh.rotation.x = -2.75
+  mesh.rotation.y = -0.7
 
-  scene.add( mesh );
+  // scene.add( mesh );
+  group.add(mesh);
 
-  var geometry = new THREE.TorusBufferGeometry( 130, 15, 32, 100 )
-  var material = new THREE.MeshLambertMaterial(/* {depthWrite: false, depthTest: false} */);
-  var texture = new THREE.TextureLoader().load(require("./map2.png"));
+  var geometry = new THREE.TorusBufferGeometry( 120, 13, 30, 30 )
+  var material = new THREE.MeshBasicMaterial({ color: 0x29ADFE });
+  var texture = new THREE.TextureLoader().load(require("./map-r2.png"));
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.x = 2;
+  texture.repeat.y = 2;
+  material.opacity = 0.7;
   material.map = texture;
   material.alphaTest = 0.5
   material.blending = THREE.CustomBlending;
@@ -70,11 +80,11 @@ function init() {
 
   mesh2 = new THREE.Mesh( geometry, material );
   // mesh2.position.z = -50
-  mesh2.position.x = 37
-  mesh2.position.y = 20
-  mesh2.rotation.x = 2.1 + Math.PI
-  mesh2.rotation.y = 0.25
-  scene.add( mesh2 );
+  mesh2.position.x = 57
+  mesh2.position.y = 0
+  mesh2.rotation.x = 1.95 + Math.PI
+  mesh2.rotation.y = 0.15
+  group.add( mesh2 );
 
   window.addEventListener( 'resize', onWindowResize, false );
 
@@ -95,14 +105,15 @@ function animate() {
 
   var delta = clock.getDelta() * 0.5;
 
-  mesh.rotation.z += delta * 3;
-  mesh2.rotation.z += delta * 3.2;
+  mesh.rotation.z -= delta * 1;
+  // group.rotation.y -= delta * 1;
+  // mesh2.rotation.z += delta * 3.2;
 
   if (mesh.material.map) {
-    mesh.material.map.offset.y += 0.004;
+    // mesh.material.map.offset.y = -0.1;
   }
   if (mesh2.material.map) {
-    mesh2.material.map.offset.y += 0.006;
+    mesh2.material.map.offset.y -= 0.006;
   }
 
   // mesh.material.map.needsUpdate = true;
