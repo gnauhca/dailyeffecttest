@@ -101,7 +101,7 @@ export class Ani {
       this.controls.maxPolarAngle = this.controls.minPolarAngle + 2 * Math.PI; // radians
       this.controls.minAzimuthAngle = -6; // radians
       this.controls.maxAzimuthAngle = this.controls.minAzimuthAngle + 2 * Math.PI; // radians
-      this.controls.rotateSpeed = 0.2;
+      this.controls.rotateSpeed = 0.3;
 
       this.controls.enablePan = false;
       this.controls.enableZoom = false;

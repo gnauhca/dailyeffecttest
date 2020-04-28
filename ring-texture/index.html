@@ -25,10 +25,14 @@
 </head>
 
 <body>
-  <div id="control1"><canvas id="canvas1" width="1000" height="1000"></canvas></div>
+  <div id="control1" style="height: 1300px"><canvas id="canvas1" width="1000" height="1000"></canvas></div>
   <div id="control2"><canvas id="canvas2" width="1000" height="1000"></canvas></div>
   <div id="control3"><canvas id="canvas3" width="1000" height="1000"></canvas></div>
   <script>
+    var a= 0;
+    setTimeout(() => {
+      a = 1;
+    }, 2000);
     window.onload = function () {
       var canvas1 = document.querySelector('#canvas1');
       var canvas2 = document.querySelector('#canvas2');
@@ -57,6 +61,7 @@
 
       var ani1 = new ringAni.Ani({
         canvas: canvas1, tick(delta) {
+          if (!a) return; 
           ringRed1.rotation.z -= delta * 0.001;
           ringBlue1.material.map.offset.y -= 0.006;
         },
@@ -84,7 +89,7 @@
 
       var ani2 = new ringAni.Ani({
         canvas: canvas2, tick(delta) {
-          ringBlue2.material.map.offset.y -= 0.006;
+          // ringBlue2.material.map.offset.y -= 0.006;
         },
       })
 
