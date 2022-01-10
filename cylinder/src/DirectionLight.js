@@ -9,7 +9,7 @@ export default class DirectionLight extends Light {
   }
 
   setNeedUpdate() {
-    this.updated = true;;
+    this.updated = true;
   }
 
   setPosition(x, y, z) {
@@ -32,7 +32,6 @@ export default class DirectionLight extends Light {
     this.setNeedUpdate();
   }
 
-
   setIntensity(intense) {
     this.intensity = intensity;
     setNeedUpdate();
@@ -41,10 +40,10 @@ export default class DirectionLight extends Light {
   calBrightness(position, normal, backside) {
     // overwrite
 
-    let lightPosition = this.position.clone();;
-    // lightPosition.y *= -1; 
+    const lightPosition = this.position.clone();
+    // lightPosition.y *= -1;
 
-    let cosOfAngle = lightPosition.dot(normal) / (lightPosition.length() * 1);
+    const cosOfAngle = lightPosition.dot(normal) / (lightPosition.length() * 1);
     let brightness = 0;
 
     if (backside) {
@@ -54,9 +53,8 @@ export default class DirectionLight extends Light {
     }
 
     // console.log(brightness);
-    brightness *= this.intensity; 
+    brightness *= this.intensity;
 
     return brightness;
   }
-
 }

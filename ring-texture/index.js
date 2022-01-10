@@ -1,123 +1,78 @@
-import './index.less';
-import * as THREE from 'three';
+import { getRing, Ani } from './ring-ani.js';
 
-var camera, scene, renderer;
-var mesh;
-var mesh2;
-var group = new THREE.Group;
+let a = 0;
+setTimeout(() => {
+  a = 1;
+}, 2000);
+window.onload = function () {
+  const canvas1 = document.querySelector('#canvas1');
+  const control1 = document.querySelector('#control1');
 
-var clock = new THREE.Clock();
+  const anis = [];
 
-init();
-animate();
+  const ringRed1 = getRing('red');
+  const ringBlue1 = getRing('blue');
 
-function init() {
+  ringRed1.position.x = -55;
+  ringRed1.position.y = 0;
+  ringRed1.position.z = 0;
+  ringRed1.rotation.x = Math.PI;
+  ringRed1.rotation.y = 0;
 
-  renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
-  // renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setPixelRatio( 3 );
-  renderer.setSize( 1000, 600 );
-  renderer.gammaOutput = true;
-  renderer.gammaFactor = 2.2;
-  document.body.appendChild( renderer.domElement );
+  ringBlue1.position.x = 55;
+  ringBlue1.position.y = 0;
+  ringBlue1.position.z = 0;
+  ringBlue1.rotation.x = Math.PI / -2;
+  ringBlue1.rotation.y = 0;
 
-  camera = new THREE.PerspectiveCamera( 50, 10 / 6, 1, 2000 );
-  camera.position.z = 400;
-  camera.lookAt(new THREE.Vector3);
+  const ani1 = new Ani({
+    canvas: canvas1,
+    tick(delta) {
+      if (!a) return;
+      ringRed1.rotation.z -= delta * 0.001;
+      ringBlue1.material.map.offset.y -= 0.006;
+    },
+    controlElement: control1,
+  });
 
-  scene = new THREE.Scene();
-  scene.add(group);
+  ani1.group.rotation.x = 0.75;
+  ani1.group.rotation.y = 0.5;
+  ani1.group.rotation.z = -0.3;
 
-  var spotLight = new THREE.SpotLight( 0xffffff );
-  spotLight.position.set( 100, 1000, 500 );
-  // scene.add( spotLight );
+  ani1.addObj(ringRed1);
+  ani1.addObj(ringBlue1);
 
-  var light = new THREE.AmbientLight( 0x808080 ); // soft white light
-  // scene.add( light );
+  anis.push({
+    canvas: canvas1,
+    ani: ani1,
+  });
 
-  // var geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
-  var geometry = new THREE.TorusBufferGeometry( 100, 25, 28, 70 )
-  var material = new THREE.MeshBasicMaterial({ color: 0xFF202E});
-  var texture = new THREE.TextureLoader().load(require("./map-r.png"));
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.x = 2;
-  texture.repeat.y = 2;
-  texture.offset.y = 0.95;
-  texture.format = THREE.RGBAFormat;
-  material.transparent = true;
-  material.map = texture;
-  material.blending = THREE.AdditiveBlending;
-  material.blending = THREE.CustomBlending;
-  material.blendEquation = THREE.AddEquation; //default
-  material.blendSrc = THREE.SrcAlphaFactor; //default
-  material.blendDst = THREE.OneMinusSrcAlphaFactor; //default
+  const ringBlue2 = getRing('blue');
 
-  mesh = new THREE.Mesh( geometry, material );
-  mesh.position.x = -30
-  mesh.position.y = -28
-  mesh.rotation.x = -2.75
-  mesh.rotation.y = -0.7
+  ringBlue2.position.x = 0;
+  ringBlue2.position.y = 0;
+  ringBlue2.rotation.x = 1.95 + Math.PI;
+  ringBlue2.rotation.y = 0.15;
 
-  // scene.add( mesh );
-  group.add(mesh);
-
-  var geometry = new THREE.TorusBufferGeometry( 120, 13, 30, 30 )
-  var material = new THREE.MeshBasicMaterial({ color: 0x29ADFE });
-  var texture = new THREE.TextureLoader().load(require("./map-r2.png"));
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.x = 2;
-  texture.repeat.y = 2;
-  material.opacity = 0.7;
-  material.map = texture;
-  material.alphaTest = 0.5
-  material.blending = THREE.CustomBlending;
-  material.blendEquation = THREE.AddEquation; //default
-  material.blendSrc = THREE.SrcAlphaFactor; //default
-  material.blendDst = THREE.OneMinusSrcAlphaFactor; //default
-  material.blending = THREE.AdditiveBlending;
-
-  mesh2 = new THREE.Mesh( geometry, material );
-  // mesh2.position.z = -50
-  mesh2.position.x = 57
-  mesh2.position.y = 0
-  mesh2.rotation.x = 1.95 + Math.PI
-  mesh2.rotation.y = 0.15
-  group.add( mesh2 );
-
-  window.addEventListener( 'resize', onWindowResize, false );
-
-}
-
-function onWindowResize() {
-
-  // camera.aspect = window.innerWidth / window.innerHeight;
-  // camera.updateProjectionMatrix();
-
-  // renderer.setSize( window.innerWidth, window.innerHeight );
-
-}
-
-function animate() {
-
-  requestAnimationFrame( animate );
-
-  var delta = clock.getDelta() * 0.5;
-
-  mesh.rotation.z -= delta * 1;
-  // group.rotation.y -= delta * 1;
-  // mesh2.rotation.z += delta * 3.2;
-
-  if (mesh.material.map) {
-    // mesh.material.map.offset.y = -0.1;
-  }
-  if (mesh2.material.map) {
-    mesh2.material.map.offset.y -= 0.006;
+  function checkVisible(elm) {
+    const rect = elm.getBoundingClientRect();
+    const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+    return !(rect.bottom <= 0 || rect.top - viewHeight >= 0);
   }
 
-  // mesh.material.map.needsUpdate = true;
+  function checkPosition() {
+    anis.forEach((aniItem, index) => {
+      if (checkVisible(aniItem.canvas)) {
+        aniItem.ani.start();
+        console.log(index, 'start');
+      } else {
+        aniItem.ani.pause();
+        console.log(index, 'pause');
+      }
+    });
+  }
 
-  renderer.render( scene, camera );
-
-}
+  window.addEventListener('scroll', checkPosition);
+  window.addEventListener('resize', checkPosition);
+  checkPosition();
+};

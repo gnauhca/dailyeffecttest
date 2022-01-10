@@ -4,9 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>kaleidoscope</title>
+  <style>
+    #kaleidoscope {
+      display: inline-block;
+      position: relative;
+      overflow: hidden;
+      width: 600px;
+      height: 600px;
+    }
+    img {
+      position: absolute;
+      top: 0;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
 </head>
 <body>
-  <div id="kaleidoscope"></div>
+  <div id="kaleidoscope">
+    <img src="./flower.png" alt="">
+  </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/104/three.min.js"></script>
   <script src="https://threejs.org/examples/js/shaders/CopyShader.js"></script>
   <script src="https://threejs.org/examples/js/shaders/KaleidoShader.js"></script>

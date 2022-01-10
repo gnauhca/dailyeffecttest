@@ -13,11 +13,10 @@ export default class Group extends Object3D {
       position: 'absolute',
       top: '50%',
       left: '50%',
-      'transform-style': 'preserve-3d'
+      'transform-style': 'preserve-3d',
     };
 
     util.setStyles(this.elem, groupStyle);
-    
   }
 
   setNeedUpdate() {
@@ -25,7 +24,7 @@ export default class Group extends Object3D {
     super.setNeedUpdate();
     this.elemMatrixNeedUpdate = true;
 
-    this.children.forEach(child => {
+    this.children.forEach((child) => {
       child.normalNeedUpdate = true;
       child.worldModelMatrixNeedUpdate = true;
     });
@@ -43,11 +42,9 @@ export default class Group extends Object3D {
   // updateElemMatrix() {
   //   if (this.elemMatrixNeedUpdate) {
   //     let modelMatrix = this.getModelMatrix().elements.map(num => num.toFixed(6));
-      
+
   //     this.elem.style.transform = `translate(-50%, -50%) matrix3d(${modelMatrix.join(',')})`;
   //     this.elemMatrixNeedUpdate = false;
   //   }
   // }
-
-
 }

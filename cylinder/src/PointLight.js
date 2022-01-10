@@ -1,4 +1,4 @@
-export default class Light{
+export default class Light {
   constructor(position, intensity) {
     this.position = position || [0, -1, 0];
     this.intensity = intensity || 1;
@@ -6,7 +6,7 @@ export default class Light{
   }
 
   setNeedUpdate() {
-    this.updated = true;;
+    this.updated = true;
   }
 
   setPosition(vec3) {
@@ -21,11 +21,9 @@ export default class Light{
 
   calBrightness(position, normal, backSide) {
     // overwrite
-    
 
     // console.log(brightness);
 
     return brightness;
   }
-
 }

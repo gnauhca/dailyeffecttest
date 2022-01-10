@@ -150,9 +150,11 @@
     <button class="rotate-btn btn">5</button>
     <button class="spin-btn btn">spin</button>
   </div>
+  <script type="module">
+    import Ani from './Ani.js';
 
-  <script>
-    window.onload = function () {
+    window.onload = () => {
+      const ani = new Ani();
       ani.spin();
 
       const rotateBtns = document.querySelectorAll('.rotate-btn');
@@ -167,7 +169,7 @@
       spinBtn.addEventListener('click', () => {
         ani.spin();
       });
-    }
+    };
   </script>
 </body>
 

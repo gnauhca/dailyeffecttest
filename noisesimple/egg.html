@@ -24,11 +24,8 @@
 </head>
 
 <body>
-  <script>
-
-    const WIDTH = 800;
+  <script>const WIDTH = 800;
     const HEIGHT = 800;
-
 
     function getRandomCirclePoints(radius, count, offset = 0.2) {
       const points = [];
@@ -55,7 +52,7 @@
         const controlPointNext = { x: (nextPoint.x + point.x) / 2, y: point.y };
         controlPoints.push([
           controlPointPrev,
-          controlPointNext
+          controlPointNext,
         ]);
       }
 
@@ -65,7 +62,6 @@
     // polygonal line
     const scene = new CvsScene(WIDTH, HEIGHT);
     class Egg extends CvsObj {
-
       constructor() {
         super();
         this.innerRadius = HEIGHT / 4;
@@ -78,8 +74,7 @@
       }
 
       draw(renderer) {
-
-        const ctx = renderer.ctx;
+        const { ctx } = renderer;
 
         ctx.translate(WIDTH / 2, HEIGHT / 2);
         ctx.fillStyle = '#ffffff'; // outer
@@ -93,12 +88,12 @@
 
           ctx.beginPath();
           ctx.bezierCurveTo(
-            controlPoint1.x, 
-            controlPoint1.y, 
-            controlPoint2.x, 
+            controlPoint1.x,
+            controlPoint1.y,
+            controlPoint2.x,
             controlPoint2.y,
             nextPoint.x,
-            nextPoint.y
+            nextPoint.y,
           );
           ctx.fill();
         }
@@ -109,10 +104,6 @@
 
     scene.add(egg);
     scene.update();
-
-
-
-
   </script>
 </body>
 

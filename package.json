@@ -1,0 +1,44 @@
+{
+  "name": "dailyeffecttest",
+  "version": "1.0.0",
+  "description": "日常小效果测试，每一个文件夹都是一个小测试。",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "lint": "eslint src",
+    "lint:fix": "eslint ./ --fix"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.15.8",
+    "@babel/eslint-parser": "^7.15.8",
+    "@babel/plugin-proposal-class-properties": "^7.16.7",
+    "@vitejs/plugin-vue": "^1.6.0",
+    "eslint": "^8.6.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-html": "^6.2.0",
+    "eslint-plugin-import": "^2.25.4",
+    "glob": "^7.2.0",
+    "less": "^4.1.2",
+    "rollup-plugin-copy": "^3.4.0",
+    "sass": "^1.47.0",
+    "three": "^0.136.0",
+    "vite": "^2.6.13",
+    "vite-plugin-live-reload": "^2.1.0",
+    "vite-plugin-style-import": "^1.2.1"
+  },
+  "dependencies": {
+    "@tweenjs/tween.js": "^18.6.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gnauhca/dailyeffecttest.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gnauhca/dailyeffecttest/issues"
+  },
+  "homepage": "https://github.com/gnauhca/dailyeffecttest#readme"
+}

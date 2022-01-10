@@ -1,0 +1,29 @@
+{
+  "extends": [
+    "airbnb-base"
+  ],
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "plugins": [
+    "html"
+  ],
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "parser": "@babel/eslint-parser",
+    "sourceType": "module",
+    "allowImportExportEverywhere": true,
+    "es6": true,
+    "ecmaVersion": 6,
+    "requireConfigFile": false
+  },
+  "rules": {
+    "import/no-extraneous-dependencies": 0,
+    "no-use-before-define": 0,
+    "import/extensions": 0,
+    "max-classes-per-file": 0,
+    "no-plusplus": 0,
+    "max-len": ["error", { "code": 120, "tabWidth": 4 }]
+  }
+}

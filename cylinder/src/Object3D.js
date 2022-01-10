@@ -47,7 +47,6 @@ export default class Object3D {
     this.setNeedUpdate();
   }
 
-
   setRotation(x, y, z) {
     this.rotation.set(x, y, z);
     this.setNeedUpdate();
@@ -67,7 +66,6 @@ export default class Object3D {
     this.rotation.z = z;
     this.setNeedUpdate();
   }
-
 
   setScale(x, y, z) {
     this.scale.set(x, y, z);
@@ -94,19 +92,19 @@ export default class Object3D {
       return this.modelMatrix;
     }
 
-    let position = this.position.clone();
-    let rotation = this.rotation.clone();
-    let scale = this.scale.clone();
+    const position = this.position.clone();
+    const rotation = this.rotation.clone();
+    const scale = this.scale.clone();
 
     // position.y *= -1;
     // rotation.y *= -1;
     // scale.y *= -1;
 
-    let scaleMatrix = new Matrix4().makeScale(scale.x, scale.y, scale.z);
-    let rotationMatrix = new Matrix4().makeRotationFromEuler(rotation);
-    let translateMatrix = new Matrix4().makeTranslation(position.x, position.y, position.z);
+    const scaleMatrix = new Matrix4().makeScale(scale.x, scale.y, scale.z);
+    const rotationMatrix = new Matrix4().makeRotationFromEuler(rotation);
+    const translateMatrix = new Matrix4().makeTranslation(position.x, position.y, position.z);
 
-    let modelMatrix = translateMatrix.multiply(rotationMatrix).multiply(scaleMatrix);
+    const modelMatrix = translateMatrix.multiply(rotationMatrix).multiply(scaleMatrix);
     // let modelMatrix = rotationMatrix.multiply(translateMatrix).multiply(scaleMatrix);
 
     this.modelMatrix = modelMatrix.clone();
@@ -119,7 +117,7 @@ export default class Object3D {
       return this.worldModelMatrix;
     }
 
-    let parent = this.parent;
+    const { parent } = this;
     let matrix = this.getModelMatrix();
 
     if (parent) {
@@ -138,7 +136,7 @@ export default class Object3D {
 
     let start = new Vector3(0, 0, 0);
     let end = new Vector3(0, 0, 1);
-    let worldModelMatrix = this.getWorldModalMatrix();
+    const worldModelMatrix = this.getWorldModalMatrix();
 
     start = start.applyMatrix4(worldModelMatrix);
     end = end.applyMatrix4(worldModelMatrix);
@@ -158,11 +156,10 @@ export default class Object3D {
 
   updateElemMatrix() {
     if (this.elemMatrixNeedUpdate) {
-      let modelMatrix = this.getModelMatrix().elements.map(num => num.toFixed(6));
+      const modelMatrix = this.getModelMatrix().elements.map((num) => num.toFixed(6));
       this.elem.style.transform = `translate(-50%, -50%) matrix3d(${modelMatrix.join(',')})`;
       this.elem.style['-webkit-transform'] = `translate(-50%, -50%) matrix3d(${modelMatrix.join(',')})`;
       this.elemMatrixNeedUpdate = false;
     }
   }
-
 }

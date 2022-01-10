@@ -1,8 +1,6 @@
-
 class Particle {
-
   constructor({ pos, v, radius }) {
-    this.pos = pos || new Vector2;
+    this.pos = pos || new Vector2();
     this.v = v;
     this.radius = radius;
   }
@@ -23,13 +21,12 @@ class Particle {
       this.pos.x * step - this.radius * step / 2,
       this.pos.y * step - this.radius * step / 2,
       this.radius * step,
-      this.radius * step
+      this.radius * step,
     );
   }
 }
 
 class Ani {
-
   constructor() {
     this.T = 0;
     this.step = 1;
@@ -54,7 +51,6 @@ class Ani {
     this.maxRadius = this.radius * 1.2;
     this.maxMinRadiusSub = this.maxRadius - this.minRadius;
 
-
     this.faceRadius = 6;
 
     // for eyes
@@ -65,12 +61,12 @@ class Ani {
     this.cvs = document.querySelector('canvas');
     this.ctx = this.cvs.getContext('2d');
     this.resize();
-    window.onresize = () => { this.resize(); }
+    window.onresize = () => { this.resize(); };
   }
 
   resize() {
-    let height = window.innerHeight;
-    let width = window.innerWidth;
+    const height = window.innerHeight;
+    const width = window.innerWidth;
     this.cvs.height = height;
     this.cvs.width = width;
     this.step = Math.max(height, width) / 100;
@@ -81,42 +77,40 @@ class Ani {
     let pre = now;
     let delta = 0;
 
-    let t = () => {
+    const t = () => {
       now = new Date().getTime();
       delta = now - pre;
       pre = now;
       this.tick(delta);
       // this.T = setTimeout(t, 100);
       this.T = requestAnimationFrame(t);
-    }
+    };
 
     requestAnimationFrame(t);
   }
 
-
-
   tick(delta) {
-    let second = delta / 1000;
+    const second = delta / 1000;
     if (this.particles.length < this.max) {
       for (let i = 0; i < 20; i++) {
-        let speed = this.minSpeed + Math.random() * this.maxMinSpeedSub;
-        let angle = Math.PI * Math.random() * 2;
-        let v = (new Vector2(Math.cos(angle), Math.sin(angle))).setLength(speed);
+        const speed = this.minSpeed + Math.random() * this.maxMinSpeedSub;
+        const angle = Math.PI * Math.random() * 2;
+        const v = (new Vector2(Math.cos(angle), Math.sin(angle))).setLength(speed);
 
-        let radius = this.minRadius + Math.random() * this.maxMinRadiusSub;
+        const radius = this.minRadius + Math.random() * this.maxMinRadiusSub;
 
-        let faceAngle = Math.PI * 2 * Math.random();
+        const faceAngle = Math.PI * 2 * Math.random();
         this.particles.push(
           new Particle({
             pos: new Vector2(
-              // Math.cos(faceAngle) * this.faceRadius * Math.random(), 
-              // Math.sin(faceAngle) * this.faceRadius * 
+              // Math.cos(faceAngle) * this.faceRadius * Math.random(),
+              // Math.sin(faceAngle) * this.faceRadius *
               (Math.random() - 0.5) * this.faceRadius,
               (Math.random() - 0.5) * this.faceRadius,
             ),
             v,
-            radius
-          })
+            radius,
+          }),
         );
       }
     }
@@ -133,13 +127,13 @@ class Ani {
 
     // this.ctx.fillRect(0,0, 100, 100);
 
-    let time = new Date().getTime();
+    const time = new Date().getTime();
     for (let i = this.particles.length - 1; i >= 0; i--) {
-      let particle = this.particles[i];
-      let liftEnd = particle.pos.clone();
+      const particle = this.particles[i];
+      const liftEnd = particle.pos.clone();
       liftEnd.x *= 0;
       liftEnd.y -= 10;
-      let liftV = liftEnd.sub(particle.pos);
+      const liftV = liftEnd.sub(particle.pos);
 
       liftV.setLength(this.lift);
 
@@ -169,13 +163,13 @@ class Ani {
     // this.ctx.fillStyle = '#fff';
     this.ctx.globalAlpha = 0.6;
     this.ctx.globalCompositeOperation = 'source-over';
-    let eyeXAdd = noise.perlin2(0.5, time / 500) * 0.4;
-    let eyeYAdd = noise.perlin2(0.5, 10 + time / 500) * 0.4;
+    const eyeXAdd = noise.perlin2(0.5, time / 500) * 0.4;
+    const eyeYAdd = noise.perlin2(0.5, 10 + time / 500) * 0.4;
 
-    let eyeX1 = (1 + eyeXAdd) * this.step;
-    let eyeX2 = (-1 + eyeXAdd) * this.step;
+    const eyeX1 = (1 + eyeXAdd) * this.step;
+    const eyeX2 = (-1 + eyeXAdd) * this.step;
     let eyeY = (0 + eyeYAdd) * this.step;
-    let eyeWidth = 0.6 * this.step;
+    const eyeWidth = 0.6 * this.step;
     let eyeScale = 1;
 
     if (time - this.eyeBlinkAt < this.eyeBlinkDur) {

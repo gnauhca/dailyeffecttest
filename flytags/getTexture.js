@@ -1,4 +1,3 @@
-
 const cache = {};
 
 function getTexture(type, num) {
@@ -20,13 +19,12 @@ function getTexture(type, num) {
   ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, 1024, 1024);
   // document.body.appendChild(cvs);
 
-
   // img.realWidth = 5 * img.width / img.height;
   // img.realHeight = 5;
 
   // img.width = 1024;
   // img.height = 1024;
-  
+
   const texture = new THREE.TextureLoader().load(img.src);
   texture.realWidth = 10 * img.width / img.height;
   texture.realHeight = 12;
@@ -34,9 +32,10 @@ function getTexture(type, num) {
   return texture;
 }
 
-
 function createImg(options) {
-  const { type, text, height: optionHeight, color } = options;
+  const {
+    type, text, height: optionHeight, color,
+  } = options;
   const scale = 3;
   const height = optionHeight * scale;
   const cvs = document.createElement('canvas');
@@ -45,16 +44,15 @@ function createImg(options) {
   const fontSize = Math.abs(height - padding[1]);
   const globalCompositeOperation = type === 'text' ? 'source-atop' : 'destination-in';
 
-
-  let heightD2 = parseInt(height / 2);
+  const heightD2 = parseInt(height / 2);
 
   cvs.width = 1000;
   cvs.height = 100;
   // ctx.font = fontSize | 0 + 'px ' + 'microsoft yahei';
-  ctx.font = fontSize + 'px PingFang SC';
-  let width = ctx.measureText(text).width;
+  ctx.font = `${fontSize}px PingFang SC`;
+  let { width } = ctx.measureText(text);
   width += padding[0] * 2;
-  let widthD2 = parseInt(width / 2);
+  const widthD2 = parseInt(width / 2);
 
   cvs.realWidth = width;
   cvs.realHeight = height;
@@ -70,8 +68,8 @@ function createImg(options) {
   ctx.globalCompositeOperation = globalCompositeOperation;
   ctx.fillStyle = '#fff';
 
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
   ctx.fillText(text, widthD2, heightD2);
 
   const cvs2 = document.createElement('canvas');

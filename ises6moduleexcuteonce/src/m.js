@@ -1,1 +1,0 @@
-export var counter = {count: 1};

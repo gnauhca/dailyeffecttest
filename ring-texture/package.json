@@ -10,7 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "@tweenjs/tween.js": "^18.3.2",
-    "clean-webpack-plugin": "^3.0.0",
     "three": "^0.109.0"
   }
 }

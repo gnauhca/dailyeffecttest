@@ -1,32 +1,30 @@
-require('./index.scss');
-
 /**
  * author: zzc,
  * https://github.com/gnauhca/dailyeffecttest/tree/master/ios-select
  */
 const easing = {
-  easeOutCubic: function(pos) {
-    return (Math.pow((pos-1), 3) +1);
+  easeOutCubic(pos) {
+    return ((pos - 1) ** 3 + 1);
   },
-  easeOutQuart: function(pos) {
-    return -(Math.pow((pos-1), 4) -1);
+  easeOutQuart(pos) {
+    return -((pos - 1) ** 4 - 1);
   },
 };
 
 class IosSelector {
   constructor(options) {
-    let defaults = {
-      el: '', // dom 
-      type: 'infinite', // infinite 无限滚动，normal 非无限 
+    const defaults = {
+      el: '', // dom
+      type: 'infinite', // infinite 无限滚动，normal 非无限
       count: 20, // 圆环规格，圆环上选项个数，必须设置 4 的倍数
       sensitivity: 0.8, // 灵敏度
       source: [], // 选项 {value: xx, text: xx}
       value: null,
-      onChange: null
+      onChange: null,
     };
 
-    this.options = Object.assign({}, defaults, options);
-    this.options.count =  this.options.count - this.options.count % 4;
+    this.options = { ...defaults, ...options };
+    this.options.count = this.options.count - this.options.count % 4;
     Object.assign(this, this.options);
 
     this.halfCount = this.options.count / 2;
@@ -35,7 +33,7 @@ class IosSelector {
     this.minV = Math.sqrt(1 / this.a); // 最小初速度
     this.selected = this.source[0];
 
-    this.exceedA = 10; // 超出减速 
+    this.exceedA = 10; // 超出减速
     this.moveT = 0; // 滚动 tick
     this.moving = false;
 
@@ -46,17 +44,17 @@ class IosSelector {
 
       highlight: null,
       highlightList: null,
-      highListItems: null // list
+      highListItems: null, // list
     };
     this.events = {
       touchstart: null,
       touchmove: null,
-      touchend: null
+      touchend: null,
     };
 
     this.itemHeight = this.elems.el.offsetHeight * 3 / this.options.count; // 每项高度
     this.itemAngle = 360 / this.options.count; // 每项之间旋转度数
-    this.radius = this.itemHeight / Math.tan(this.itemAngle * Math.PI / 180); // 圆环半径 
+    this.radius = this.itemHeight / Math.tan(this.itemAngle * Math.PI / 180); // 圆环半径
 
     this.scroll = 0; // 单位为一个 item 的高度（度数）
     this._init();
@@ -65,21 +63,19 @@ class IosSelector {
   _init() {
     this._create(this.options.source);
 
-    let touchData = {
+    const touchData = {
       startY: 0,
-      yArr: []
+      yArr: [],
     };
 
-    for (let eventName in this.events) {
-      this.events[eventName] = ((eventName) => {
-        return (e) => {
-          if (this.elems.el.contains(e.target) || e.target === this.elems.el || eventName === 'touchend') {
-            e.preventDefault();
-            if (this.source.length) {
-              this['_' + eventName](e, touchData);
-            }
+    for (const eventName in this.events) {
+      this.events[eventName] = ((eventName) => (e) => {
+        if (this.elems.el.contains(e.target) || e.target === this.elems.el || eventName === 'touchend') {
+          e.preventDefault();
+          if (this.source.length) {
+            this[`_${eventName}`](e, touchData);
           }
-        };
+        }
       })(eventName);
     }
 
@@ -96,7 +92,7 @@ class IosSelector {
   _touchstart(e, touchData) {
     this.elems.el.addEventListener('touchmove', this.events.touchmove);
     document.addEventListener('mousemove', this.events.touchmove);
-    let eventY = e.clientY || e.touches[0].clientY;
+    const eventY = e.clientY || e.touches[0].clientY;
     touchData.startY = eventY;
     touchData.yArr = [[eventY, new Date().getTime()]];
     touchData.touchScroll = this.scroll;
@@ -104,13 +100,13 @@ class IosSelector {
   }
 
   _touchmove(e, touchData) {
-    let eventY = e.clientY || e.touches[0].clientY;
+    const eventY = e.clientY || e.touches[0].clientY;
     touchData.yArr.push([eventY, new Date().getTime()]);
     if (touchData.length > 5) {
       touchData.unshift();
     }
 
-    let scrollAdd = (touchData.startY - eventY) / this.itemHeight;
+    const scrollAdd = (touchData.startY - eventY) / this.itemHeight;
     let moveToScroll = scrollAdd + this.scroll;
 
     // 非无限滚动时，超出范围使滚动变得困难
@@ -138,14 +134,14 @@ class IosSelector {
     if (touchData.yArr.length === 1) {
       v = 0;
     } else {
-      let startTime = touchData.yArr[touchData.yArr.length - 2][1];
-      let endTime = touchData.yArr[touchData.yArr.length - 1][1];
-      let startY = touchData.yArr[touchData.yArr.length - 2][0];
-      let endY = touchData.yArr[touchData.yArr.length - 1][0];
+      const startTime = touchData.yArr[touchData.yArr.length - 2][1];
+      const endTime = touchData.yArr[touchData.yArr.length - 1][1];
+      const startY = touchData.yArr[touchData.yArr.length - 2][0];
+      const endY = touchData.yArr[touchData.yArr.length - 1][0];
 
       // 计算速度
       v = ((startY - endY) / this.itemHeight) * 1000 / (endTime - startTime);
-      let sign = v > 0 ? 1 : -1;
+      const sign = v > 0 ? 1 : -1;
 
       v = Math.abs(v) > 30 ? 30 * sign : v;
     }
@@ -157,12 +153,11 @@ class IosSelector {
   }
 
   _create(source) {
-
     if (!source.length) {
       return;
     }
 
-    let template = `
+    const template = `
       <div class="select-wrap">
         <ul class="select-options" style="transform: translate3d(0, 0, ${-this.radius}px) rotateX(0deg);">
           {{circleListHTML}}
@@ -186,7 +181,7 @@ class IosSelector {
       source = concatSource;
     }
     this.source = source;
-    let sourceLength = source.length;
+    const sourceLength = source.length;
 
     // 圆环 HTML
     let circleListHTML = '';
@@ -199,7 +194,7 @@ class IosSelector {
                       transform: rotateX(${-this.itemAngle * i}deg) translate3d(0, 0, ${this.radius}px);
                     "
                     data-index="${i}"
-                    >${source[i].text}</li>`
+                    >${source[i].text}</li>`;
     }
 
     // 中间高亮 HTML
@@ -207,12 +202,10 @@ class IosSelector {
     for (let i = 0; i < source.length; i++) {
       highListHTML += `<li class="highlight-item" style="height: ${this.itemHeight}px;">
                         ${source[i].text}
-                      </li>`
+                      </li>`;
     }
 
-
     if (this.options.type === 'infinite') {
-
       // 圆环头尾
       for (let i = 0; i < this.quarterCount; i++) {
         // 头
@@ -224,7 +217,7 @@ class IosSelector {
                         transform: rotateX(${this.itemAngle * (i + 1)}deg) translate3d(0, 0, ${this.radius}px);
                       "
                       data-index="${-i - 1}"
-                      >${source[sourceLength - i - 1].text}</li>` + circleListHTML;
+                      >${source[sourceLength - i - 1].text}</li>${circleListHTML}`;
         // 尾
         circleListHTML += `<li class="select-option"
                       style="
@@ -240,49 +233,47 @@ class IosSelector {
       // 高亮头尾
       highListHTML = `<li class="highlight-item" style="height: ${this.itemHeight}px;">
                           ${source[sourceLength - 1].text}
-                      </li>` + highListHTML;
-      highListHTML += `<li class="highlight-item" style="height: ${this.itemHeight}px;">${source[0].text}</li>`
+                      </li>${highListHTML}`;
+      highListHTML += `<li class="highlight-item" style="height: ${this.itemHeight}px;">${source[0].text}</li>`;
     }
 
     this.elems.el.innerHTML = template
-                                .replace('{{circleListHTML}}', circleListHTML)
-                                .replace('{{highListHTML}}', highListHTML);
+      .replace('{{circleListHTML}}', circleListHTML)
+      .replace('{{highListHTML}}', highListHTML);
     this.elems.circleList = this.elems.el.querySelector('.select-options');
     this.elems.circleItems = this.elems.el.querySelectorAll('.select-option');
-
 
     this.elems.highlight = this.elems.el.querySelector('.highlight');
     this.elems.highlightList = this.elems.el.querySelector('.highlight-list');
     this.elems.highlightitems = this.elems.el.querySelectorAll('.highlight-item');
 
     if (this.type === 'infinite') {
-      this.elems.highlightList.style.top = -this.itemHeight + 'px';
+      this.elems.highlightList.style.top = `${-this.itemHeight}px`;
     }
 
-    this.elems.highlight.style.height = this.itemHeight + 'px';
-    this.elems.highlight.style.lineHeight = this.itemHeight + 'px';
-
+    this.elems.highlight.style.height = `${this.itemHeight}px`;
+    this.elems.highlight.style.lineHeight = `${this.itemHeight}px`;
   }
 
   /**
-   * 对 scroll 取模，eg source.length = 5 scroll = 6.1 
+   * 对 scroll 取模，eg source.length = 5 scroll = 6.1
    * 取模之后 normalizedScroll = 1.1
-   * @param {init} scroll 
+   * @param {init} scroll
    * @return 取模之后的 normalizedScroll
    */
   _normalizeScroll(scroll) {
     let normalizedScroll = scroll;
 
-    while(normalizedScroll < 0) {
+    while (normalizedScroll < 0) {
       normalizedScroll += this.source.length;
     }
-    normalizedScroll = normalizedScroll % this.source.length;
+    normalizedScroll %= this.source.length;
     return normalizedScroll;
   }
 
   /**
    * 定位到 scroll，无动画
-   * @param {init} scroll 
+   * @param {init} scroll
    * @return 返回指定 normalize 之后的 scroll
    */
   _moveTo(scroll) {
@@ -292,7 +283,7 @@ class IosSelector {
     this.elems.circleList.style.transform = `translate3d(0, 0, ${-this.radius}px) rotateX(${this.itemAngle * scroll}deg)`;
     this.elems.highlightList.style.transform = `translate3d(0, ${-(scroll) * this.itemHeight}px, 0)`;
 
-    [...this.elems.circleItems].forEach(itemElem => {
+    [...this.elems.circleItems].forEach((itemElem) => {
       if (Math.abs(itemElem.dataset.index - scroll) > this.quarterCount) {
         itemElem.style.visibility = 'hidden';
       } else {
@@ -311,7 +302,6 @@ class IosSelector {
    * 以根据加速度确保滚动到整数 scroll (保证能通过 scroll 定位到一个选中值)
    */
   async _animateMoveByInitV(initV) {
-
     // console.log(initV);
 
     let initScroll;
@@ -323,7 +313,6 @@ class IosSelector {
     let t;
 
     if (this.type === 'normal') {
-
       if (this.scroll < 0 || this.scroll > this.source.length - 1) {
         a = this.exceedA;
         initScroll = this.scroll;
@@ -347,7 +336,6 @@ class IosSelector {
         t = Math.sqrt(Math.abs(totalScrollLen / a));
         await this._animateToScroll(this.scroll, finalScroll, t, 'easeOutQuart');
       }
-
     } else {
       initScroll = this.scroll;
 
@@ -359,7 +347,7 @@ class IosSelector {
     }
 
     // await this._animateToScroll(this.scroll, finalScroll, initV, 0);
-    
+
     this._selectByScroll(this.scroll);
   }
 
@@ -369,14 +357,14 @@ class IosSelector {
       return;
     }
 
-    let start = new Date().getTime() / 1000;
+    const start = new Date().getTime() / 1000;
     let pass = 0;
-    let totalScrollLen = finalScroll - initScroll;
-    
+    const totalScrollLen = finalScroll - initScroll;
+
     // console.log(initScroll, finalScroll, initV, finalV, a);
     return new Promise((resolve, reject) => {
       this.moving = true;
-      let tick = () => {
+      const tick = () => {
         pass = new Date().getTime() / 1000 - start;
 
         if (pass < t) {
@@ -406,10 +394,10 @@ class IosSelector {
     this._moveTo(scroll);
     this.scroll = scroll;
     this.selected = this.source[scroll];
-		if (this.value !== this.selected.value) {
+    if (this.value !== this.selected.value) {
     	this.value = this.selected.value;
     	this.onChange && this.onChange(this.selected);
-		}
+    }
   }
 
   updateSource(source) {
@@ -425,9 +413,9 @@ class IosSelector {
       if (this.source[i].value === value) {
         window.cancelAnimationFrame(this.moveT);
         // this.scroll = this._moveTo(i);
-        let initScroll = this._normalizeScroll(this.scroll);
-        let finalScroll = i;
-        let t = Math.sqrt(Math.abs((finalScroll -  initScroll) / this.a));
+        const initScroll = this._normalizeScroll(this.scroll);
+        const finalScroll = i;
+        const t = Math.sqrt(Math.abs((finalScroll - initScroll) / this.a));
         this._animateToScroll(initScroll, finalScroll, t);
         setTimeout(() => this._selectByScroll(i));
         return;
@@ -439,19 +427,16 @@ class IosSelector {
   destroy() {
     this._stop();
     // document 事件解绑
-    for (let eventName in this.events) {
+    for (const eventName in this.events) {
       this.elems.el.removeEventListener('eventName', this.events[eventName]);
     }
-    document.removeEventListener('mousedown', this.events['touchstart']);
-    document.removeEventListener('mousemove', this.events['touchmove']);
-    document.removeEventListener('mouseup', this.events['touchend']);
+    document.removeEventListener('mousedown', this.events.touchstart);
+    document.removeEventListener('mousemove', this.events.touchmove);
+    document.removeEventListener('mouseup', this.events.touchend);
     // 元素移除
     this.elems.el.innerHTML = '';
     this.elems = null;
   }
 }
 
-
 export default IosSelector;
-
-

@@ -1,21 +1,21 @@
-var globalData;
-var initData = {
-    player1: {
-        avatar: null,
-    },
-    player2: {
-        avatar: null,
-    }
+let globalData;
+const initData = {
+  player1: {
+    avatar: null,
+  },
+  player2: {
+    avatar: null,
+  },
 };
 
 if (window.localStorage.gobang) {
-    globalData = window.localStorage.gobang;
+  globalData = window.localStorage.gobang;
 } else {
-    clearGlobalData();
+  clearGlobalData();
 }
 
 function clearGlobalData() {
-    globalData = JSON.parse(JSON.stringify(initData));
+  globalData = JSON.parse(JSON.stringify(initData));
 }
 
-export {globalData, clearGlobalData};
+export { globalData, clearGlobalData };

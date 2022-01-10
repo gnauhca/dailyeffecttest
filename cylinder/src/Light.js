@@ -6,7 +6,7 @@ export default class Light {
   }
 
   setNeedUpdate() {
-    this.updated = true;;
+    this.updated = true;
   }
 
   calBrightness(position, normal, backSide) {
@@ -14,5 +14,4 @@ export default class Light {
 
     return 0;
   }
-
 }

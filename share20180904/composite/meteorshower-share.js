@@ -1,6 +1,3 @@
-
-
-
 /* frames start */
 // ...
 // draw stars
@@ -17,11 +14,6 @@ ctx.fillRect(0, 0, cvs.width, cvs.height);
 // ...
 /* frames end */
 
-
-
-
-
-
 /* frames start */
 // ...
 // draw stars
@@ -33,14 +25,11 @@ stars.forEach((star) => {
 });
 
 // clear canvas
-ctx.globalCompositeOperation = "destination-in";
-ctx.fillStyle = 'rgba(255, 0, 0, 0.8)'; 
+ctx.globalCompositeOperation = 'destination-in';
+ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
 ctx.fillRect(0, 0, cvs.width, cvs.height);
 // ...
 /* frames end */
-
-
-
 
 /* fire */
 
@@ -48,18 +37,16 @@ ctx.fillRect(0, 0, cvs.width, cvs.height);
 ctx.globalCompositeOperation = 'lighter';
 
 /* frames start */
-particles.forEach(particle => {
+particles.forEach((particle) => {
   particle.pos.add(particle.v.clone().multiplyScalar(delta));
   ctx.fillRect(
     particle.pos.x * step - particle.radius * step / 2,
     particle.pos.y * step - particle.radius * step / 2,
     particle.radius * step,
-    particle.radius * step
+    particle.radius * step,
   );
 });
 /* frames end */
-
-
 
 /* cloud */
 const gradient = ctx.createRadialGradient(240, 280, 0, 240, 280, 400);

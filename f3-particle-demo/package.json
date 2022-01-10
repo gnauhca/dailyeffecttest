@@ -1,0 +1,23 @@
+{
+  "name": "f3.js",
+  "version": "1.0.0",
+  "description": "f3.js",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "dev": "webpack --watch",
+    "demo": "webpack --config webpack.config.demo.js --watch"
+  },
+  "keywords": [
+    "f3.js"
+  ],
+  "author": "zzc",
+  "license": "MIT",
+  "devDependencies": {
+    "tween.js": "^16.3.4"
+  },
+  "dependencies": {
+    "stats.js": "^0.17.0"
+  }
+}

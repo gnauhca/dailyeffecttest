@@ -5,126 +5,95 @@ import { _Math } from './Math';
  * @author bhouston / http://clara.io
  */
 
-function Line3( start, end ) {
-
-	this.start = ( start !== undefined ) ? start : new Vector3();
-	this.end = ( end !== undefined ) ? end : new Vector3();
-
+function Line3(start, end) {
+  this.start = (start !== undefined) ? start : new Vector3();
+  this.end = (end !== undefined) ? end : new Vector3();
 }
 
-Object.assign( Line3.prototype, {
+Object.assign(Line3.prototype, {
 
-	set: function ( start, end ) {
+  set(start, end) {
+    this.start.copy(start);
+    this.end.copy(end);
 
-		this.start.copy( start );
-		this.end.copy( end );
+    return this;
+  },
 
-		return this;
+  clone() {
+    return new this.constructor().copy(this);
+  },
 
-	},
+  copy(line) {
+    this.start.copy(line.start);
+    this.end.copy(line.end);
 
-	clone: function () {
+    return this;
+  },
 
-		return new this.constructor().copy( this );
+  getCenter(optionalTarget) {
+    const result = optionalTarget || new Vector3();
+    return result.addVectors(this.start, this.end).multiplyScalar(0.5);
+  },
 
-	},
+  delta(optionalTarget) {
+    const result = optionalTarget || new Vector3();
+    return result.subVectors(this.end, this.start);
+  },
 
-	copy: function ( line ) {
+  distanceSq() {
+    return this.start.distanceToSquared(this.end);
+  },
 
-		this.start.copy( line.start );
-		this.end.copy( line.end );
+  distance() {
+    return this.start.distanceTo(this.end);
+  },
 
-		return this;
+  at(t, optionalTarget) {
+    const result = optionalTarget || new Vector3();
 
-	},
+    return this.delta(result).multiplyScalar(t).add(this.start);
+  },
 
-	getCenter: function ( optionalTarget ) {
+  closestPointToPointParameter: (function () {
+    const startP = new Vector3();
+    const startEnd = new Vector3();
 
-		var result = optionalTarget || new Vector3();
-		return result.addVectors( this.start, this.end ).multiplyScalar( 0.5 );
+    return function closestPointToPointParameter(point, clampToLine) {
+      startP.subVectors(point, this.start);
+      startEnd.subVectors(this.end, this.start);
 
-	},
+      const startEnd2 = startEnd.dot(startEnd);
+      const startEnd_startP = startEnd.dot(startP);
 
-	delta: function ( optionalTarget ) {
+      let t = startEnd_startP / startEnd2;
 
-		var result = optionalTarget || new Vector3();
-		return result.subVectors( this.end, this.start );
+      if (clampToLine) {
+        t = _Math.clamp(t, 0, 1);
+      }
 
-	},
+      return t;
+    };
+  }()),
 
-	distanceSq: function () {
+  closestPointToPoint(point, clampToLine, optionalTarget) {
+    const t = this.closestPointToPointParameter(point, clampToLine);
 
-		return this.start.distanceToSquared( this.end );
+    const result = optionalTarget || new Vector3();
 
-	},
+    return this.delta(result).multiplyScalar(t).add(this.start);
+  },
 
-	distance: function () {
+  applyMatrix4(matrix) {
+    this.start.applyMatrix4(matrix);
+    this.end.applyMatrix4(matrix);
 
-		return this.start.distanceTo( this.end );
+    return this;
+  },
 
-	},
+  equals(line) {
+    return line.start.equals(this.start) && line.end.equals(this.end);
+  },
 
-	at: function ( t, optionalTarget ) {
-
-		var result = optionalTarget || new Vector3();
-
-		return this.delta( result ).multiplyScalar( t ).add( this.start );
-
-	},
-
-	closestPointToPointParameter: function () {
-
-		var startP = new Vector3();
-		var startEnd = new Vector3();
-
-		return function closestPointToPointParameter( point, clampToLine ) {
-
-			startP.subVectors( point, this.start );
-			startEnd.subVectors( this.end, this.start );
-
-			var startEnd2 = startEnd.dot( startEnd );
-			var startEnd_startP = startEnd.dot( startP );
-
-			var t = startEnd_startP / startEnd2;
-
-			if ( clampToLine ) {
-
-				t = _Math.clamp( t, 0, 1 );
-
-			}
-
-			return t;
-
-		};
-
-	}(),
-
-	closestPointToPoint: function ( point, clampToLine, optionalTarget ) {
-
-		var t = this.closestPointToPointParameter( point, clampToLine );
-
-		var result = optionalTarget || new Vector3();
-
-		return this.delta( result ).multiplyScalar( t ).add( this.start );
-
-	},
-
-	applyMatrix4: function ( matrix ) {
-
-		this.start.applyMatrix4( matrix );
-		this.end.applyMatrix4( matrix );
-
-		return this;
-
-	},
-
-	equals: function ( line ) {
-
-		return line.start.equals( this.start ) && line.end.equals( this.end );
-
-	}
-
-} );
-
+});
 
 export { Line3 };

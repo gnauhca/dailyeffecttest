@@ -1,15 +1,15 @@
 import Group from './Group.js';
-import Light from './Light.js'
+import Light from './Light.js';
 
 export default class Scene {
   constructor(container) {
-    let viewWrapperStyles = {
-      'position': 'absolute',
-      'top': 0,
-      'left': 0,
-      'width': '100%',
-      'height': '100%',
-      'transform-style': 'preserve-3d'
+    const viewWrapperStyles = {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      'transform-style': 'preserve-3d',
     };
 
     this.container = container;
@@ -19,9 +19,9 @@ export default class Scene {
     this.viewWrapper = document.createElement('div');
     Object.assign(viewWrapperStyles, {
       width: this.width,
-      height: this.height
+      height: this.height,
     });
-    for (let item in viewWrapperStyles) {
+    for (const item in viewWrapperStyles) {
       let value = viewWrapperStyles[item];
 
       if (typeof value === 'number') {
@@ -39,13 +39,13 @@ export default class Scene {
   }
 
   resize() {
-    let viewWrapperStyles = {
-      'position': 'absolute',
-      'top': 0,
-      'left': 0,
-      'width': '100%',
-      'height': '100%',
-      'transform-style': 'preserve-3d'
+    const viewWrapperStyles = {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      'transform-style': 'preserve-3d',
     };
 
     this.width = this.container.offsetWidth;
@@ -53,9 +53,9 @@ export default class Scene {
 
     Object.assign(viewWrapperStyles, {
       width: this.width,
-      height: this.height
+      height: this.height,
     });
-    for (let item in viewWrapperStyles) {
+    for (const item in viewWrapperStyles) {
       let value = viewWrapperStyles[item];
 
       if (typeof value === 'number') {
@@ -68,7 +68,6 @@ export default class Scene {
   }
 
   add(obj) {
-
     // let add = (o) => {
     //   if (o instanceof Group) {
     //     o.children.forEach(oc => add(oc));
@@ -78,7 +77,7 @@ export default class Scene {
     //   }
     // }
     // add(obj);
-    
+
     this.objs.push(obj);
     if (obj.elem) {
       this.viewWrapper.appendChild(obj.elem);
@@ -92,5 +91,4 @@ export default class Scene {
   setAmbientLightIntensity(ambientLightIntensity) {
     this.ambientLightIntensity = ambientLightIntensity;
   }
-
 }

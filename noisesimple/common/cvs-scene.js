@@ -21,13 +21,13 @@ class CvsScene {
     this.ctx = this.cvs.getContext('2d');
 
     this.renderer = {
-      cvs: this.cvs, ctx: this.ctx
-    }
+      cvs: this.cvs, ctx: this.ctx,
+    };
     document.body.appendChild(this.cvs);
   }
 
   update() {
-    this.objs.forEach(obj => {
+    this.objs.forEach((obj) => {
       obj.update(this);
       this.renderer.ctx.save();
       obj.draw(this.renderer);
@@ -49,7 +49,7 @@ class CvsScene {
       TWEEN.update();
       this.update && this.update();
       this.draw && this.draw();
-    }
+    };
 
     this.tickT = window.requestAnimationFrame(_tick);
   }

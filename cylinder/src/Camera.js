@@ -3,7 +3,6 @@ import { Matrix4 } from './math/Matrix4.js';
 
 export default class Camera {
   constructor(perspective) {
-
     this.position = new Vector3(0, 0, 0);
     this.lookAtPoint = new Vector3(0, 0, -1);
     this.up = new Vector3(0, 1, 0);
@@ -63,7 +62,7 @@ export default class Camera {
     this.setNeedUpdate();
   }
 
-  lookAt({x, y, z}) {
+  lookAt({ x, y, z }) {
     // alias for setLookAt
     this.setLookAt(x, y, z);
   }
@@ -104,21 +103,20 @@ export default class Camera {
   }
 
   getViewMatrix() {
-
     if (!this.viewMatrixNeedUpdate) {
       return this.viewMatrix;
-    } 
+    }
 
-    let position = this.position.clone();
-    let up = this.up.clone();
-    let lookAtPoint = this.lookAtPoint.clone();
+    const position = this.position.clone();
+    const up = this.up.clone();
+    const lookAtPoint = this.lookAtPoint.clone();
 
     // position.y *= -1;
     // up.y *= -1;
     // lookAtPoint.y *= -1;
 
-    let translateMatrix = new Matrix4().makeTranslation(position.x, position.y, position.z);
-    let viewMatrix = new Matrix4().lookAt(position, lookAtPoint, up);
+    const translateMatrix = new Matrix4().makeTranslation(position.x, position.y, position.z);
+    const viewMatrix = new Matrix4().lookAt(position, lookAtPoint, up);
     this.viewMatrixNeedUpdate = false;
 
     this.viewMatrix = translateMatrix.multiply(viewMatrix);
@@ -126,6 +124,4 @@ export default class Camera {
     this.viewMatrix.getInverse(this.viewMatrix);
     return this.viewMatrix.clone();
   }
-  
-
 }

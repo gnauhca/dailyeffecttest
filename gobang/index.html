@@ -1,115 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>gobang</title>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>gobang</title>
+    <link rel="stylesheet" href="./src/css/style.scss" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="page" id="avatar">
+        <h1>五子棋大作战</h1>
 
-<div class="container">
+        <div class="avatar-select">
+          <div class="avatar-player1">
+            <p>玩家 1</p>
+            <ul class="avatars" id="player1-avatar">
+              <li class="pic avatar avatar-1-1 selected" data-avatar="avatar-1-1"></li>
+              <li class="pic avatar avatar-1-2" data-avatar="avatar-1-2"></li>
+            </ul>
+          </div>
 
-	<div class="page" id="avatar">
-		<h1>五子棋大作战</h1>
+          <div class="avatar-player1">
+            <p>玩家 2</p>
+            <ul class="avatars" id="player2-avatar">
+              <li class="pic avatar avatar-2-1 selected" data-avatar="avatar-2-1"></li>
+              <li class="pic avatar avatar-2-2" data-avatar="avatar-2-2"></li>
+            </ul>
+          </div>
+        </div>
 
-		<div class="avatar-select">
-			<div class="avatar-player1">
-				<p>玩家 1</p>
-				<ul class="avatars" id="player1-avatar">
-					<li class="pic avatar avatar-1-1 selected" data-avatar="avatar-1-1"></li>
-					<li class="pic avatar avatar-1-2" data-avatar="avatar-1-2"></li>
-				</ul>
-			</div>
+        <div class="btn pointer select-ok" id="avatar-select-ok">选好了</div>
+      </div>
 
-			<div class="avatar-player1">
-				<p>玩家 2</p>
-				<ul class="avatars" id="player2-avatar">
-					<li class="pic avatar avatar-2-1 selected" data-avatar="avatar-2-1"></li>
-					<li class="pic avatar avatar-2-2" data-avatar="avatar-2-2"></li>
-				</ul>
-			</div>
-		</div>
+      <!--gate-->
+      <div class="page" id="gate">
+        <div class="gate-select">
+          <h2>时长</h2>
+          <ul class="options" id="gate-time">
+            <li class="btn option pointer selected" data-time="5">05 分钟</li>
+            <li class="btn option pointer" data-time="10">10 分钟</li>
+            <li class="btn option pointer" data-time="30">30 分钟</li>
+          </ul>
 
-		
+          <h2>开始</h2>
+          <ul class="options" id="gate-mode">
+            <li class="btn option pointer" data-mode="duet">双人</li>
+            <li class="btn option pointer" data-mode="robot">人机</li>
+            <!--<li class="option">联机</li>-->
+          </ul>
+        </div>
 
-		<div class="btn pointer select-ok" id="avatar-select-ok">选好了</div>
-	</div>
+        <div class="back pic pointer"></div>
+      </div>
 
+      <!--play-->
+      <div class="page" id="play">
+        <div class="time">
+          <div class="time-left"></div>
+          <div class="time-total"></div>
+          <div class="time-right"></div>
+        </div>
 
-	<!--gate-->
-	<div class="page" id="gate">
-		<div class="gate-select">
-			<h2>时长</h2>
-			<ul class="options" id="gate-time">
-				<li class="btn option pointer selected" data-time="5">05 分钟</li>
-				<li class="btn option pointer" data-time="10">10 分钟</li>
-				<li class="btn option pointer" data-time="30">30 分钟</li>
-			</ul>
+        <script id="play-player-template" type="play-template">
+          <div class="player">
+          	<div class="pic piece"></div>
+          	<div class="pic avatar"></div>
+          	<div class="player-handle">
+          		<div class="player-btn undo-btn">悔棋</div>
+          		<div class="player-btn askdraw-btn">求和</div>
+          		<div class="player-btn givein-btn">认怂</div>
+          	</div>
+          </div>
+        </script>
 
-			<h2>开始</h2>
-			<ul class="options" id="gate-mode">
-				<li class="btn option pointer" data-mode="duet">双人</li>
-				<li class="btn option pointer" data-mode="robot">人机</li>
-				<!--<li class="option">联机</li>-->
-			</ul>
-		</div>
+        <div class="chessboard"></div>
 
-		<div class=" back pic pointer "></div>
+        <div class="confirm">
+          <div class="confirm-box">
+            <h2 class="confirm-msg"></h2>
+            <div class="confirm-handle">
+              <div class="btn confirm-btn confirm-no"></div>
+              <div class="btn confirm-btn confirm-yes"></div>
+            </div>
+          </div>
+        </div>
 
-	</div>
-
-
-	<!--play-->
-	<div class="page" id="play">
-		<div class="time">
-			<div class="time-left"></div>
-			<div class="time-total"></div>
-			<div class="time-right"></div>
-		</div>
-
-		<script id="play-player-template" type="play-template">
-			<div class="player">
-				<div class="pic piece"></div>
-				<div class="pic avatar"></div>
-				<div class="player-handle">
-					<div class="player-btn undo-btn">悔棋</div>
-					<div class="player-btn askdraw-btn">求和</div>
-					<div class="player-btn givein-btn">认怂</div>
-				</div>
-			</div>
-		</script>
-
-
-
-		<div class="chessboard"></div>
-
-		<div class="confirm">
-			<div class="confirm-box">
-				<h2 class="confirm-msg"></h2>
-				<div class="confirm-handle">
-					<div class="btn confirm-btn confirm-no"></div>
-					<div class="btn confirm-btn confirm-yes"></div>
-				</div>
-
-			</div>
-		</div>
-
-		<div class="gameover">
-			<div class="gameover-box">
-				<div class="gameover-msg"></div>
-				<div class="gameover-handle">
-					<div class="btn gameover-btn restart">重来</div>
-					<div class="btn gameover-btn back">主页</div>
-				</div>
-			</div>
-		</div>
-
-	</div>	
-	
-</div>
-
-
-
-
-<script src="dist/main.js"></script>
-</body>
+        <div class="gameover">
+          <div class="gameover-box">
+            <div class="gameover-msg"></div>
+            <div class="gameover-handle">
+              <div class="btn gameover-btn restart">重来</div>
+              <div class="btn gameover-btn back">主页</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="./src/js/main.js" type="module"></script>
+  </body>
 </html>

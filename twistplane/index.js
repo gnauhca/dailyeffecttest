@@ -132,17 +132,16 @@ const fragmentShader = `
   }
 `;
 
-
 class Ani {
   constructor() {
     const width = Math.min(window.innerWidth * 1, 1600);
     // const width = window.innerWidth;
-    const height = width //* 9 / 16;
+    const height = width; //* 9 / 16;
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
     this.camera.position.set(100, 0, 100);
-    this.camera.lookAt(new THREE.Vector3);
+    this.camera.lookAt(new THREE.Vector3());
     this.scene.add(this.camera);
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -164,17 +163,19 @@ class Ani {
   setup() {
     const geometry = new THREE.PlaneGeometry(100, 100, 100, 100);
     const texture = new THREE.TextureLoader().load('./images/w.png');
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide, wireframe: true, map: texture });
+    const material = new THREE.MeshBasicMaterial({
+      color: 0x00ff00, side: THREE.DoubleSide, wireframe: true, map: texture,
+    });
 
     const shaderMaterial = new THREE.ShaderMaterial({
-      vertexShader: vertexShader,
-      fragmentShader: fragmentShader,
+      vertexShader,
+      fragmentShader,
       uniforms: {
         texture: { value: texture },
 
         time: {
           type: 'float',
-          value: 0.0
+          value: 0.0,
         },
       },
       transparent: true,
@@ -221,4 +222,4 @@ window.onload = function () {
   ani = new Ani();
 
   ani.start();
-}
+};

@@ -1,6 +1,7 @@
 export default class View {
-    constructor() {
-        this.pages = {};
-    }
-    init() { }
+  constructor() {
+    this.pages = {};
+  }
+
+  init() { }
 }

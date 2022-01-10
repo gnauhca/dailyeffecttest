@@ -7,38 +7,38 @@ import { Quaternion } from '../Quaternion';
  * @author tschw
  */
 
-function QuaternionLinearInterpolant( parameterPositions, sampleValues, sampleSize, resultBuffer ) {
-
-	Interpolant.call( this, parameterPositions, sampleValues, sampleSize, resultBuffer );
-
+function QuaternionLinearInterpolant(parameterPositions, sampleValues, sampleSize, resultBuffer) {
+  Interpolant.call(this, parameterPositions, sampleValues, sampleSize, resultBuffer);
 }
 
-QuaternionLinearInterpolant.prototype = Object.assign( Object.create( Interpolant.prototype ), {
+QuaternionLinearInterpolant.prototype = Object.assign(Object.create(Interpolant.prototype), {
 
-	constructor: QuaternionLinearInterpolant,
+  constructor: QuaternionLinearInterpolant,
 
-	interpolate_: function( i1, t0, t, t1 ) {
+  interpolate_(i1, t0, t, t1) {
+    const result = this.resultBuffer;
+    const values = this.sampleValues;
+    const stride = this.valueSize;
 
-		var result = this.resultBuffer,
-			values = this.sampleValues,
-			stride = this.valueSize,
+    let offset = i1 * stride;
 
-			offset = i1 * stride,
+    const alpha = (t - t0) / (t1 - t0);
 
-			alpha = ( t - t0 ) / ( t1 - t0 );
+    for (let end = offset + stride; offset !== end; offset += 4) {
+      Quaternion.slerpFlat(
+        result,
+        0,
+        values,
+        offset - stride,
+        values,
+        offset,
+        alpha,
+      );
+    }
 
-		for ( var end = offset + stride; offset !== end; offset += 4 ) {
+    return result;
+  },
 
-			Quaternion.slerpFlat( result, 0,
-					values, offset - stride, values, offset, alpha );
-
-		}
-
-		return result;
-
-	}
-
-} );
-
+});
 
 export { QuaternionLinearInterpolant };

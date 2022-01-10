@@ -10,13 +10,13 @@ export default class Face extends Object3D {
     this.brightness = 1; // 元素亮度
     this.backside = false;
     this.lightHandler; // 自定义光照处理，接受 brightness 作为参数
-    
+
     const faceStyles = {
       position: 'absolute',
       top: '50%',
       left: '50%',
       overflow: 'hidden',
-      'box-sizing': 'border-box'
+      'box-sizing': 'border-box',
     };
 
     this.elem = elem || document.createElement('div');
@@ -24,7 +24,6 @@ export default class Face extends Object3D {
       this.elem.classList.add(`c3-face-${this.options.name}`);
     }
     util.setStyles(this.elem, faceStyles);
-    
   }
 
   setNeedUpdate() {
@@ -35,7 +34,7 @@ export default class Face extends Object3D {
 
   setBrightness(brightness) {
     if (this.brightness !== brightness) {
-      this.brightness = brightness
+      this.brightness = brightness;
       this.elemLightNeedUpdate = true;
     }
   }
@@ -47,9 +46,8 @@ export default class Face extends Object3D {
       } else {
         this.elem.style.filter = `brightness(${this.brightness})`;
       }
-      
+
       this.elemLightNeedUpdate = false;
     }
   }
-
 }

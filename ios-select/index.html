@@ -3,6 +3,7 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta charset="UTF-8">
+	<link rel="stylesheet" href="./index.scss">
 	<title>ios-select</title>
 </head>
 <body>
@@ -18,8 +19,8 @@
 </div>
 
 
-<script src="dist/index.js"></script>
-<script>
+<script type="module">
+	import IosSelector from './index.js';
 // let iosSelector = new IosSelector({
 //   el: '#iosSelector',
 // 	// type: 'infinite',
@@ -38,43 +39,42 @@
 //   onChange: (selected) => { console.log(selected);}
 // });
 
-
 function getYears() {
-	let currentYear = new Date().getFullYear();
-	let years = [];
+  const currentYear = new Date().getFullYear();
+  const years = [];
 
-	for (let i = currentYear - 20; i < currentYear + 20; i++) {
-		years.push({
-			value: i,
-			text: i + '年'
-		});
-	}
-	return years;
+  for (let i = currentYear - 20; i < currentYear + 20; i++) {
+	    years.push({
+	      value: i,
+	      text: `${i}年`,
+	    });
+  }
+  return years;
 }
 
 function getMonths(year) {
-	let months = [];
-	for (let i = 1; i <= 12; i++) {
-		months.push({
-			value: i,
-			text: i + '月'
-		});
-	}
-	return months;
+  const months = [];
+  for (let i = 1; i <= 12; i++) {
+	    months.push({
+	      value: i,
+	      text: `${i}月`,
+	    });
+  }
+  return months;
 }
 
 function getDays(year, month) {
-	let dayCount = new Date(year,month,0).getDate(); 
-	let days = [];
+  const dayCount = new Date(year, month, 0).getDate();
+  const days = [];
 
-	for (let i = 1; i <= dayCount; i++) {
-		days.push({
-			value: i,
-			text: i + '日'
-		});
-	}
+  for (let i = 1; i <= dayCount; i++) {
+	    days.push({
+	      value: i,
+	      text: `${i}日`,
+	    });
+  }
 
-	return days; 
+  return days;
 }
 
 let currentYear = new Date().getFullYear();
@@ -85,55 +85,50 @@ let yearSelector;
 let monthSelector;
 let daySelector;
 
-yearSource = getYears();
-monthSource = getMonths();
-daySource = getDays(currentYear, currentMonth);
+let yearSource = getYears();
+let monthSource = getMonths();
+let daySource = getDays(currentYear, currentMonth);
 
 yearSelector = new IosSelector({
-	el: '.year',
-	type: 'infinite',
-	source: yearSource,
-	count: 20,
-	onChange: (selected) => {
-		currentYear = selected.value;
-		daySource = getDays(currentYear, currentMonth);
-		daySelector.updateSource(daySource);
-		console.log(yearSelector.value, monthSelector.value, daySelector.value);
-	}
+  el: '.year',
+  type: 'infinite',
+  source: yearSource,
+  count: 20,
+  onChange: (selected) => {
+	    currentYear = selected.value;
+	    daySource = getDays(currentYear, currentMonth);
+	    daySelector.updateSource(daySource);
+	    console.log(yearSelector.value, monthSelector.value, daySelector.value);
+  },
 });
 
 monthSelector = new IosSelector({
-	el: '.month',
-	type: 'infinite',
-	source: monthSource,
-	count: 20,
-	onChange: (selected) => {
-		currentMonth = selected.value;
+  el: '.month',
+  type: 'infinite',
+  source: monthSource,
+  count: 20,
+  onChange: (selected) => {
+	    currentMonth = selected.value;
 
-		let days = getDays(currentYear, currentMonth);
-		if (daySource.length !== days.length) {
-			daySource = days;
-			daySelector.updateSource(daySource);
-		}
-		console.log(yearSelector.value, monthSelector.value, daySelector.value);
-	}
+	    const days = getDays(currentYear, currentMonth);
+	    if (daySource.length !== days.length) {
+	      daySource = days;
+	      daySelector.updateSource(daySource);
+	    }
+	    console.log(yearSelector.value, monthSelector.value, daySelector.value);
+  },
 });
 
 daySelector = new IosSelector({
-	el: '.day',
-	type: 'infinite',
-	source: daySource,
-	count: 20,
-	onChange: (selected) => {
-		currentDay = selected.value;
-		console.log(yearSelector.value, monthSelector.value, daySelector.value);
-	}
+  el: '.day',
+  type: 'infinite',
+  source: daySource,
+  count: 20,
+  onChange: (selected) => {
+	    currentDay = selected.value;
+	    console.log(yearSelector.value, monthSelector.value, daySelector.value);
+  },
 });
-
-
-
-
-
 </script>
 </body>
 </html>

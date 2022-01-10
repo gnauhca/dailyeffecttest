@@ -68,22 +68,22 @@ const config = {
   tagHeight: {
     type: 'float',
     value: tagHeight,
-    range: [5, 50]
+    range: [5, 50],
   },
   tagMargin: {
     type: 'float',
     value: tagMargin,
-    range: [0, 30]
+    range: [0, 30],
   },
   tagRowGap: {
     type: 'float',
     value: tagRowGap,
-    range: [0, 100]
+    range: [0, 100],
   },
   tagsTotalWidthHeightRatio: {
     type: 'float',
     value: tagsTotalWidthHeightRatio,
-    range: [0, 20]
+    range: [0, 20],
   },
   tagRowHeight: {
     type: 'float',
@@ -91,7 +91,7 @@ const config = {
   },
   tagsTotalRowHeight: {
     type: 'float',
-    value: tagsTotalRowHeight
+    value: tagsTotalRowHeight,
   },
   tagsHalfRowHeight: {
     type: 'float',
@@ -99,16 +99,16 @@ const config = {
   },
   tagsHalfRowWidth: {
     type: 'float',
-    value: tagsHalfRowWidth
+    value: tagsHalfRowWidth,
   },
   tagsTotalRowWidth: {
     type: 'float',
-    value: tagsTotalRowWidth
+    value: tagsTotalRowWidth,
   },
   cameraZTotalRowHeightRatio: {
     type: 'float',
     value: cameraZTotalRowHeightRatio,
-    range: [1, 10]
+    range: [1, 10],
   },
   cameraZ: {
     type: 'float',
@@ -118,43 +118,43 @@ const config = {
   objPosNoiseWide: {
     type: 'float',
     value: objPosNoiseWide,
-    range: [0.1, 5]
+    range: [0.1, 5],
   },
 
   objPosNoiseOffset: {
     type: 'float',
     value: objPosNoiseOffset,
-    range: [0, 2]
+    range: [0, 2],
   },
   objPosNoiseUnit: {
     type: 'float',
     value: objPosNoiseUnit,
-    range: [0, 3]
+    range: [0, 3],
   },
   noiseWide: {
     type: 'float',
     value: noiseWide,
-    range: [0.1, 5]
+    range: [0.1, 5],
   },
   noiseOffset: {
     type: 'float',
     value: noiseOffset,
-    range: [0, 2]
+    range: [0, 2],
   },
   noiseUnit: {
     type: 'float',
     value: noiseUnit,
-    range: [0, 3]
+    range: [0, 3],
   },
   spinAngle: {
     type: 'float',
     value: spinAngle,
-    range: [0, 1]
+    range: [0, 1],
   },
   spinOffset: {
     type: 'float',
     value: spinOffset,
-    range: [0, 100]
+    range: [0, 100],
   },
 };
 configListeners = [];
@@ -167,14 +167,14 @@ function updateConfig() {
   config.tagsHalfRowWidth.value = config.tagsTotalRowWidth.value / 2;
   config.cameraZ.value = config.tagsTotalRowHeight.value * config.cameraZTotalRowHeightRatio.value;
   // console.log(config);
-  configListeners.forEach(listener => listener());
+  configListeners.forEach((listener) => listener());
 }
 
-for (let key in config) {
+for (const key in config) {
   const configItem = config[key];
   configItem[key] = configItem.value;
   if (config[key].range) {
-    gui.add(config[key], key, configItem.range[0], configItem.range[1]).listen().onChange(value => {
+    gui.add(config[key], key, configItem.range[0], configItem.range[1]).listen().onChange((value) => {
       config[key].value = value;
       updateConfig();
     });
@@ -182,13 +182,13 @@ for (let key in config) {
 }
 
 const uniform = {
-  ...config
-}
+  ...config,
+};
 
 const textureCache = {};
 function getTexture(typeIndex, type) {
-  if (textureCache[typeIndex + '-' + type]) {
-    return textureCache[typeIndex + '-' + type];
+  if (textureCache[`${typeIndex}-${type}`]) {
+    return textureCache[`${typeIndex}-${type}`];
   }
   const types = ['icon', 'text', 'texten'];
   const typeName = types[typeIndex];
@@ -198,7 +198,7 @@ function getTexture(typeIndex, type) {
   const texture = new THREE.TextureLoader().load(img.src);
   texture.img = img;
 
-  textureCache[typeIndex + '-' + type] = texture;
+  textureCache[`${typeIndex}-${type}`] = texture;
   return texture;
 }
 const testTexture = getTexture(1, 1);
@@ -211,6 +211,7 @@ class Base {
   constructor() {
     configListeners.push(() => this.onConfigUpdate());
   }
+
   onConfigUpdate() {
 
   }
@@ -223,10 +224,10 @@ class Path extends Base {
       initialTagType: 0,
       angle: 0,
       v: 0,
-      offset: 0
+      offset: 0,
     };
     this.scene = scene;
-    this.options = Object.assign({}, defaults, options);
+    this.options = { ...defaults, ...options };
     Object.assign(this, this.options);
     this.v = this.options.v * config.tagHeight.value / 1000;
     this.width = config.tagsTotalRowWidth.value;
@@ -244,20 +245,20 @@ class Path extends Base {
   }
 
   addTags() {
-    let lastTag = this.tags[this.tags.length - 1];
+    const lastTag = this.tags[this.tags.length - 1];
     let lastX = lastTag ? lastTag.x + lastTag.width / 2 : this.startX + this.options.offset * config.tagRowHeight.value;
-    
+
     while (lastX < this.endX) {
-      let tagType = this.tagType;
-      let tagTypeIndex = this.tagTypeIndex;
+      let { tagType } = this;
+      let { tagTypeIndex } = this;
 
       tagTypeIndex += 1;
       if (tagTypeIndex === 3) {
         tagTypeIndex = 0;
         tagType += 1;
-        tagType = tagType % 6;
+        tagType %= 6;
       }
-      
+
       const texture = getTexture(this.tagTypeIndex, this.tagType);
       const tagWidth = config.tagHeight.value * texture.img.width / texture.img.height;
       // console.log(texture.img.src);
@@ -265,12 +266,12 @@ class Path extends Base {
       if (lastX > this.endX) {
         return;
       }
-      const tag = new Tag({ 
-        x: lastX, 
+      const tag = new Tag({
+        x: lastX,
         y: this.y,
         texture,
         width: tagWidth,
-        height: config.tagHeight.value
+        height: config.tagHeight.value,
       }, this, this.scene);
       this.tags.push(tag);
 
@@ -313,19 +314,19 @@ class Path extends Base {
     this.y = this.options.yIndex * config.tagRowHeight.value;
     this.startX = this.width / -2;
     this.endX = this.width / 2;
-    
+
     if (this.tags.length > 0) {
-      this.tags.forEach(tag => {
+      this.tags.forEach((tag) => {
         tag.updateOptions({
           width: config.tagHeight.value * tag.texture.img.width / tag.texture.img.height,
-          height: config.tagHeight.value
+          height: config.tagHeight.value,
         });
       });
 
-      let removeTags = [];
+      const removeTags = [];
       let lastX = this.tags[0].x * ratio - this.tags[0].width / 2;
-      
-      this.tags.forEach(tag => {
+
+      this.tags.forEach((tag) => {
         lastX += tag.width / 2;
         if (lastX < this.startX || lastX > this.endX) {
           removeTags.push(tag);
@@ -334,16 +335,13 @@ class Path extends Base {
         }
         lastX += tag.width / 2 + config.tagMargin.value;
       });
-      removeTags.forEach(tag => this.removeTag(tag));
+      removeTags.forEach((tag) => this.removeTag(tag));
     }
   }
-
 }
 
 class Tag {
-
   constructor(options, path, scene) {
-
     Object.assign(this, options);
     this.options = options;
     this.scene = scene;
@@ -357,7 +355,6 @@ class Tag {
   }
 
   getTexture(type, num) {
-
     const imgs = document.querySelectorAll(`.${type}-img`);
     const img = imgs[num];
 
@@ -370,27 +367,29 @@ class Tag {
 
   createPlane() {
     const geometry = new THREE.PlaneGeometry(this.width, this.height, 10, 5);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide, wireframe: false, map: this.texture });
+    const material = new THREE.MeshBasicMaterial({
+      color: 0xffff00, side: THREE.DoubleSide, wireframe: false, map: this.texture,
+    });
 
     // console.log(this.texture.img.src);
     const shaderMaterial = new THREE.ShaderMaterial({
-      vertexShader: vertexShader,
-      fragmentShader: fragmentShader,
+      vertexShader,
+      fragmentShader,
       uniforms: {
         ...uniform,
         texture1: { value: this.texture },
         // texture1: { value: testTexture },
         objPos: {
           type: 'vec3',
-          value: new THREE.Vector3(this.x, this.options.y, 0)
+          value: new THREE.Vector3(this.x, this.options.y, 0),
         },
         opacity: {
           type: 'float',
-          value: 1
+          value: 1,
         },
         time: {
           type: 'float',
-          value: new Date().getTime() / 1000
+          value: new Date().getTime() / 1000,
         },
       },
       depthTest: false,
@@ -427,11 +426,10 @@ class Tag {
     opacity = easing.easeOutCubic(opacity) - 0.1;
     opacity = step(0, 1, opacity);
 
-
     this.plane.material.uniforms.objPos.value = position;
     this.plane.material.uniforms.opacity.value = opacity;
     this.plane.material.uniforms.time.value = new Date().getTime();
-    for(let uniformKey in this.plane.material.uniforms) {
+    for (const uniformKey in this.plane.material.uniforms) {
       if (config[uniformKey]) {
         this.plane.material.uniforms[uniformKey].value = config[uniformKey].value;
       }
@@ -445,8 +443,6 @@ class Tag {
       this.plane.rotation.x = Math.PI;
     }
 
-
-    
     // this.gemo.vertices.forEach(vec => {
     //   const pos = this.path.getPos(vec.x + x, vec.y);
     //   vec.x = pos.x;
@@ -508,7 +504,7 @@ class TagRender extends Base {
         yIndex: i,
         initialTagType: (Math.random() * 6) | 0,
         offset: (Math.random() - 0.5) * 10,
-        v: 80
+        v: 80,
       }, this.scene);
       paths.push(path);
     }
@@ -516,7 +512,7 @@ class TagRender extends Base {
   }
 
   update() {
-    this.paths.forEach(path => {
+    this.paths.forEach((path) => {
       path.update();
     });
     this.render();
@@ -525,7 +521,7 @@ class TagRender extends Base {
   render() {
     this.renderer.render(this.scene, this.camera);
   }
-    
+
   onConfigUpdate() {
     this.camera.position.z = config.cameraZ.value * 2;
     this.update();
@@ -558,6 +554,7 @@ class Ani {
     // }, 100);
     this.tick = window.requestAnimationFrame(() => this.update());
   }
+
   update() {
     setTimeout(() => {
       this.renderer.update();
@@ -570,7 +567,7 @@ window.onload = function () {
   ani = new Ani();
 
   ani.start();
-}
+};
 
 // download img
 function download() {

@@ -4,38 +4,37 @@
  * @author felixturner / http://airtight.cc/
  */
 
- THREE.TestShader = {
+THREE.TestShader = {
 
-	uniforms: {
-		"tDiffuse": { type: "t", value: null },
-		"amount":     { type: "f", value: 0.5 }
-	},
+  uniforms: {
+    tDiffuse: { type: 't', value: null },
+    amount: { type: 'f', value: 0.5 },
+  },
 
-	vertexShader: [
+  vertexShader: [
 
-	"varying vec2 vUv;",
-	"void main() {",
-		"vUv = uv;",
-		"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+    'varying vec2 vUv;',
+    'void main() {',
+    'vUv = uv;',
+    'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
 
-	"}"
+    '}',
 
-	].join("\n"),
+  ].join('\n'),
 
-	fragmentShader: [
+  fragmentShader: [
 
-	"uniform sampler2D tDiffuse;",
-	"uniform float amount;",
-	"varying vec2 vUv;",
+    'uniform sampler2D tDiffuse;',
+    'uniform float amount;',
+    'varying vec2 vUv;',
 
-	"void main() {",
+    'void main() {',
 
-		"vec4 color = texture2D(tDiffuse, vUv);",
-		"gl_FragColor = color*amount;",
+    'vec4 color = texture2D(tDiffuse, vUv);',
+    'gl_FragColor = color*amount;',
 
-	"}"
+    '}',
 
-
-	].join("\n")
+  ].join('\n'),
 
 };

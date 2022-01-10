@@ -1,7 +1,6 @@
 import Light from './Light.js';
 
 export default class AmbientLight extends Light {
-
   constructor(intensity) {
     super();
     this.intensity = intensity;
@@ -16,5 +15,4 @@ export default class AmbientLight extends Light {
   calBrightness() {
     return this.intensity;
   }
-
 }

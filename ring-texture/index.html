@@ -1,149 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>ring texture</title>
-  <style>
-    body {
-      background: #0f20c3;
-      /* background: #ff505e; */
-    }
-    canvas {
-      display: block;
-      margin: 0 auto;
-      /* position: absolute;
-      top: 50%;
-      transform: translateY(-50%); */
-      /* width: 30%!important; */
-      /* display: block; */
-      /* height: auto !important; */
-    }
-  </style>
-</head>
-
-<body>
-  <div id="control1" style="height: 1300px"><canvas id="canvas1" width="1000" height="1000"></canvas></div>
-  <div id="control2"><canvas id="canvas2" width="1000" height="1000"></canvas></div>
-  <div id="control3"><canvas id="canvas3" width="1000" height="1000"></canvas></div>
-  <script>
-    var a= 0;
-    setTimeout(() => {
-      a = 1;
-    }, 2000);
-    window.onload = function () {
-      var canvas1 = document.querySelector('#canvas1');
-      var canvas2 = document.querySelector('#canvas2');
-      var canvas3 = document.querySelector('#canvas3');
-      var control1 = document.querySelector('#control1');
-      var control2 = document.querySelector('#control2');
-      var control3 = document.querySelector('#control3');
-      
-
-      var anis = [];
-
-      var ringRed1 = ringAni.getRing('red');
-      var ringBlue1 = ringAni.getRing('blue');
-
-      ringRed1.position.x = -55
-      ringRed1.position.y = 0
-      ringRed1.position.z = 0
-      ringRed1.rotation.x = Math.PI
-      ringRed1.rotation.y = 0
-
-      ringBlue1.position.x = 55
-      ringBlue1.position.y = 0
-      ringBlue1.position.z = 0
-      ringBlue1.rotation.x = Math.PI / -2
-      ringBlue1.rotation.y = 0
-
-      var ani1 = new ringAni.Ani({
-        canvas: canvas1, tick(delta) {
-          if (!a) return; 
-          ringRed1.rotation.z -= delta * 0.001;
-          ringBlue1.material.map.offset.y -= 0.006;
-        },
-        controlElement: control1
-      })
-
-      ani1.group.rotation.x = 0.75;
-      ani1.group.rotation.y = 0.5;
-      ani1.group.rotation.z = -0.3;
-
-      ani1.addObj(ringRed1);
-      ani1.addObj(ringBlue1);
-
-      anis.push({
-        canvas: canvas1,
-        ani: ani1
-      });
-
-      var ringBlue2 = ringAni.getRing('blue');
-
-      ringBlue2.position.x = 0
-      ringBlue2.position.y = 0
-      ringBlue2.rotation.x = 1.95 + Math.PI
-      ringBlue2.rotation.y = 0.15
-
-      var ani2 = new ringAni.Ani({
-        canvas: canvas2, tick(delta) {
-          // ringBlue2.material.map.offset.y -= 0.006;
-        },
-      })
-
-      ani2.addObj(ringBlue2);
-
-      anis.push({
-        canvas: canvas2,
-        ani: ani2
-      });
-
-
-      var ringRed3 = ringAni.getRing('red2');
-
-      ringRed3.position.x = 0
-      ringRed3.position.y = 0
-      ringRed3.rotation.x = 1.95 + Math.PI
-      ringRed3.rotation.y = 0.15
-      ringRed3.material.color
-      var ani3 = new ringAni.Ani({
-        canvas: canvas3, tick(delta) {
-          ringRed3.material.map.offset.y -= 0.006;
-        },
-      })
-
-      ani3.addObj(ringRed3);
-
-      anis.push({
-        canvas: canvas3,
-        ani: ani3
-      });
-
-      function checkVisible(elm) {
-        var rect = elm.getBoundingClientRect();
-        var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
-        return !(rect.bottom <= 0 || rect.top - viewHeight >= 0);
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>ring texture</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
       }
 
-      function checkPosition() {
-        anis.forEach((aniItem, index) => {
-          if (checkVisible(aniItem.canvas)) {
-            aniItem.ani.start();
-            console.log(index, 'start');
-          } else {
-            aniItem.ani.pause();
-            console.log(index, 'pause');
-          }
-        });
+      body {
+        background: #0f20c3;
+        /* background: #ff505e; */
       }
+      canvas {
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
 
-      window.addEventListener('scroll', checkPosition);
-      window.addEventListener('resize', checkPosition);
-      checkPosition();
-    }
-  </script>
-</body>
-
+  <body>
+    <div id="control1" style="height: 1300px"><canvas id="canvas1" width="1000" height="1000"></canvas></div>
+    <script type="module" src="./index.js"></script>
+  </body>
 </html>

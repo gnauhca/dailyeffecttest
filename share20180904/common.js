@@ -1,6 +1,6 @@
 setTimeout(() => {
   document.querySelector('canvas').style.opacity = 0;
-  document.querySelector('canvas').style.transition = "none";
+  document.querySelector('canvas').style.transition = 'none';
 }, 30);
 setTimeout(() => {
   document.querySelector('canvas').style.opacity = 1;
