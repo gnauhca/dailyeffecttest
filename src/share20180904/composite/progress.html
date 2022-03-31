@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>progress bar</title>
+    <style>
+      * {
+        margin: 0;
+      }
+
+      body,
+      html {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
+      body {
+        background-color: #000;
+      }
+
+      canvas {
+        position: relative;
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <canvas></canvas>
+    <script src="../lib/easing.js"></script>
+    <script>
+      const cvs = document.querySelector('canvas');
+      const ctx = cvs.getContext('2d');
+
+      cvs.width = window.innerWidth;
+      cvs.height = window.innerHeight;
+
+      function drawProgressBar(progress) {
+        let progressBarWidth = 1200;
+        let progressBarHeight = 140;
+        let startPos = { x: -progressBarWidth / 2, y: -progressBarHeight / 2 };
+
+        // ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = '#007aff';
+        ctx.fillRect(startPos.x, startPos.y, progressBarWidth * progress, progressBarHeight);
+
+        ctx.globalCompositeOperation = 'xor';
+        ctx.font = '100px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(parseInt(progress * 100) + '%', 0, 0);
+      }
+
+      const dur = 5000;
+      let startTime = new Date().getTime();
+      let pass = 0;
+      let progress = 0;
+
+      function tick() {
+        let pass = new Date().getTime() - startTime;
+        pass = Math.min(pass, dur);
+        progress = pass / dur;
+
+        if (progress < 1) {
+          ctx.clearRect(0, 0, cvs.width, cvs.height);
+          ctx.save();
+          ctx.translate(cvs.width / 2, cvs.height / 2);
+          drawProgressBar(easing.linear(progress));
+          ctx.restore();
+
+          requestAnimationFrame(tick);
+        }
+      }
+
+      tick();
+    </script>
+  </body>
+</html>

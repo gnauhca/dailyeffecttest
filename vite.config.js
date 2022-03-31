@@ -1,63 +1,41 @@
 import { defineConfig } from 'vite';
 import path from 'path';
-import styleImport from 'vite-plugin-style-import';
 import liveReload from 'vite-plugin-live-reload';
 import glob from 'glob';
 import copy from 'rollup-plugin-copy';
 
-const htmls = glob.sync('*/*.html');
-const inputs = { index: path.resolve(__dirname, 'index.html') };
-
-console.log(htmls);
+const htmls = glob.sync('{src/*.html,src/*/*.html,src/*/*/*.html}');
+const inputs = {};
 
 htmls.forEach((htmlPath) => {
-  inputs[htmlPath] = path.resolve(__dirname, htmlPath);
+  inputs[htmlPath.replace('src/', '')] = path.resolve(__dirname, htmlPath);
 });
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: './',
+  root: 'src',
+  base: process.env.NODE_ENV === 'development' ? './' : '/daily-effect-test/',
   build: {
+    outDir: '../dist',
+    emptyOutDir: true,
     rollupOptions: {
       input: inputs,
     },
   },
-  publicDir: './',
-  plugins: [
-    copy({
-      targets: [
-        { src: ['./*/*.js'], dest: 'dist/' },
-      ],
-      copyOnce: true,
-    }),
-  ],
-  css: {
-    preprocessorOptions: {
-      less: {
-        modifyVars: {
-          'primary-color': '#333333',
-          'link-color': '#333333',
-          'border-radius-base': '4px',
-        },
-        javascriptEnabled: true,
-      },
-    },
-  },
   plugins: [
     liveReload(['*']),
-    styleImport({
-      libs: [
-        {
-          libraryName: 'ant-design-vue',
-          esModule: true,
-          resolveStyle: (name) => `ant-design-vue/es/${name}/style`,
-        },
+    copy({
+      targets: [
+        { src: ['src/**/*.(js|jpg|png|gif|gltf)', '!src/**/node_modules/**'], dest: 'dist/' },
       ],
+      flatten: false,
+      verbose: true,
+      hook: 'writeBundle',
     }),
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './'),
+      '@': path.resolve(__dirname, './src'),
     },
   },
   server: {

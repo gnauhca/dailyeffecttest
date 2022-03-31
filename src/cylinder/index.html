@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>geometries</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'PingFang SC', -apple-system, 'Helvetica Neue', Helvetica, BlinkMacSystemFont, 'Microsoft YaHei' !important;
+    }
+
+    .container {
+      position: relative;
+      max-width: 500px;
+      width: 100%;
+      /* height: 500px; */
+      overflow: hidden;
+      border: 1px solid #ddd;
+      box-shadow: 0 4px 20px rgb(0, 0, 0, 0.15);
+      margin-bottom: 20px;;
+    }
+
+    .item {
+      position: relative;
+      width: 280px;
+      height: 370px;
+      transform-style: preserve-3d;
+      overflow: visible!important;
+    }
+
+    .item-front,
+    .item-front-inner,
+    .item-back,
+    .item-back-inner {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      
+    }
+    .item-front-inner,
+    .item-back-inner {
+      background-size: 100%;
+      /* backface-visibility: hidden; */
+    }
+
+    .item-front,
+    .item-back {
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 200px;
+      color: #fff;
+    }
+
+    .item-front {
+      background: rgb(85, 135, 211);
+      z-index: 1;
+    }
+    .item-front::after {
+      content: 'F';
+    }
+
+    .item-back {
+      background: rgb(4, 32, 75);
+      transform: rotateY(180deg);
+      z-index: 0;
+    }
+    .item-back::after {
+      content: 'B';
+    }
+
+    .item-front-inner {
+    }
+
+    .item-back-inner {
+    }
+
+    .item-front {
+      backface-visibility: hidden;
+    }
+
+
+    .btn {
+      padding: 15px 20px;
+      font-size: 20px;
+      -webkit-appearance: none;
+      background: #ddd;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+  <script src="./lib/stats.min.js"></script>
+  <!-- <script src="./lib/TrackballControls.js"></script> -->
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="item item0">
+      <div class="item-front">
+        <div class="item-front-inner"></div>
+      </div>
+      <div class="item-back">
+        <div class="item-back-inner"></div>
+      </div>
+    </div>
+    <div class="item item1">
+      <div class="item-front">
+        <div class="item-front-inner"></div>
+      </div>
+      <div class="item-back">
+        <div class="item-back-inner"></div>
+      </div>
+    </div>
+    <div class="item item2">
+      <div class="item-front">
+        <div class="item-front-inner"></div>
+      </div>
+      <div class="item-back">
+        <div class="item-back-inner"></div>
+      </div>
+    </div>
+    <div class="item item3">
+      <div class="item-front">
+        <div class="item-front-inner"></div>
+      </div>
+      <div class="item-back">
+        <div class="item-back-inner"></div>
+      </div>
+    </div>
+    <div class="item item4">
+      <div class="item-front">
+        <div class="item-front-inner"></div>
+      </div>
+      <div class="item-back">
+        <div class="item-back-inner"></div>
+      </div>
+    </div>
+    <div class="item item5">
+      <div class="item-front">
+        <div class="item-front-inner"></div>
+      </div>
+      <div class="item-back">
+        <div class="item-back-inner"></div>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="rotate-btn btn">1</button>
+    <button class="rotate-btn btn">2</button>
+    <button class="rotate-btn btn">3</button>
+    <button class="rotate-btn btn">4</button>
+    <button class="rotate-btn btn">5</button>
+    <button class="spin-btn btn">spin</button>
+  </div>
+  <script type="module">
+    import Ani from './Ani.js';
+
+    window.onload = () => {
+      const ani = new Ani();
+      ani.spin();
+
+      const rotateBtns = document.querySelectorAll('.rotate-btn');
+      const spinBtn = document.querySelector('.spin-btn');
+
+      for (let i = 0; i < rotateBtns.length; i++) {
+        const rotateBtn = rotateBtns[i];
+        rotateBtn.addEventListener('click', () => {
+          ani.setIndex(i);
+        });
+      }
+      spinBtn.addEventListener('click', () => {
+        ani.spin();
+      });
+    };
+  </script>
+</body>
+
+</html>
