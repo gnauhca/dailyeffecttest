@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SCALE SWIPER LOOP</title>
+    <link rel="stylesheet" href="https://unpkg.com/swiper@8/swiper-bundle.min.css" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        height: 100vh;
+        font-family: Arial, Helvetica, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .swiper-outbox {
+        position: relative;
+        width: 300px;
+        height: 50px;
+        overflow: hidden;
+      }
+      .swiper {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 600px;
+        height: 50px;
+        /* outline: 1px solid green; */
+      }
+      .swiper-slide {
+        position: relative;
+        overflow: visible;
+        /* outline: 1px solid #333; */
+        font-size: 0px;
+        text-align: center;
+      }
+      .box {
+        /* transform: translateX(40%) scale(0.9); */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        z-index: 2;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 1px solid red;
+        color: red;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="swiper-outbox">
+      <div class="swiper">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide" data-user-index="1">
+            1
+            <div class="box">1</div>
+          </div>
+          <div class="swiper-slide" data-user-index="2">
+            2
+            <div class="box">2</div>
+          </div>
+          <div class="swiper-slide" data-user-index="3">
+            3
+            <div class="box">3</div>
+          </div>
+          <div class="swiper-slide" data-user-index="4">
+            4
+            <div class="box">4</div>
+          </div>
+          <div class="swiper-slide" data-user-index="5">
+            5
+            <div class="box">5</div>
+          </div>
+          <div class="swiper-slide" data-user-index="6">
+            6
+            <div class="box">6</div>
+          </div>
+          <div class="swiper-slide" data-user-index="7">
+            7
+            <div class="box">7</div>
+          </div>
+          <div class="swiper-slide" data-user-index="8">
+            8
+            <div class="box">8</div>
+          </div>
+          <div class="swiper-slide" data-user-index="9">
+            9
+            <div class="box">9</div>
+          </div>
+          <div class="swiper-slide" data-user-index="10">
+            10
+            <div class="box">10</div>
+          </div>
+          <div class="swiper-slide" data-user-index="11">
+            11
+            <div class="box">11</div>
+          </div>
+          <div class="swiper-slide">
+            12
+            <div class="box">12</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
+    <script>
+      let frameT = 0;
+      let slideItems = [...document.querySelectorAll('.swiper-slide')];
+      const slideCount = slideItems.length;
+      const container = document.querySelector('.swiper');
+      const swiper = new Swiper('.swiper', {
+        loop: true, // 循环模式选项
+        autoplay: {
+          delay: 1000,
+          disableOnInteraction: false,
+        },
+        slidesPerView: slideCount,
+        initialSlide: 0,
+        slideToClickedSlide: true,
+        centeredSlides: true,
+        watchSlidesProgress: true,
+        on: {
+          transitionStart: function () {
+            setTimeout(frameUpdateBoxTransform);
+          },
+          transitionEnd: function () {
+            setTimeout(cancelFrameUpdateBoxTransform, 100);
+          },
+          touchMove() {
+            updateBoxTransform();
+          },
+        },
+      });
+      // 初始化 swiper 之后，slide 会被复制，需重新 query
+      slideItems = [...document.querySelectorAll('.swiper-slide')];
+
+      const maxScale = 1; // 最大缩放
+      const minScale = 0.5; // 最小缩放
+      const maxOpacity = 1;
+      const minOpacity = 0;
+      const scaleFn = (distanceIndexToCenter) => maxScale - Math.abs(distanceIndexToCenter) * 0.2; // 根据 item 离最中心距离确定 scale 值得函数
+      const opacityFn = (distanceIndexToCenter) => maxOpacity - Math.abs(distanceIndexToCenter) * 0.2; // 根据 item 离最中心距离确定 scale 值得函数
+
+      function updateBoxTransform() {
+        const itemWidth = slideItems[0].offsetWidth;
+        const subScale = maxScale - minScale;
+
+        const containerLeft = container.getBoundingClientRect().left;
+        const containerCenter = containerLeft + container.offsetWidth / 2 - itemWidth / 2;
+        slideItems.forEach((slide) => {
+          const slideLeft = slide.getBoundingClientRect().left;
+          slide.dataset.distanceIndex = (slideLeft - containerCenter) / itemWidth;
+        });
+        slideItems.sort((a, b) => (Math.abs(a.dataset.distanceIndex) > Math.abs(b.dataset.distanceIndex) ? 1 : -1));
+
+        let posOffset = 0;
+        let negOffset = 0;
+        slideItems.forEach((slide) => {
+          const box = slide.children[0];
+          const { distanceIndex } = slide.dataset;
+          let scale = scaleFn(distanceIndex);
+          let opacity = opacityFn(distanceIndex);
+          let translate = 0;
+          scale = Math.max(Math.min(scale, maxScale), minScale);
+          opacity = Math.max(Math.min(opacity, maxOpacity), minOpacity);
+          slide.dataset.scale = scale;
+          translate = (1 - scale) * itemWidth;
+
+          if (distanceIndex < 0) {
+            box.style.transform = `translateX(${negOffset + translate / 2}px) scale(${scale})`;
+            negOffset += translate;
+          } else if (distanceIndex > 0) {
+            box.style.transform = `translateX(${-1 * (posOffset + translate / 2)}px) scale(${scale})`;
+            posOffset += translate;
+          } else {
+            box.style.transform = `scale(${scale})`;
+          }
+          box.style.opacity = opacity;
+        });
+
+        // console.log(slideItems.map(item => [item.dataset.distanceIndex, item.dataset.scale]));
+      }
+
+      function frameUpdateBoxTransform() {
+        updateBoxTransform();
+        frameT = requestAnimationFrame(frameUpdateBoxTransform);
+      }
+      function cancelFrameUpdateBoxTransform() {
+        cancelAnimationFrame(frameT);
+      }
+
+      setTimeout(() => {
+        updateBoxTransform();
+      }, 0);
+    </script>
+  </body>
+</html>

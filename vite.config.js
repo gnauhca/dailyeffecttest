@@ -14,7 +14,7 @@ htmls.forEach((htmlPath) => {
 // https://vitejs.dev/config/
 export default defineConfig({
   root: 'src',
-  base: process.env.NODE_ENV === 'development' ? './' : '/daily-effect-test/',
+  // base: process.env.NODE_ENV === 'development' ? './' : '/daily-effect-test/',
   build: {
     outDir: '../dist',
     emptyOutDir: true,

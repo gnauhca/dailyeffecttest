@@ -80,7 +80,6 @@
            <a href="./cloud/index.html" title="./cloud/index.html">/cloud/index.html</a>
            <a href="./cloudwave/index.html" title="./cloudwave/index.html">/cloudwave/index.html</a>
            <a href="./cylinder/index.html" title="./cylinder/index.html">/cylinder/index.html</a>
-           <a href="./earth/index.html" title="./earth/index.html">/earth/index.html</a>
            <a href="./f3-particle-demo/index.html" title="./f3-particle-demo/index.html">/f3-particle-demo/index.html</a>
            <a href="./fire/index.html" title="./fire/index.html">/fire/index.html</a>
            <a href="./flytags/index.html" title="./flytags/index.html">/flytags/index.html</a>
@@ -106,6 +105,7 @@
            <a href="./share20180904/filter/ball.html" title="./share20180904/filter/ball.html">/share20180904/filter/ball.html</a>
            <a href="./share20180904/filter/reflect.html" title="./share20180904/filter/reflect.html">/share20180904/filter/reflect.html</a>
            <a href="./snapsvg-circles/index.html" title="./snapsvg-circles/index.html">/snapsvg-circles/index.html</a>
+           <a href="./swiper-scale-loop/swiper-scale.html" title="./swiper-scale-loop/swiper-scale.html">/swiper-scale-loop/swiper-scale.html</a>
            <a href="./tree-generator/editor.html" title="./tree-generator/editor.html">/tree-generator/editor.html</a>
            <a href="./tree-generator/index.html" title="./tree-generator/index.html">/tree-generator/index.html</a>
            <a href="./twistplane/index.html" title="./twistplane/index.html">/twistplane/index.html</a>
@@ -137,6 +137,7 @@
         links.forEach((item) => item.classList.remove('active'));
         links.find((item) => item.getAttribute('href') === link).classList.add('active');
         iframe.src = link;
+        window.location.hash = `#${link}`;
       }
 
       nav.addEventListener('click', (e) => {
@@ -146,7 +147,12 @@
           activeLink(link);
         }
       });
-      activeLink('./ball/index.html');
+      const hash = window.location.hash.replace(/#/g, '');
+      let link = './ball/index.html';
+      if (links.find((item) => item.getAttribute('href') === hash)) {
+        link = hash;
+      }
+      activeLink(link);
     </script>
   </body>
 </html>

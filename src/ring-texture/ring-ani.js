@@ -1,10 +1,8 @@
-import * as THREE from './node_modules/three/build/three.module.js';
+import * as THREE from 'three';
 import './three-utils';
 import { OrbitControls } from './orbit-controls.js';
 import textureUrl from './map-r.png';
 import textureUrl2 from './map-r2.png';
-
-console.log(THREE);
 
 export function getRing(type) {
   let ring;
