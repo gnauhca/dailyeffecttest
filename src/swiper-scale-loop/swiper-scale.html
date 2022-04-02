@@ -16,19 +16,22 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        --width: min(100vw, 600px);
+        --count: 12;
+        --half-count: calc(var(--count) / 2);
       }
       .swiper-outbox {
         position: relative;
-        width: 300px;
-        height: 50px;
+        width: var(--width);
+        height: calc(var(--width) / var(--half-count));
         overflow: hidden;
       }
       .swiper {
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
-        width: 600px;
-        height: 50px;
+        width: calc(var(--width) * 2);
+        height: calc(var(--width) / var(--half-count));
         /* outline: 1px solid green; */
       }
       .swiper-slide {
@@ -49,8 +52,9 @@
         left: 0;
         width: 100%;
         height: 100%;
-        border: 1px solid red;
-        color: red;
+        border: 1px solid #fff;
+        background-color: #abcdef;
+        color: #fff;
         font-size: 14px;
       }
     </style>
@@ -147,8 +151,8 @@
       const minScale = 0.5; // 最小缩放
       const maxOpacity = 1;
       const minOpacity = 0;
-      const scaleFn = (distanceIndexToCenter) => maxScale - Math.abs(distanceIndexToCenter) * 0.2; // 根据 item 离最中心距离确定 scale 值得函数
-      const opacityFn = (distanceIndexToCenter) => maxOpacity - Math.abs(distanceIndexToCenter) * 0.2; // 根据 item 离最中心距离确定 scale 值得函数
+      const scaleFn = (distanceIndexToCenter) => maxScale - Math.abs(distanceIndexToCenter) * 0.25; // 根据 item 离最中心距离确定 scale 值得函数
+      const opacityFn = (distanceIndexToCenter) => maxOpacity - Math.abs(distanceIndexToCenter) * 0.25; // 根据 item 离最中心距离确定 scale 值得函数
 
       function updateBoxTransform() {
         const itemWidth = slideItems[0].offsetWidth;

@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import './three-utils';
 import { OrbitControls } from './orbit-controls.js';
-import textureUrl from './map-r.png';
-import textureUrl2 from './map-r2.png';
 
+const textureUrl = './map-r.png';
+const textureUrl2 = './map-r2.png';
 export function getRing(type) {
   let ring;
   if (type === 'red') {
