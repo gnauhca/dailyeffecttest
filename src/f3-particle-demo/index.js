@@ -127,7 +127,7 @@ class Effect extends F3.Time {
 
   update(delta) {
     this.timePass += delta;
-    this.xOffset = this.timePass / 500;
+    this.xOffset = this.timePass / 1000;
 
     let point;
     let flyPecent;

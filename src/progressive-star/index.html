@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Progressive Star</title>
+    <style>
+      body {
+        display: flex;
+        align-items: center;
+        width: 100vw;
+        height: 100vh;
+        justify-content: center;
+        background: #000;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      canvas {
+        max-width: 100vw;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+    <script src="./lib.js"></script>
+    <script>
+      (function () {
+        var aniStars = function (cvs, ctx) {
+          var PI = Math.PI,
+            r = Math.random,
+            w = cvs.width,
+            h = cvs.height;
+          (cR = 8000), (cX = parseInt(w / 2)), (cY = h - 300 + cR), (fX = cX), (fY = h - 450);
+
+          function AniStars() {
+            this.stars = [];
+            this.starsCacha = [];
+            this.offCvs;
+            this.init();
+          }
+
+          AniStars.prototype.init = function () {
+            this.offCvs = document.createElement('canvas');
+
+            this.offCvs.width = this.offCvs.height = 50;
+            var offCtx = this.offCvs.getContext('2d');
+
+            offCtx.beginPath();
+            offCtx.fillStyle = '#ffffff';
+            offCtx.fillRect(0, 0, 50, 50);
+
+            var star,
+              now = new Date().getTime();
+            /* for (var i = 0; i < 200; i++) {
+			star = this.createStar();
+			star.currentPos = star.finalPos;
+			star.finish = true;
+			star.finishTime = now + 500000000000;
+		} */
+            //this.createStar();
+          };
+
+          AniStars.prototype.clock = function (detal, now) {
+            var now = new Date().getTime(),
+              percent = 0,
+              star;
+
+            for (var i = this.stars.length - 1; i >= 0; i--) {
+              star = this.stars[i];
+              if (star.finish) {
+                this.stars.splice(i, 1);
+                continue;
+              } else {
+                percentY = Math.abs(star.currentPos[1] - star.initPos[1]) / Math.abs(star.totalDis[1]);
+                percentX = Math.abs(star.currentPos[0] - star.initPos[0]) / Math.abs(star.totalDis[0]);
+
+                star.finishTime += detal;
+                var v = easing.easeOutExpo(star.finishTime, star.v, -1 * star.v + 20, star.duration);
+                //console.log(star.finishTime,v);
+                star.currentPos[0] += v * (detal / 1000) * star.radio[0];
+                star.currentPos[1] += v * (detal / 1000) * star.radio[1];
+
+                if (percentY > 1 || percentX > 1) {
+                  percentX = 1;
+                  percentY = 1;
+                  star.currentPos[0] = star.finalPos[0];
+                  star.currentPos[1] = star.finalPos[1];
+                  star.finish = true;
+                  star.finishTime = now;
+                }
+                ctx.beginPath();
+                ctx.globalAlpha = 1 - percentY * 0.3;
+                ctx.fillStyle = star.color;
+                ctx.fillRect(
+                  parseInt(star.currentPos[0]),
+                  parseInt(star.currentPos[1]),
+                  parseInt(3 - 2 * percentY),
+                  parseInt(5 - 3 * percentY),
+                );
+              }
+            }
+
+            for (var i = 0; i < detal / 5; i++) {
+              this.createStar();
+            }
+
+            // test
+            /*ctx.strokeStyle = '#333333';
+		ctx.beginPath();
+		ctx.arc(cX,cY,cR,0,PI*2);
+		ctx.stroke();*/
+          };
+
+          AniStars.prototype.createStar = function () {
+            if (this.stars.length > 2000) {
+              return;
+            }
+
+            var angle,
+              finalX,
+              finalY,
+              initX,
+              initY,
+              radioX,
+              radioY,
+              randomSign = Math.random() - 0.5 < 0 ? -1 : 1, //随机正负数
+              dis,
+              star;
+
+            angle = PI / 2 + randomSign * Math.random() * (Math.random() * 0.3);
+            finalX = cX + cR * Math.cos(angle);
+            finalY = cY - cR * Math.sin(angle) + (Math.random() > 0.9 ? Math.random() * 80 - 20 : 0);
+            initY = h;
+            initX = fX + (finalX - fX) * ((fY - initY) / (fY - finalY));
+            //finalY += Math.random()*6-3;
+            initY += Math.random() * 100 - 60;
+            dis = Math.sqrt((finalY - initY) * (finalY - initY) + (finalX - initX) * (finalX - initX));
+            radioX = (finalX - initX) / dis;
+            radioY = (finalY - initY) / dis;
+            star = {
+              radio: [radioX, radioY],
+              finalPos: [finalX, finalY],
+              initPos: [initX, initY],
+              currentPos: [initX, initY],
+              totalDis: [finalX - initX, finalY - initY],
+              finish: false,
+              finishTime: 0,
+              duration: 2400,
+              v: 2.8 * dis,
+              width: 1,
+              alpha: Math.random(),
+              color: Math.random() > 0.8 ? '#dd0000' : '#ffffff',
+              // color: (Math.random() * 16777215) | 0
+            };
+            //star.color = '#' + star.color.toString(16);
+            //console.log(star)
+            this.stars.push(star);
+            return star;
+          };
+
+          return new AniStars();
+        };
+
+        var cvs = document.querySelectorAll('canvas')[0];
+        cvs.width = document.body.clientWidth;
+        cvs.height = 400;
+        var ctx = cvs.getContext('2d');
+
+        var timer = TIME.getTimer(cvs, ctx, 'star', function () {
+          timer.add(aniStars(cvs, ctx));
+        });
+        timer.start();
+      })();
+    </script>
+  </body>
+</html>

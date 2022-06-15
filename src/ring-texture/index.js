@@ -31,6 +31,7 @@ window.onload = function () {
       if (!a) return;
       ringRed1.rotation.z -= delta * 0.001;
       ringBlue1.material.map.offset.y -= 0.006;
+      ringRed1.material.map.offset.y -= 0.006;
     },
     controlElement: control1,
   });

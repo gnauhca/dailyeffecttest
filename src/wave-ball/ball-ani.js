@@ -1,4 +1,4 @@
-import THREE from 'three';
+import * as THREE from 'three';
 import { TIME, Time } from './time.js';
 // import Stats from './stats.js';
 // var stats = new Stats();

@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import './three-utils';
 import { OrbitControls } from './orbit-controls.js';
 
-const textureUrl = './map-r.png';
-const textureUrl2 = './map-r2.png';
+const textureUrl = './chaz.png';
+const textureUrl2 = './daily.png';
 export function getRing(type) {
   let ring;
   if (type === 'red') {
@@ -77,7 +77,7 @@ export class Ani {
   init() {
     const { width, height } = this.options.canvas;
     const ratio = width / height;
-    const cameraDistance = 500;
+    const cameraDistance = 450;
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: this.options.canvas });
     this.renderer.setSize(width, height);

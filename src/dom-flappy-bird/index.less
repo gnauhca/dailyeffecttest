@@ -1,0 +1,195 @@
+body {
+  font-family: impact, "microsoft yahei";
+  text-align: center;
+  color: #000;
+  text-shadow: 0px 0px 1px #fff, 0px 0px 1px #fff, 0px 0px 1px #fff;
+  background: #000;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.none {
+  display: none;
+}
+
+#gamebox {
+  position: relative;
+  margin: 0 auto;
+  margin-top: 5%;
+  border: 1px solid #eee;
+  overflow: hidden;
+  background: #000;
+}
+
+.flappybg {
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  height: 85%;
+  top: 0;
+}
+
+#bird {
+  position: absolute;
+  z-index: 20;
+  width: 6%;
+  height: 12%;
+  left: 20%;
+  top: 40%;
+  border: 1px solid #f00;
+  font-size: 2rem;  
+  line-height: 6rem;
+  .eye {
+      position: absolute;
+      z-index: 20;
+      width: 15%;
+      height: 15%;
+      right: 10%;
+      top: 28%;
+      background: #a00;
+      transform: rotate(45deg);
+      animation: eyeblink 3s infinite both;
+  }
+  .wind {
+      position: absolute;
+      z-index: 20;
+      width: 50%;
+      height: 50%;
+      left: -20%;
+      top: 15%;
+      background: #000;
+      border: 1px solid #f00; 
+      transform: rotate(-45deg);
+      transform-origin: right center;
+  }
+  .mouse {
+      position: absolute;
+      z-index: 20;
+      width: 50%;
+      height: 50%;
+      right: -50%;
+      top: 25%;
+      //border: 1px solid #f00; 
+      overflow: hidden;
+      &:after {
+          position: absolute;
+          content: '';
+          display: block;
+          width: 100%;
+          height: 100%;
+          left: -79%;
+          transform: rotate(10deg) skew(-50deg);
+          border: 1px solid #f00;    
+      }        
+  }
+}
+@keyframes eyeblink {
+  0% {
+      transform: rotate(45deg);
+  }
+  30% {
+      transform: rotate(45deg);
+  }
+  41% {
+      transform: rotate(45deg) scaleY(0.2);
+  }
+  50% {
+      transform: rotate(45deg) scaleY(0.2);
+  }
+  61% {
+      transform: rotate(45deg);
+  }
+  100% {
+      transform: rotate(45deg);
+  }
+}
+#btmLine {
+  position: absolute;
+  height: 15%;
+  width: 120%;
+  bottom: 0;
+  border-top: 1px solid #ddd;
+}
+
+.pipe {
+  position: absolute;
+  z-index: 10;
+  width: 8%;
+  height: 50%;
+  left: 10%;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-bottom: none;
+}
+
+.pipeSize {
+  position: absolute;
+  z-index: 11;
+  width: 120%;
+  left: -10%;
+  background: #000;
+  border: 1px solid #ddd;
+}
+
+.pipeTop {
+  top: 0;
+}
+
+.pipeBtm {
+  bottom: 15%;
+
+}
+
+.pipeTop .pipeSize {
+  bottom: 0;
+}
+
+.pipeBtm .pipeSize {
+  top: 0;
+}
+
+#score {
+  position: absolute;
+  z-index: 100;
+  font-size: 5rem;
+  top: 40%;
+  left: 60%;
+}
+
+#startBtn {
+  position: absolute;
+  z-index: 1000;
+  width: 10%;
+  height: 20%;
+  top: 40%;
+  left: 45%;
+  border-radius: 10%;
+  font-size: 5rem;
+  cursor: pointer;
+}
+
+#retryBtn {
+  position: absolute;
+  z-index: 1000;
+  width: 10%;
+  height: 20%;
+  top: 40%;
+  left: 45%;
+  font-size: 5rem;
+  cursor: pointer;
+}
+
+#gameoverBox {
+  position: absolute;
+  z-index: 1000;
+  width: 30%;
+  height: 15%;
+  font-size: 100%;
+  top: 25%;
+  left: 35%;
+  font-size: 5rem;
+}

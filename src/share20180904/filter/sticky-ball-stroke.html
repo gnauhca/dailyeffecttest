@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>ball-stroke</title>
+  <title>Sticky Ball (Stroked)</title>
   <style>
     * {
       margin: 0;
@@ -31,13 +31,13 @@
 </head>
 
 <body>
-  <button onclick="stroke = !stroke;" style="margin: 0px 0">stroke</button>
+  <button onclick="stroke = !stroke;" style="margin: 20px; float: right;">stroke</button>
   <script src="../lib/tween.js"></script>
   <script src="../lib/time.js"></script>
   <script src="../lib/vec2.js"></script>
   <!-- <script src="../common.js"></script> -->
   <script>
-    let stroke = 0;
+    let stroke = 1;
 
     class Ball {
       constructor(options) {

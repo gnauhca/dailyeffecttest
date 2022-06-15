@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSS loading box</title>
+    <link rel="stylesheet" href="./index.scss">
+  </head>
+  <body>
+    <div class="progress" id="progressView">
+      <div class="water-box-wrap">
+        <div class="box">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <div class="water">
+          <div><span id="progressVal">0%</span></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.1.6/zepto.min.js"></script>
+    <script>
+      var _$progressVal = $('#progressVal');
+      var _$water = $('.water');
+      var _$waterDivs = _$water.find('div');
+
+      function setProgress(percent) {
+        var initColor = [246, 11, 55];
+        var finalColor = [16, 121, 125];
+        var opacity = 0.3;
+        var currentColor;
+
+        currentColor = finalColor.map(function (colorVal, i) {
+          return (initColor[i] + (colorVal - initColor[i]) * percent) | 0;
+        });
+
+        _$waterDivs.css('backgroundColor', 'rgba(' + currentColor.join(',') + ',' + opacity + ')');
+
+        _$progressVal.html(((percent * 100) | 0) + '%');
+        percent *= 0.99;
+        _$water.css('transform', 'scaleY(' + percent.toFixed(2) + ')');
+      }
+
+      (function () {
+        var percent = 0;
+
+        function _() {
+          percent += 1;
+          percent = percent > 100 ? 100 : percent;
+          setProgress(percent / 100);
+          if (percent < 100) setTimeout(_, (Math.random() * 200) | (0 + 20));
+        }
+        _();
+      })();
+    </script>
+  </body>
+</html>

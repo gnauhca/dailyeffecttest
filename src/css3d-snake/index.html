@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSS3D Snake</title>
+    <style>
+      body {
+        perspective: 1500px;
+        transform-style: preserve-3d;
+        background-image: radial-gradient(circle at center, rgba(200, 200, 200, 0.4) 0%, #000 100%);
+        overflow: hidden;
+        font-family: Helvetica, 'microsoft yahei';
+      }
+
+      span {
+        display: block;
+        cursor: pointer;
+      }
+
+      span:hover {
+        background: #bbb !important;
+        color: #000 !important;
+        box-shadow: 0 0 5px #000 !important;
+      }
+
+      #scoreTxt {
+        position: fixed;
+        width: 250px;
+        height: 50px;
+        left: 20px;
+        top: 10px;
+        color: #fff;
+        font-size: 50px;
+        z-index: 5;
+        opacity: 0.8;
+        z-index: 100;
+      }
+
+      #upgradeTip {
+        position: fixed;
+        display: none;
+        width: 250px;
+        height: 50px;
+        left: 20px;
+        top: 10px;
+        color: #fff;
+        font-size: 50px;
+        z-index: 5;
+        opacity: 0.8;
+        z-index: 100;
+      }
+
+      #modelBtn {
+        position: fixed;
+        left: 20px;
+        top: 110px;
+        padding: 15px;
+        background: #666;
+        filter: alpha(opacity=70);
+        opacity: 0.9;
+        border-radius: 8px;
+        text-align: center;
+        line-height: 50px;
+        font-size: 40px;
+        color: #ddd;
+        z-index: 10000;
+      }
+
+      #pauseBtn {
+        display: none;
+        position: fixed;
+        right: 50px;
+        top: 10px;
+        padding: 15px;
+        background: #666;
+        filter: alpha(opacity=70);
+        opacity: 0.7;
+        border-radius: 8px;
+        text-align: center;
+        line-height: 50px;
+        font-size: 40px;
+        color: #ddd;
+        z-index: 10000;
+      }
+
+      #gameBox {
+        position: relative;
+        margin: 0 auto;
+        margin-top: 50px;
+        background: rgba(31, 103, 180, 0.3);
+        transform-style: preserve-3d;
+        transition: transform linear 0.3s;
+      }
+
+      #startBtn {
+        position: fixed;
+        left: 50%;
+        margin-left: -50px;
+        margin-top: 150px;
+        width: 100px;
+        height: 100px;
+        background: #333;
+        filter: alpha(opacity=70);
+        opacity: 0.9;
+        border-radius: 8px;
+        text-align: center;
+        line-height: 100px;
+        font-size: 40px;
+        color: #ddd;
+        z-index: 100000000;
+        transform: translateZ(50px);
+      }
+
+      #gameoverTxt {
+        position: fixed;
+        left: 50%;
+        margin-left: -100px;
+        margin-top: 50px;
+        display: none;
+        width: 200px;
+        height: 100px;
+        filter: alpha(opacity=70);
+        opacity: 0.7;
+        border-radius: 8px;
+        text-align: center;
+        line-height: 100px;
+        font-size: 40px;
+        color: #ddd;
+        z-index: 100000000;
+        transform: translateZ(50px);
+      }
+
+      .grid {
+        position: absolute;
+        background: none;
+        z-index: 999;
+        outline: 2px solid #abcedf;
+      }
+
+      .block.food1 > span {
+        background: #e76b59;
+      }
+
+      .block.food2 > span {
+        background: #abcdef;
+      }
+
+      .block.food3 > span {
+        background: #652231;
+      }
+
+      .block.food4 > span {
+        background: #189974;
+      }
+
+      .block.food5 > span {
+        background: #118721;
+      }
+
+      .block {
+        position: absolute;
+        background: none;
+        z-index: 1000;
+        transform: translateZ(14px);
+        transform-style: preserve-3d;
+      }
+
+      .block > span {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 90%;
+        height: 90%;
+        margin: 5%;
+        box-shadow: inset 0 0 10px #000;
+        background: rgba(250, 250, 250, 0.5);
+      }
+
+      .block span:nth-child(1) {
+        transform: rotateX(0deg) translateZ(14px);
+      }
+
+      .block span:nth-child(2) {
+        transform: rotateX(90deg) translateZ(14px);
+      }
+
+      .block span:nth-child(3) {
+        transform: rotateX(180deg) translateZ(14px);
+      }
+
+      .block span:nth-child(4) {
+        transform: rotateX(270deg) translateZ(14px);
+      }
+
+      .block span:nth-child(5) {
+        transform: rotateY(90deg) translateZ(14px);
+      }
+
+      .block span:nth-child(6) {
+        transform: rotateY(-90deg) translateZ(14px);
+      }
+
+      .snakeHead > span {
+        -webkit-animation: glow 2s linear infinite;
+        background: #409eff;
+      }
+
+      .snakeHead.boom > span,
+      .boom > .grid {
+        -webkit-animation: boom 2s linear infinite;
+        animation: boom 2s linear infinite;
+        background: #f00;
+      }
+
+      .snakeHead.boom > span {
+        background: red;
+        transition: all 2s;
+      }
+
+      .boom#gameBox {
+        // -webkit-animation: swing 5s linear infinite;
+        // animation: swing 5s linear infinite;
+        transition: all 2s;
+      }
+
+      .food > span {
+        -webkit-animation: glow 2s linear infinite;
+        animation: glow 2s linear infinite;
+        background: #409eff;
+      }
+
+      @-webkit-keyframes glow {
+        0% {
+          box-shadow: inset 0 0 10px #000;
+        }
+        25% {
+          box-shadow: inset 0 0 20px #000;
+        }
+        50% {
+          box-shadow: inset 0 0 40px #000;
+        }
+        75% {
+          box-shadow: inset 0 0 20px #000;
+        }
+        100% {
+          box-shadow: inset 0 0 10px #000;
+        }
+      }
+
+      @-webkit-keyframes boom {
+        /* 0% {box-shadow:0 0 10px #c00;}
+	25% {box-shadow:0 0 10px #c00;}
+	50% {box-shadow:0 0 60px #c00;}
+	75% {box-shadow:0 0 10px #c00;}
+	100% {box-shadow:0 0 10px #c00;} */
+      }
+
+      @-webkit-keyframes swing {
+        0% {
+          margin-top: 0px;
+        }
+        50% {
+          margin-top: 30px;
+        }
+        100% {
+          margin-top: 0px;
+        }
+      }
+
+      @keyframes glow {
+        0% {
+          box-shadow: inset 0 0 10px #000;
+        }
+        25% {
+          box-shadow: inset 0 0 20px #000;
+        }
+        50% {
+          box-shadow: inset 0 0 40px #000;
+        }
+        75% {
+          box-shadow: inset 0 0 20px #000;
+        }
+        100% {
+          box-shadow: inset 0 0 10px #000;
+        }
+      }
+
+      @keyframes boom {
+        /* 0% {box-shadow:0 0 10px #c00;}
+	25% {box-shadow:0 0 10px #c00;}
+	50% {box-shadow:0 0 60px #c00;}
+	75% {box-shadow:0 0 10px #c00;}
+	100% {box-shadow:0 0 10px #c00;} */
+      }
+
+      @keyframes swing {
+        0% {
+          margin-top: 0px;
+        }
+        50% {
+          margin-top: 30px;
+        }
+        100% {
+          margin-top: 0px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="scoreTxt"></div>
+    <span id="startBtn">Start</span>
+    <span id="pauseBtn">Pause</span>
+    <span id="gameoverTxt">gameover</span>
+    <span id="levelTxt"></span>
+    <span id="upgradeTip"></span>
+    <span id="modelBtn"></span>
+    <div id="gameBox"></div>
+    <script src="./index.js"></script>
+  </body>
+</html>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>ring texture</title>
+    <title>Ring Effect</title>
     <style>
       * {
         padding: 0;
@@ -12,18 +12,30 @@
       }
 
       body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         background: #0f20c3;
         /* background: #ff505e; */
+      }
+      #control1 {
+        width: min(100vw, 100vh);
+        height: min(100vw, 100vh);
       }
       canvas {
         display: block;
         margin: 0 auto;
+        max-width: 100%;
+        max-height: 100%;
+      }
+      @media screen {
+        
       }
     </style>
   </head>
 
   <body>
-    <div id="control1" style="height: 1300px"><canvas id="canvas1" width="1000" height="1000"></canvas></div>
+    <div id="control1"><canvas id="canvas1" width="1000" height="1000"></canvas></div>
     <script type="module" src="./index.js"></script>
   </body>
 </html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOM 2048</title>
+    <style>
+      body {
+        background: #222;
+        font-family: Helvetica;
+        font-size: 16px;
+      }
+      * { margin: 0; padding: 0; }
+      .gameArea {
+        width: 800px;
+        height: 500px;
+        margin: 0 auto;
+        margin-top: 80px;
+        padding-top: 50px;
+        background: #888;
+      }
+      .record {
+        float: left;
+        font-size: 60px;
+        text-shadow: 2px 2px 8px #888;
+        color: #665544;
+        padding: 0 30px;
+      }
+      .record .score {
+        margin-bottom: 40px;
+        width: 250px;
+        padding: 30px 20px;
+        border-radius: 8px;
+        background: #fff;
+      }
+      .record .label {
+        font-size: 40px;
+      }
+      #score {
+        width: 100%;
+        overflow: hidden;
+      }
+      #maxNo {
+        width: 100%;
+        overflow: hidden;
+      }
+
+      #gameBox {
+        float: left;
+        width: 400px;
+        height: 400px;
+        border: 5px solid #213456;
+        position: relative;
+        background: #fff;
+      }
+      .block {
+        width: 100px;
+        height: 100px;
+        float: left;
+        box-shadow: inset 0px 0px 6px #888;
+      }
+      .num {
+        position: absolute;
+        z-index: 10;
+        text-align: center;
+        box-shadow: 0 0 5px #555;
+        font-family: impact;
+        color: #f3f3f3;
+        line-height: 100px;
+      }
+      .num2 {
+        background: #123;
+      }
+      .num4 {
+        background: #143;
+      }
+      .num8 {
+        background: #183;
+      }
+      .num16 {
+        background: #161623;
+      }
+      .num32 {
+        background: #323223;
+      }
+      .num64 {
+        background: #646423;
+      }
+      .num128 {
+        background: #128128;
+        font-size: 60px;
+      }
+      .num256 {
+        background: #256256;
+        font-size: 60px;
+      }
+      .num512 {
+        background: #512;
+        font-size: 60px;
+      }
+      .num1024 {
+        background: #102424;
+        font-size: 45px;
+      }
+      .num2048 {
+        background: #204848;
+        font-size: 45px;
+      }
+      .num4096 {
+        background: #409696;
+        font-size: 45px;
+      }
+
+      .mask {
+        background: #fff;
+        opacity: 0.8;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        z-index: 10000;
+        display: none;
+      }
+      .mask p#maskBtn {
+        opacity: 1;
+        text-align: center;
+        top: 40%;
+        margin-top: 20px;
+        position: absolute;
+        width: 100%;
+      }
+      .mask p#maskTxt {
+        font-size: 80px;
+        margin-top: 80px;
+        text-align: center;
+      }
+      .mask p a {
+        margin: 0 20px;
+        color: #111;
+        font-size: 50px;
+        text-shadow: 2px 2px 8px #555;
+        font-family: 'microsoft yahei';
+        font-weight: bold;
+        letter-spacing: -2px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mask">
+      <p id="maskTxt"></p>
+      <p id="maskBtn">
+        <a id="tryAgain">try again</a>
+        <a id="keepGoing">keep going</a>
+      </p>
+    </div>
+
+    <div class="gameArea">
+      <div class="record">
+        <div class="score">
+          <p class="label">score:</p>
+          <p id="score">0</p>
+        </div>
+        <div class="score">
+          <p class="label">max:</p>
+          <p id="maxNo">0</p>
+        </div>
+      </div>
+
+      <div id="gameBox">
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+      </div>
+    </div>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="./index.js"></script>
+  </body>
+</html>

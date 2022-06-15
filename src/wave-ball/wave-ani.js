@@ -1,4 +1,4 @@
-import THREE from 'three';
+import * as THREE from 'three';
 import { Time, TIME, TWEEN } from './time.js';
 
 const waveVertexShader = `
@@ -25,12 +25,12 @@ const waveVertexShader = `
 
 const waveFragmentShader = `
 
-    uniform sampler2D texture; 
+    uniform sampler2D texture1; 
     uniform vec3 color; 
     uniform float opacity; 
     void main() { 
         
-        gl_FragColor = vec4(color, opacity) * texture2D( texture, gl_PointCoord ); 
+        gl_FragColor = vec4(color, opacity) * texture2D( texture1, gl_PointCoord ); 
     }
 
 `;
@@ -92,7 +92,7 @@ class Wave extends Time {
 
     const uniforms = {
 
-      texture: {
+      texture1: {
         value: new THREE.TextureLoader().load(pointImg),
       },
       color: {

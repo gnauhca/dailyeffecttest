@@ -1,0 +1,156 @@
+*{margin:0; padding:0;}
+ul li {list-style: none;}
+body {width: 100%;height: 100%; position: absolute; -webkit-user-select: none; -moz-user-select: none; font-family: impact;}
+.state {width:100%; height:100%; perspective:800px; position: relative;background-image: radial-gradient(circle at center, #ccc 0%, #022627 100%); }
+#startBtn {position: absolute; left:50%; top:50%; width: 200px; height:200px; margin-left: -100px; margin-top: -100px; line-height: 200px; font-size: 60px; text-align: center; background:rgba(50,50,50,0.7); border-radius: 20px; color:#ccc; z-index: 100000000; cursor: pointer; transition:all 0.5s;}
+#startBtn:hover {font-size: 80px; text-shadow: 0 0 30px #222; background: rgba(10,10,10,0.3); border-radius: 100px;}
+
+/* options */
+.options {position: fixed; width: 100%; height: 60px; bottom:0px; background: rgba(10,10,10,0.5);text-align:center; transition: all 0.5s;}
+.option-block{margin:5px 20px; padding: 3px 10px; bbackground: rgba(0,0,0,0.7); display: inline-block;}
+.option-block li {display: inline-block; width: 45px; height: 45px; font-size: 14px; border-radius: 10px; text-align: center; line-height: 45px; color: #333; cursor: pointer; background: #ddd; margin:0 5px;}
+
+.option-block li:hover {background: #aaa;}
+
+/* options playing 撤销，返回等*/
+.option-playing {position: fixed; width: 100%; height: 60px; top:-200px; background: rgba(10,10,10,0.5);text-align:center; transition: all 0.5s;}
+.option-playing div {display: inline-block; width: 45px; height: 45px; font-size: 14px; border-radius: 10px; text-align: center; line-height: 45px; color: #333; cursor: pointer; background: #ddd; margin:5px 5px;}
+.option-playing div:hover {background: #aaa;}
+
+.time-area{ position: fixed; top: -30px; right: 30px; font-size: 30px; color: #ddf; transition:all 1s;}
+
+.success {display:none; position:fixed; top:50%; left:0;  width: 100%; height:50px; margin-top: -50px; text-align: center; font-size: 50px; color: #edf;text-shadow: 0 0 15px #333;}
+
+
+
+
+
+
+#cubeWrap { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; transition: width 0.5s, height 0.5s;}
+
+#cubeWrap.cube-ani {
+	-webkit-animation: cube-rotate 8s linear infinite;
+	animation: cube-rotate 8s linear infinite;
+}
+
+@-webkit-keyframes cube-rotate {
+	0% {transform: rotate(0deg);}
+	20% {transform: rotate3d(0.2,1,0.5,290deg);}
+	40% {transform: rotate3d(0.8,0.8,1,140deg);}
+	60% {transform: rotate3d(0.2,0.3,1,350deg);}
+	80% {transform: rotate3d(0.8,0.3,0.5,260deg);}
+	100% {transform: rotate(0deg);}
+}
+
+@keyframes cube-rotate {
+	0% {transform: rotate(0deg);}
+	20% {transform: rotate3d(0.2,1,0.5,290deg);}
+	40% {transform: rotate3d(0.8,0.8,1,140deg);}
+	60% {transform: rotate3d(0.2,0.3,1,350deg);}
+	80% {transform: rotate3d(0.8,0.3,0.5,260deg);}
+	100% {transform: rotate(0deg);}
+}
+
+#cubeWrap.cube-ani .face { background: #222;}
+.face {width:100%; height:100%; position: absolute; left: 0; top: 0;}
+.face.front {}
+
+.block {position: absolute; background:#222; color:#fff; font-size: 14px; text-align: center; line-height: 300%; -webkit-animation: block-show 8s linear infinite; width: 0%; height: 0%; transition: width 0.5s,height 0.5s, left 0.5s, top 0.5s,background 0.5s;}
+
+.block:after {position: absolute; z-index: 10; width:90%; height:90%; content: ''; display: block; left:5%; top:5%; border-radius: 20%;}
+.cool .block.block-front:after {position: absolute; background: rgba(251,245,0,0.7);}
+.cool .block.block-right:after {position: absolute; background: rgba(56,123,222,0.7);}
+.cool .block.block-back:after {position: absolute; background: rgba(218,35,28,0.7);}
+.cool .block.block-left:after {position: absolute; background: rgba(0,146,63,0.7);}
+.cool .block.block-up:after {position: absolute; background: rgba(251,253,254,0.7);}
+.cool .block.block-bottom:after {position: absolute; background: rgba(227,120,21,0.7);}
+
+.popular .block.block-front:after {position: absolute; background: #345;}
+.popular .block.block-right:after {position: absolute; background: #567;}
+.popular .block.block-back:after {position: absolute; background: #789;}
+.popular .block.block-left:after {position: absolute; background: #9ab;}
+.popular .block.block-up:after {position: absolute; background: #bcd;}
+.popular .block.block-bottom:after {position: absolute; background: #def;}
+
+.pretty .block.block-front:after {position: absolute; background: #543;}
+.pretty .block.block-right:after {position: absolute; background: #765;}
+.pretty .block.block-back:after {position: absolute; background: #987;}
+.pretty .block.block-left:after {position: absolute; background: #ba9;}
+.pretty .block.block-up:after {position: absolute; background: #dcb;}
+.pretty .block.block-bottom:after {position: absolute; background: #fed;}
+
+
+.arrow-up,
+.arrow-left,
+.arrow-right,
+.arrow-down
+{
+    position: absolute;
+    z-index: 100;
+
+    width: 0;
+    height: 0;
+
+    cursor: pointer;
+    transition: all .3s;
+    transform-origin: top center;
+
+    opacity: 0;
+
+}
+
+.block:hover div{opacity: 0.6}
+.block:hover div:hover{opacity: 1}
+
+.arrow-up {
+	transform: translateX(-50%); top: 8%; left: 50%;     
+	border-top: none !important;
+    border-right: solid transparent;
+    border-bottom: solid #000;
+    border-left: solid transparent;
+}
+.arrow-left {
+	transform: translateY(-50%); top: 50%; left: 8%;    
+	border-left: none !important;
+    border-top: solid transparent;
+    border-right: solid #000;
+    border-bottom: solid transparent;
+}
+.arrow-right {
+	transform: translateY(-50%);  top: 50%; right: 8%;    
+	border-right: none !important;
+    border-top: solid transparent;
+    border-left: solid #000;
+    border-bottom: solid transparent;
+}
+.arrow-down {
+	transform: translateX(-50%); bottom: 8%;  left: 50%;    
+	border-bottom: none !important;
+    border-right: solid transparent;
+    border-top: solid #000;
+    border-left: solid transparent;
+}
+
+
+
+
+/* 中间夹层 */
+.floor-wrap {position: absolute; width:100%; height:100%; transform-style:preserve-3d; opacity: 0;}
+.floor-wrap div {position:absolute;}
+
+.floor-box {width:100%; height:100%; transform-style:preserve-3d;}
+.floor-frontmask, .floor-backmask {width: 100%; height: 100%; background: #000;}
+.floor-front,.floor-back {width:100%; height: 100%;}
+
+
+
+/* 			'frontMask': null,//当存在中间夹层是显示的盖板
+'backMask': null,//当存在中间夹层是显示的盖板
+'front': null,
+'left': null,
+'back': null,
+'right': null,
+'up': null,
+'bottom': null,
+'floorBox': null,//整个层包裹元素
+'floorWrap': null//整 */

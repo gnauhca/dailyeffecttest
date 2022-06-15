@@ -1,0 +1,119 @@
+@use 'sass:math';
+@mixin box($width) {
+  $halfWidth: math.div($width, 2);
+  // up
+  &:nth-child(1) {
+    transform: rotate3d(1, 0, 0, 90deg) translateZ($halfWidth);
+  }
+  //down
+  &:nth-child(2) {
+    transform: rotate3d(1, 0, 0, -90deg) translateZ($halfWidth);
+  }
+  //front
+  &:nth-child(3) {
+    transform: rotate3d(0, 0, 0, 0deg) translateZ($halfWidth);
+  }
+  //back
+  &:nth-child(4) {
+    transform: rotate3d(1, 0, 0, 180deg) translateZ($halfWidth);
+  }
+  //left
+  &:nth-child(5) {
+    transform: rotate3d(0, 1, 0, 90deg) translateZ($halfWidth);
+  }
+  //right
+  &:nth-child(6) {
+    transform: rotate3d(0, 1, 0, -90deg) translateZ($halfWidth);
+  }
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+body {
+  font-family: 'pingfang SC', 'helvetica neue', arial, 'hiragino sans gb', 'microsoft yahei ui', 'microsoft yahei',
+    simsun, sans-serif;
+  background-image: radial-gradient(circle, #276378, #000);
+}
+
+// progress
+$box-width: 100px;
+.progress {
+  position: absolute;
+  z-index: 100000;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.1);
+  perspective: 1200px;
+
+  .water-box-wrap {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: $box-width;
+    height: $box-width;
+    margin-left: math.div($box-width, -2);
+    margin-top: math.div($box-width, -2);
+    transform-style: preserve-3d;
+    animation: waterbox 8s infinite alternate;
+  }
+  .box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+
+    div {
+      position: absolute;
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.6);
+      outline: 1px solid rgb(156, 194, 196);
+      @include box($box-width);
+    }
+  }
+
+  .water {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: center bottom;
+    transition: transform linear 0.2s;
+    transform-style: preserve-3d;
+
+    div {
+      position: absolute;
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(16, 121, 155, 0.3);
+      @include box($box-width);
+      text-align: center;
+      span {
+        line-height: $box-width;
+        font-size: math.div($box-width, 5);
+        color: #eee;
+        transform: translate3d(0, 0, -2px);
+      }
+    }
+  }
+}
+@keyframes waterbox {
+  0% {
+    transform: rotateY(20deg) rotateX(-20deg);
+  }
+
+  100% {
+    transform: rotateY(-40deg) rotateX(-60deg);
+  }
+}

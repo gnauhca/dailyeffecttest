@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Solar System</title>
+    <style>
+      body {
+        background: #000;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+    <script>
+      // slogen animate
+      var easing = function (t, b, c, d) {
+        if ((t /= d / 2) < 1) return (c / 2) * t * t * t + b;
+        return (c / 2) * ((t -= 2) * t * t + 2) + b;
+      };
+
+      function Circle(radius, lineWidth, rotate, scale, clockwise, color, dur, delay) {
+        this.currentAngle = 0;
+        this.prevAngle = 0;
+        this.initAngle = 0;
+        this.finalAngle = Math.PI * 2 * (clockwise ? 1 : -1);
+        this.lineWidth = lineWidth;
+
+        this.radius = radius;
+        this.rotate = rotate;
+        this.scale = scale;
+        this.clockwise = clockwise;
+        this.color = color;
+        this.dur = dur;
+        this.timepass = -delay || 0;
+        this.percent = 0;
+
+        this.finish = false;
+
+        this.update = function (delta) {
+          this.timepass += delta;
+          if (this.timepass < 0) return;
+
+          this.percent = easing(this.timepass, 0, 1, this.dur);
+          // this.percent = this.timepass/this.dur;
+          this.percent = this.percent > 1 ? 1 : this.percent;
+
+          this.prevAngle = this.currentAngle;
+          this.currentAngle = this.initAngle + (this.finalAngle - this.initAngle) * this.percent;
+          if (this.percent === 1) {
+            this.finish = true;
+          }
+        };
+      }
+
+      var Star = function (x, y, radius, color, dur, delay) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.color = color;
+
+        this.dur = dur;
+        this.delay = delay;
+        this.timepass = -delay || 0;
+        this.percent = 0;
+
+        this.update = function (delta) {
+          this.timepass += delta;
+          if (this.timepass < 0) return;
+
+          this.percent = easing(this.timepass, 0, 1, this.dur);
+          this.percent = this.timepass / this.dur;
+          this.percent = this.percent > 1 ? 1 : this.percent;
+          if (this.percent === 1) {
+            this.finish = true;
+          }
+        };
+      };
+
+      var Animate = function () {
+        var aniT;
+        var cvs;
+        var ctx;
+
+        this.circles = [];
+        this.stars = [];
+
+        this.init = function () {
+          cvs = document.querySelector('canvas');
+          cvs.width = window.innerWidth;
+          cvs.height = window.innerHeight;
+          ctx = cvs.getContext('2d');
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = '#ffffff';
+          window.onresize = function () {
+            cvs.width = window.innerWidth;
+            cvs.height = window.innerHeight;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ffffff';
+          };
+        };
+
+        this.draw = function () {
+          ctx.save();
+          ctx.globalCompositeOperation = 'destination-in';
+          ctx.globalAlpha = 0.8;
+          ctx.strokeStyle = ctx.fillStyle = '#000000';
+          ctx.fillRect(0, 0, cvs.width, cvs.height);
+          ctx.restore();
+
+          this.stars.forEach(function (star) {
+            ctx.save();
+
+            var middle = (0.5 - Math.abs(star.percent - 0.5)) / 0.5;
+            var radius = star.radius * middle;
+            var opacity = middle * 0.3;
+
+            ctx.translate(0, 0);
+            ctx.fillStyle = star.color;
+            ctx.globalAlpha = opacity;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          });
+
+          this.circles.forEach(function (circle) {
+            if (circle.finish || !circle.percent) return;
+
+            ctx.save();
+            var angle = circle.currentAngle;
+            var prevAngle = circle.prevAngle;
+            var middle = (0.5 - Math.abs(circle.percent - 0.5)) / 0.5;
+            var opacity;
+            var x, y;
+
+            x = Math.cos(angle) * circle.radius;
+            y = Math.sin(angle) * circle.radius;
+
+            lineWidth = middle * circle.lineWidth;
+            opacity = middle;
+
+            ctx.translate(cvs.width / 2, cvs.height / 2);
+            ctx.rotate(circle.rotate + Math.PI * -0.5, 1);
+            ctx.scale(circle.scale, 1);
+
+            ctx.strokeStyle = circle.color;
+            ctx.globalOpacity = opacity;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.arc(0, 0, circle.radius, angle, prevAngle, circle.clockwise);
+            ctx.stroke();
+
+            ctx.restore();
+          });
+        };
+
+        this.tick = function () {
+          var now = new Date().getTime();
+          var pre = now;
+          var delta = 0;
+          var that = this;
+
+          var starColors = ['#ffff20', '#ffedff', '#ffffff', 'ffc608', '#35c2e4', '#c62fc6'];
+          var starColor;
+          var circleRadius = 0;
+
+          (function _tick() {
+            now = new Date().getTime();
+            delta = now - pre;
+            delta = delta > 30 ? 30 : delta;
+            pre = now;
+
+            that.circles.forEach(function (circle) {
+              circle.update(delta);
+            });
+            that.stars.forEach(function (star) {
+              star.update(delta);
+            });
+
+            for (var i = that.circles.length - 1; i >= 0; i--) {
+              if (that.circles[i].finish) {
+                that.circles.splice(i, 1);
+              }
+            }
+            for (var i = that.stars.length - 1; i >= 0; i--) {
+              if (that.stars[i].finish) {
+                that.stars.splice(i, 1);
+              }
+            }
+
+            if (that.circles.length < 10) {
+              circleRadius = (100 + 1000 * Math.random()) | 0;
+              that.circles.push(
+                new Circle(
+                  circleRadius,
+                  circleRadius / 30,
+                  -Math.PI / 12 + (Math.PI / 6) * Math.random(),
+                  0.1 + 0.1 * Math.random(),
+                  1 + Math.round(Math.random()),
+                  'rgb(' +
+                    [
+                      (100 + Math.random() * 156) | 0,
+                      (100 + Math.random() * 156) | 0,
+                      (100 + Math.random() * 156) | 0,
+                    ].join(',') +
+                    ')',
+                  (circleRadius * 10 + Math.random() * 6000) | 0,
+                  (Math.random() * 2000) | 0,
+                ),
+              );
+            }
+            if (that.stars.length < 180) {
+              starColor = starColors[(starColors.length * Math.random()) | 0];
+              that.stars.push(
+                new Star(
+                  window.innerWidth * Math.random(),
+                  window.innerHeight * Math.random(),
+                  (3 * Math.random()) | 0,
+                  starColor,
+                  (6000 * Math.random()) | 0,
+                  (1000 * Math.random()) | 0,
+                ),
+              );
+            }
+
+            that.draw();
+            aniT = window.requestAnimationFrame(_tick);
+          })();
+        };
+
+        this.start = function () {
+          this.tick();
+        };
+
+        this.stop = function () {
+          window.cancelAnimationFrame(aniT);
+        };
+      };
+
+      var animate = new Animate();
+      animate.init();
+      animate.start();
+    </script>
+  </body>
+</html>

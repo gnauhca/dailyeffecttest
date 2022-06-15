@@ -40,6 +40,7 @@ const animate = {
 };
 
 const s = Snap(1000, 1000);
+s.attr({ viewBox: '0, 0, 1000, 1000' });
 
 const sElems = {
 

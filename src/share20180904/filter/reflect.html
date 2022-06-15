@@ -5,11 +5,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>reflect</title>
+  <title>SVG Reflect</title>
+  <style>
+    body {
+      background-color: #000;
+    }
+    .wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 800px;
+      overflow: hidden;
+    }
+    .wrapper svg {
+      position: absolute;
+      left: -10%;
+      top: -10%;
+      width: 120%;
+      height: 120%;
+    }
+  </style>
 </head>
 
 <body>
-  <div>
+  <div class="wrapper">
 
     <svg width="1200" height="1600" viewBox="0 0 1200 1600">
       <filter id="displacementFilter">

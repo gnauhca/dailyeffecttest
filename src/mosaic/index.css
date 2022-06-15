@@ -1,0 +1,41 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-family: 'PingFang SC', -apple-system, 'Helvetica Neue', Helvetica, BlinkMacSystemFont, 'Microsoft YaHei', tahoma,
+    Arial, 'Open Sans', 'Hiragino Sans GB', 'Heiti SC', 'WenQuanYi Micro Hei', sans-serif;
+}
+body {
+  width: 100vw;
+  height: 100vh;
+}
+canvas {
+  display: block;
+  margin: 0 auto;
+}
+
+.form {
+  padding: 20px 0;
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.21);
+  font-size: 26px;
+}
+
+.field {
+  line-height: 30px;
+  text-align: center;
+  width: 40%;
+  margin: 0 auto;
+}
+label {
+  display: inline-block;
+  text-align: right;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+input {
+  vertical-align: middle;
+  width: 200px;
+  height: 50px;
+}

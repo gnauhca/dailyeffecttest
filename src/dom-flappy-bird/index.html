@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DOM Flappy bird</title>
+    <link rel="stylesheet" href="./index.less" />
+  </head>
+  <body>
+    <div id="outwrap">
+      <div id="gamebox">
+        <div class="flappybg"></div>
+        <div id="bird">
+          <div class="eye"></div>
+          <div class="wind" id="birdWind"></div>
+          <div class="mouse"></div>
+        </div>
+        <div id="score">0</div>
+        <div id="btmLine"></div>
+        <div class="none" id="gameoverBox">
+          <div id="gameover">Gameover</div>
+        </div>
+        <div id="startBtn" class="none">start</div>
+        <div id="retryBtn" class="none">retry</div>
+        <!--div class="pipe pipeTop">
+          <div class="pipeSize"></div>
+        </div>
+        <div class="pipe pipeBtm">
+          <div class="pipeSize"></div>
+        </div-->
+      </div>
+    </div>
+    <script src="./index.js"></script>
+  </body>
+</html>

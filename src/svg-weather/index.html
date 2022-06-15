@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Svg Weather</title>
+    <style>
+      body {
+        background: #1881c4;
+        font-family: 'pingfang SC','helvetica neue',arial,'hiragino sans gb','microsoft yahei ui','microsoft yahei',simsun,sans-serif;
+      }
+      svg {
+        position: absolute;
+        z-index: 1;
+        left: 50%;
+        width: 2560px;
+        height: 300px;
+        top: 50%;
+        margin-left: -1280px;
+        margin-top: -150px;
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="2560px" height="300px" viewBox="0 0 2560 300" xmlns="http://www.w3.org/2000/svg"></svg>
+
+    <script>
+      const svgText = [
+        ['08:00', '多云', '30°'],
+        ['11:00', '晴', '31°'],
+        ['14:00', '晴', '29°'],
+        ['17:00', '晴', '28°'],
+        ['21:00', '晴', '26°'],
+        ['23:00', '晴', '28°'],
+      ];
+    </script>
+    <script src="./easing.js"></script>
+    <script src="./index.js"></script>
+  </body>
+</html>

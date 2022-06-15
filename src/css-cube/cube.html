@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<title>CSS Cube</title>
+<link rel='stylesheet' href='./cube.css'>
+</head>
+<body>
+		
+	<div class='state'>
+		<div id='startBtn'>Start</div>
+
+		<div id='cubeWrap'>
+			<div id='floorWrap' class='floor-wrap'></div>
+		</div>
+
+	</div>
+
+	<!-- 游戏开始之前允许的操作 -->
+	<div class='options' id='cubeOptWrap'>
+		<div class='option-block size-opt-wrap'>
+			<ul>
+				<li class='size-opt' id='optSizeSmall'>small</li>
+				<li class='size-opt' id='optSizeMedium'>medium</li>
+				<li class='size-opt' id='optSizeLarge'>large</li>
+			</ul>			
+		</div>
+
+		<div class='option-block col-opt-wrap'>
+			<ul>
+				<li class='col-opt' id='optCol2'>2 col</li>
+				<li class='col-opt' id='optCol3'>3 col</li>
+				<li class='col-opt' id='optCol4'>4 col</li>
+				<li class='col-opt' id='optCol5'>5 col</li>
+				<li class='col-opt' id='optCol6'>6 col</li>
+			</ul>			
+		</div>
+
+		<div class='option-block style-opt-wrap'>
+			<ul>
+				<li class='style-opt' id='optStyleCool'>popular</li>
+				<li class='style-opt' id='optStylePopular'>cool</li>
+				<li class='style-opt' id='optStylePretty'>luxury</li>
+			</ul>
+		</div>
+	</div>
+	<!-- 游戏开始之前允许的操作 over -->
+
+	<!-- 游戏开始之后允许的操作 -->
+	<div class='option-playing' id='optPlayingWrap'>
+		<div id='undo'>undo</div>
+		<div id='redo'>redo</div>
+		<div id='reset'>reset</div>
+	</div>
+	<!-- 游戏开始之后允许的操作over -->
+
+	<!-- 计时 -->
+	<div class='time-area' id='time'>
+		00:00
+	</div>
+
+	<!-- 成功 -->
+	<div class='success' id='successTxt'>
+		<span>YOU WIN</span>
+	</div>
+
+<script src='common.js'></script>
+
+<script src='gamer.js'></script>
+<script src='block.js'></script>
+<script src='face.js'></script>
+<script src='floor.js'></script>
+<script src='cube.js'></script>
+<script src='view.js'></script>
+<script>
+	gamer.init();
+</script>
+</body>
+</html>

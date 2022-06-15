@@ -5,6 +5,7 @@
 const path = require('path');
 const fs = require('fs');
 const glob = require('fast-glob');
+
 const assetPath = 'dist/assets';
 
 const files = glob.sync('dist/**/*.{html,css,js}');
